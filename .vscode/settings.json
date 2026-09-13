@@ -1,0 +1,10 @@
+{
+    "html-validate.validate": [
+        "html",
+        "javascript",
+        "markdown",
+        "vue",
+        "vue-html",
+        "angular"
+    ]
+}

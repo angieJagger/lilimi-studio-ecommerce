@@ -1,0 +1,26 @@
+<header class="site-header">
+  <div class="site-header__container container">
+    <a class="site-header__brand" [routerLink]="['/', transloco.getActiveLang()]">
+      Lilimi Studio
+    </a>
+    <nav class="site-header__navigation" [attr.aria-label]="'nav.mainNavigation' | transloco">
+      @for (item of shopNavigation; track item.labelKey) {
+      <a class="site-header__link" [routerLink]="['/', transloco.getActiveLang(), item.path]"
+        [queryParams]="item.queryParams">
+        {{ item.labelKey | transloco }}
+      </a>
+      }
+    </nav>
+    <div class="site-header__actions">
+  <button class="site-header__language" type="button" (click)="toggleLanguage()"
+    [attr.aria-label]="'language.switchLabel' | transloco" [title]="'language.switchLabel' | transloco">
+    {{ transloco.getActiveLang() === 'pl' ? 'PL' : 'EN' }}
+  </button>
+  <button class="site-header__menu-button" type="button" aria-haspopup="dialog" (click)="mobileMenu.open()">
+    {{ 'nav.menu' | transloco }}
+  </button>
+  </div>
+  </div>
+</header>
+
+<app-mobile-menu #mobileMenu></app-mobile-menu>

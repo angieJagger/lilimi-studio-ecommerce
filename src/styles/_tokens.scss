@@ -1,0 +1,59 @@
+
+
+:root {
+  --spacing-0: 0;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-120: 120px;
+
+  --radius-0: 0;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-full: 999px;
+
+  /*  Primitive colors */
+--violet-600: #4f46a5;
+--violet-800: #332e6b;
+--lilac-300: #c8b6e2;
+--lilac-50: #f3eff8;
+--coral-500: #d5635c;
+--neutral-900: #211f26;
+--neutral-600: #6b6770;
+--neutral-200: #ddd9e0;
+--neutral-50: #faf9fb;
+--white: #ffffff;
+
+/* Semantic colors*/
+--brand-primary: var(--violet-600);
+--brand-lilac: var(--lilac-300);
+--accent-coral: var(--coral-500);
+
+--text-primary: var(--neutral-900);
+--text-secondary: var(--neutral-600);
+--text-inverse: var(--white);
+
+--surface-page: var(--neutral-50);
+--surface-default: var(--white);
+--surface-brand-soft: var(--lilac-50);
+--surface-inverse: var(--violet-800);
+
+--border-default: var(--neutral-200);
+--border-brand: var(--violet-600);
+
+--action-primary-background: var(--violet-600);
+--action-primary-background-hover: var(--violet-800);
+--action-primary-text: var(--white);
+
+/* Font families */
+--font-body: 'Manrope Variable', sans-serif;
+--font-heading: 'Fraunces Variable', serif;
+}

@@ -1,0 +1,95 @@
+<section class="hero">
+  <div class="container hero__container">
+    <div class="hero__copy">
+      <p class="hero__eyebrow">
+        {{ 'home.hero.eyebrow' | transloco }}
+      </p>
+
+      <h1 class="heading-1">
+        {{ 'home.hero.title' | transloco }}
+      </h1>
+
+      <p class="hero__description">
+        {{ 'home.hero.description' | transloco }}
+      </p>
+
+          <div class="hero__actions">
+            <a class="button button--primary" [routerLink]="[]" fragment="offer">
+              {{ 'home.hero.viewOffer' | transloco }}
+            </a>
+            <a class="button button--secondary" [routerLink]="[]" fragment="custom-order">
+              {{ 'home.hero.requestProject' | transloco }}
+            </a>
+          </div>
+    </div>
+
+    <div class="hero__media">
+      <p>{{ 'home.hero.mediaPlaceholder' | transloco }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="offer" id="offer">
+  <div class="container">
+    <h2 class="heading-2">
+      {{ 'home.offer.title' | transloco }}
+    </h2>
+    <ul class="offer__grid">
+      @for (item of offerItems; track item.labelKey) {
+      <li>
+        <a class="offer-card" [routerLink]="['/', transloco.getActiveLang(), item.path]" [queryParams]="item.queryParams">
+          <h3 class="offer-card__title">
+            {{ item.labelKey | transloco }}
+          </h3>
+
+          <span class="offer-card__action">
+            {{ 'home.offer.view' | transloco }}
+            <span aria-hidden="true">→</span>
+          </span>
+        </a>
+      </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<section class="featured">
+  <div class="container">
+    <div class="featured__header">
+      <p class="featured__eyebrow">
+        {{ 'home.featured.eyebrow' | transloco }}
+      </p>
+
+      <div class="featured__title-row">
+        <h2 class="heading-2">
+          {{ 'home.featured.title' | transloco }}
+        </h2>
+
+        <a class="featured__view-all" [routerLink]="['/', transloco.getActiveLang(), 'products']">
+          {{ 'home.featured.viewAll' | transloco }}
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+    <div class="featured__products">
+      <app-product-card [productName]="'demoProducts.forestDragon.name' | transloco"
+        [typeLabel]="'demoProducts.forestDragon.type' | transloco" description="DST • PES • JEF" [priceInGrosz]="2900"
+        [locale]="transloco.getActiveLang()"></app-product-card>
+        <app-product-card [productName]="'demoProducts.embroideredShirt.name' | transloco"
+          [typeLabel]="'demoProducts.embroideredShirt.type' | transloco"
+          [description]="'demoProducts.embroideredShirt.description' | transloco"
+          [pricePrefix]="'demoProducts.embroideredShirt.pricePrefix' | transloco" [priceInGrosz]="8900"
+          [locale]="transloco.getActiveLang()"></app-product-card>
+    </div>
+  </div>
+</section>
+
+<section class="custom-order" id="custom-order">
+  <div class="container">
+    <div class="custom-order__panel">
+      <h2 class="heading-2">
+        {{ 'home.customOrder.title' | transloco }}
+      </h2>
+    </div>
+  </div>
+</section>

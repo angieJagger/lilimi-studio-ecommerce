@@ -1,1 +1,29 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@fontsource-variable/manrope/wght.css' as manrope;
+@use '@fontsource-variable/fraunces/wght.css' as fraunces;
+@use './styles/tokens';
+@use './styles/utilities';
+@use './styles/typography';
+@use './styles/buttons';
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--text-primary);
+  background-color: var(--surface-page);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

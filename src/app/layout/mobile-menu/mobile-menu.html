@@ -1,0 +1,25 @@
+<dialog #dialog class="mobile-menu" [attr.aria-label]="'nav.mainNavigation' | transloco">
+    <div class="mobile-menu__header">
+        <a class="mobile-menu__brand" [routerLink]="['/', transloco.getActiveLang()]" (click)="close()">
+            Lilimi Studio
+        </a>
+
+        <button class="mobile-menu__close" type="button" autofocus [attr.aria-label]="'nav.closeMenu' | transloco"
+            (click)="close()">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+
+    <nav [attr.aria-label]="'nav.mainNavigation' | transloco">
+        <ul class="mobile-menu__links">
+          @for (item of shopNavigation; track item.labelKey) {
+          <li>
+            <a class="mobile-menu__link" [routerLink]="['/', transloco.getActiveLang(), item.path]"
+              [queryParams]="item.queryParams" (click)="close()">
+              {{ item.labelKey | transloco }}
+            </a>
+          </li>
+          }
+        </ul>
+    </nav>
+</dialog>

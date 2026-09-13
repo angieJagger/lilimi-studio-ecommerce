@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "patterns": "Wzory haftów",
+    "embroideredProducts": "Produkty haftowane",
+    "digitizing": "Digitalizacja haftu",
+    "websites": "Strony internetowe",
+    "cart": "Koszyk",
+    "account": "Konto",
+    "menu": "Menu",
+    "closeMenu": "Zamknij menu",
+    "mainNavigation": "Nawigacja główna"
+  },
+
+  "language": {
+    "switchLabel": "Zmień język na angielski"
+  },
+
+  "products": {
+    "title": "Wszystkie produkty"
+  },
+
+  "home": {
+    "hero": {
+      "eyebrow": "Haft • Pliki cyfrowe • Strony WWW",
+      "title": "Twórcze projekty dla Ciebie i Twojej marki",
+      "description": "Wzory haftów, personalizowane produkty i proste strony internetowe — gotowe lub tworzone na zamówienie",
+      "mediaPlaceholder": "Miejsce na zdjęcie / realizację",
+      "viewOffer": "Zobacz ofertę",
+      "requestProject": "Zleć projekt"
+    },
+
+    "offer": {
+      "title": "Znajdź coś dla siebie",
+      "view": "Zobacz"
+    },
+
+    "customOrder": {
+      "title": "Stwórzmy coś razem"
+    },
+
+    "featured": {
+      "eyebrow": "Polecane produkty",
+      "title": "Wybrane dla Ciebie",
+      "viewAll": "Zobacz wszystkie"
+}
+  },
+
+  "demoProducts": {
+    "forestDragon": {
+      "name": "Wzór haftu „Leśny smok”",
+      "type": "Plik cyfrowy"
+    },
+
+    "embroideredShirt": {
+      "name": "Koszulka z haftem",
+      "type": "Produkt fizyczny",
+      "description": "Wykonywana na zamówienie",
+      "pricePrefix": "od"
+    }
+  }
+}
+

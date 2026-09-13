@@ -1,0 +1,62 @@
+{
+  "nav": {
+    "patterns": "Embroidery patterns",
+    "embroideredProducts": "Embroidered products",
+    "digitizing": "Embroidery digitizing",
+    "websites": "Websites",
+    "cart": "Cart",
+    "account": "Account",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "mainNavigation": "Main navigation"
+  },
+
+  "language": {
+    "switchLabel": "Switch to Polish"
+  },
+
+  "products": {
+    "title": "All products"
+  },
+
+  "home": {
+    "hero": {
+      "eyebrow": "Embroidery • Digital files • Websites",
+      "title": "Creative projects for you and your brand",
+      "description": "Embroidery patterns, personalised products and simple websites — ready-made or created to order",
+      "mediaPlaceholder": "Project image placeholder",
+      "viewOffer": "Explore the offer",
+      "requestProject": "Request a project"
+
+    },
+
+    "offer": {
+      "title": "Find something for you",
+      "view": "Explore"
+    },
+
+    "customOrder": {
+      "title": "Let’s create something together"
+    },
+
+    "featured": {
+      "eyebrow": "Featured products",
+      "title": "Curated for you",
+      "viewAll": "View all"
+    }
+  },
+
+  "demoProducts": {
+    "forestDragon": {
+      "name": "Forest Dragon embroidery pattern",
+      "type": "Digital file"
+    },
+
+    "embroideredShirt": {
+      "name": "Embroidered T-shirt",
+      "type": "Physical product",
+      "description": "Made to order",
+      "pricePrefix": "from"
+    }
+  }
+}
