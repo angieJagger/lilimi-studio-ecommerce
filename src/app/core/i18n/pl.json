@@ -42,7 +42,27 @@
       "eyebrow": "Polecane produkty",
       "title": "Wybrane dla Ciebie",
       "viewAll": "Zobacz wszystkie"
-}
+    },
+
+    "process": {
+      "eyebrow": "KROK PO KROKU",
+      "title": "Jak wygląda współpraca?",
+      "steps": {
+        "choose": {
+          "title": "Wybierz ofertę",
+          "description": "Znajdź gotowy produkt lub usługę dopasowaną do Twojego pomysłu."
+        },
+        "describe": {
+          "title": "Opowiedz o pomyśle",
+          "description": "Opisz swoje potrzeby, prześlij inspiracje i ustalmy szczegóły realizacji."
+        },
+        "receive": {
+          "title": "Zaakceptuj i odbierz",
+          "description": "Zatwierdź przygotowany projekt i odbierz gotową realizację."
+        }
+      }
+  }
+
   },
 
   "demoProducts": {

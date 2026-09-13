@@ -43,6 +43,25 @@
       "eyebrow": "Featured products",
       "title": "Curated for you",
       "viewAll": "View all"
+    },
+
+    "process": {
+      "eyebrow": "STEP BY STEP",
+      "title": "How does it work?",
+      "steps": {
+        "choose": {
+          "title": "Choose an offer",
+          "description": "Find a ready-made product or a service that fits your idea."
+        },
+        "describe": {
+          "title": "Tell me about your idea",
+          "description": "Describe your needs, share your inspiration and let's agree on the details."
+        },
+        "receive": {
+          "title": "Approve and receive",
+          "description": "Approve the design and receive the finished result."
+        }
+      }
     }
   },
 

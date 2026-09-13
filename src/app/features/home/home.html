@@ -84,6 +84,38 @@
   </div>
 </section>
 
+<section class="process" aria-labelledby="process-title">
+  <div class="container">
+    <p class="process__eyebrow">
+      {{ 'home.process.eyebrow' | transloco }}
+    </p>
+
+    <h2 id="process-title" class="heading-2">
+      {{ 'home.process.title' | transloco }}
+    </h2>
+
+    <ol class="process__steps">
+      @for (step of ['choose', 'describe', 'receive']; track step; let index = $index) {
+      <li class="process__step">
+        <span class="process__number" aria-hidden="true">
+          {{ index + 1 }}
+        </span>
+
+        <div class="process__content">
+          <h3 class="process__title">
+            {{ ('home.process.steps.' + step + '.title') | transloco }}
+          </h3>
+
+          <p class="process__description">
+            {{ ('home.process.steps.' + step + '.description') | transloco }}
+          </p>
+        </div>
+      </li>
+      }
+    </ol>
+  </div>
+</section>
+
 <section class="custom-order" id="custom-order">
   <div class="container">
     <div class="custom-order__panel">
