@@ -35,7 +35,10 @@
     },
 
     "customOrder": {
-      "title": "Stwórzmy coś razem"
+      "eyebrow": "MASZ WŁASNY POMYSŁ?",
+      "title": "Stwórzmy coś razem",
+      "description": "Opowiedz, czego potrzebujesz, a przygotuję propozycję dopasowaną do Twojego projektu.",
+      "cta": "Zleć projekt"
     },
 
     "featured": {
@@ -77,6 +80,11 @@
       "description": "Wykonywana na zamówienie",
       "pricePrefix": "od"
     }
+  },
+
+  "projectInquiry": {
+    "title": "Opowiedz o swoim projekcie",
+    "description": "Napisz, czego potrzebujesz. Na podstawie Twojego opisu przygotuję propozycję realizacji i wycenę."
   }
 }
 

@@ -116,12 +116,25 @@
   </div>
 </section>
 
-<section class="custom-order" id="custom-order">
+<section class="custom-order" id="custom-order" aria-labelledby="custom-order-title">
   <div class="container">
     <div class="custom-order__panel">
-      <h2 class="heading-2">
-        {{ 'home.customOrder.title' | transloco }}
-      </h2>
+      <div class="custom-order__copy">
+        <p class="custom-order__eyebrow">
+          {{ 'home.customOrder.eyebrow' | transloco }}
+        </p>
+
+        <h2 id="custom-order-title" class="heading-2">
+          {{ 'home.customOrder.title' | transloco }}
+        </h2>
+
+        <p class="custom-order__description">
+          {{ 'home.customOrder.description' | transloco }}
+        </p>
+      </div>
+      <a class="button button--primary custom-order__cta" [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']">
+        {{ 'home.customOrder.cta' | transloco }}
+      </a>
     </div>
   </div>
 </section>

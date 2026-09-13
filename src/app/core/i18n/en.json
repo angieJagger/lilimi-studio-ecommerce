@@ -36,7 +36,10 @@
     },
 
     "customOrder": {
-      "title": "Let’s create something together"
+      "eyebrow": "HAVE AN IDEA?",
+      "title": "Let's create something together",
+      "description": "Tell me what you need and I'll prepare a proposal tailored to your project.",
+      "cta": "Start a project"
     },
 
     "featured": {
@@ -77,5 +80,10 @@
       "description": "Made to order",
       "pricePrefix": "from"
     }
+  },
+
+  "projectInquiry": {
+    "title": "Tell me about your project",
+    "description": "Describe what you need. I'll use your brief to prepare a proposal and a quote."
   }
 }

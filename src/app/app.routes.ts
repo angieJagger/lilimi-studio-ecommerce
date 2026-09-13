@@ -25,6 +25,11 @@ const shopRoutes: Routes = [
     loadComponent: () =>
       import('./features/services/web-design/web-design').then((m) => m.WebDesign),
   },
+  {
+    path: 'project-inquiry',
+    loadComponent: () =>
+      import('./features/project-inquiry/project-inquiry').then((m) => m.ProjectInquiry),
+  },
 ];
 
 export const routes: Routes = [
