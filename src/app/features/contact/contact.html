@@ -1,0 +1,24 @@
+<section class="contact" aria-labelledby="contact-title">
+  <div class="container">
+    <div class="contact__content">
+      <h1 id="contact-title" class="heading-1">
+        {{ 'contact.title' | transloco }}
+      </h1>
+
+      <p class="contact__description">
+        {{ 'contact.description' | transloco }}
+      </p>
+
+      <div class="contact__panel">
+        <p id="contact-demo-notice" class="contact__notice">
+          {{ 'contact.demoNotice' | transloco }}
+        </p>
+
+        <a class="button button--primary contact__cta"
+          [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']" aria-describedby="contact-demo-notice">
+          {{ 'contact.cta' | transloco }}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -139,6 +139,13 @@
     "cta": "Tell us about your project"
   },
 
+  "contact": {
+    "title": "Let's talk about your idea",
+    "description": "Interested in embroidery, a personalised product or a website? Describe your idea using our project inquiry form.",
+    "cta": "Go to the inquiry form",
+    "demoNotice": "The form currently runs in demo mode and does not send messages."
+  },
+
   "footer": {
     "description": "Embroidery patterns, personalised products and thoughtfully crafted websites.",
     "offerTitle": "Offer",

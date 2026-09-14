@@ -139,6 +139,13 @@
     "cta": "Opowiedz nam o swoim projekcie"
   },
 
+  "contact": {
+    "title": "Porozmawiajmy o Twoim pomyśle",
+    "description": "Interesuje Cię haft, personalizowany produkt lub strona internetowa? Opisz swój pomysł w formularzu zapytania projektowego.",
+    "cta": "Przejdź do formularza",
+    "demoNotice": "Formularz działa obecnie w trybie demonstracyjnym i nie wysyła wiadomości."
+  },
+
   "footer": {
     "description": "Wzory haftów, personalizowane produkty i strony internetowe tworzone z pomysłem.",
     "offerTitle": "Oferta",

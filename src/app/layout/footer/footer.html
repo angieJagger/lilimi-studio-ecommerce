@@ -37,6 +37,11 @@
               {{ 'footer.about' | transloco }}
             </a>
           </li>
+          <li>
+            <a [routerLink]="['/', transloco.getActiveLang(), 'contact']">
+              {{ 'footer.contact' | transloco }}
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
