@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Footer } from './footer';
+import { About } from './about';
 import { provideRouter } from '@angular/router';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
 
-describe('Footer', () => {
-  let component: Footer;
-  let fixture: ComponentFixture<Footer>;
+describe('About', () => {
+  let component: About;
+  let fixture: ComponentFixture<About>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Footer, getTranslocoTestingModule()],
+      imports: [About, getTranslocoTestingModule()],
       providers: [provideRouter([])],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Footer);
+    fixture = TestBed.createComponent(About);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

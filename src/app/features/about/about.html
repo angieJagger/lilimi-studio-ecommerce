@@ -1,0 +1,43 @@
+<article class="about" aria-labelledby="about-title">
+  <div class="container">
+    <div class="about__content">
+      <header class="about__intro">
+        <p class="about__eyebrow">
+          {{ 'about.eyebrow' | transloco }}
+        </p>
+
+        <h1 id="about-title" class="heading-1">
+          {{ 'about.title' | transloco }}
+        </h1>
+
+        <p class="about__text">
+          {{ 'about.intro' | transloco }}
+        </p>
+      </header>
+
+      <section class="about__section" aria-labelledby="about-story-title">
+        <h2 id="about-story-title" class="heading-2">
+          {{ 'about.storyTitle' | transloco }}
+        </h2>
+
+        <p class="about__text">
+          {{ 'about.story' | transloco }}
+        </p>
+      </section>
+
+      <section class="about__section" aria-labelledby="about-approach-title">
+        <h2 id="about-approach-title" class="heading-2">
+          {{ 'about.approachTitle' | transloco }}
+        </h2>
+
+        <p class="about__text">
+          {{ 'about.approach' | transloco }}
+        </p>
+      </section>
+
+      <a class="button button--primary about__cta" [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']">
+        {{ 'about.cta' | transloco }}
+      </a>
+    </div>
+  </div>
+</article>

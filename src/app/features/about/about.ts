@@ -1,15 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { shopNavigation } from '../navigation';
 
 @Component({
-  selector: 'app-footer',
   imports: [RouterLink, TranslocoPipe],
-  templateUrl: './footer.html',
-  styleUrl: './footer.scss',
+  selector: 'app-about',
+  styleUrl: './about.scss',
+  templateUrl: './about.html',
 })
-export class Footer {
+export class About {
   protected readonly transloco = inject(TranslocoService);
-  protected readonly shopNavigation = shopNavigation;
 }

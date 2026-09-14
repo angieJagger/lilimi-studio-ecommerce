@@ -126,5 +126,26 @@
     },
 
     "validationPassed": "Your details are valid. This demo has not sent your inquiry."
+  },
+
+  "about": {
+    "eyebrow": "MEET LILIMI STUDIO",
+    "title": "A small studio with a personal story",
+    "intro": "We create embroidery patterns, personalised products and websites. We help turn ideas into things that matter to you and your brand.",
+    "storyTitle": "Where does Lilimi come from?",
+    "story": "Lilimi takes its name from the founder's daughter. It marks the personal beginning of the brand and the hope that, over time, it will become something mother and daughter build together.",
+    "approachTitle": "We start with your idea",
+    "approach": "Every project starts with a conversation about your needs and expectations. Together, we define the scope, discuss the details and find an approach that fits your idea.",
+    "cta": "Tell us about your project"
+  },
+
+  "footer": {
+    "description": "Embroidery patterns, personalised products and thoughtfully crafted websites.",
+    "offerTitle": "Offer",
+    "informationTitle": "Information",
+    "about": "About us",
+    "contact": "Contact",
+    "terms": "Terms and conditions",
+    "privacy": "Privacy policy"
   }
 }

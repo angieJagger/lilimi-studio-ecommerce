@@ -1,1 +1,48 @@
-<p>footer works!</p>
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <a class="site-footer__logo" [routerLink]="['/', transloco.getActiveLang()]">
+          Lilimi Studio
+        </a>
+
+        <p class="site-footer__description">
+          {{ 'footer.description' | transloco }}
+        </p>
+      </div>
+
+      <nav aria-labelledby="footer-offer-title">
+        <h2 id="footer-offer-title" class="site-footer__title">
+          {{ 'footer.offerTitle' | transloco }}
+        </h2>
+
+        <ul class="site-footer__links">
+          @for (item of shopNavigation; track item.labelKey) {
+          <li>
+            <a [routerLink]="['/', transloco.getActiveLang(), item.path]" [queryParams]="item.queryParams">
+              {{ item.labelKey | transloco }}
+            </a>
+          </li>
+          }
+        </ul>
+      </nav>
+      <nav aria-labelledby="footer-information-title">
+        <h2 id="footer-information-title" class="site-footer__title">
+          {{ 'footer.informationTitle' | transloco }}
+        </h2>
+      
+        <ul class="site-footer__links">
+          <li>
+            <a [routerLink]="['/', transloco.getActiveLang(), 'about']">
+              {{ 'footer.about' | transloco }}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <p class="site-footer__copyright">
+      © 2026 Lilimi Studio
+    </p>
+  </div>
+</footer>

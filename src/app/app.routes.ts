@@ -30,6 +30,11 @@ const shopRoutes: Routes = [
     loadComponent: () =>
       import('./features/project-inquiry/project-inquiry').then((m) => m.ProjectInquiry),
   },
+
+  {
+    path: 'about',
+    loadComponent: () => import('./features/about/about').then((m) => m.About),
+  },
 ];
 
 export const routes: Routes = [

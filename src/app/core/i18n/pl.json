@@ -126,6 +126,27 @@
     },
 
     "validationPassed": "Dane są poprawne. W tej wersji demonstracyjnej zapytanie nie zostało wysłane."
+  },
+
+  "about": {
+    "eyebrow": "POZNAJ LILIMI STUDIO",
+    "title": "Mała pracownia, osobista historia",
+    "intro": "Tworzymy wzory haftów, personalizowane produkty i strony internetowe. Pomagamy zamieniać pomysły w rzeczy, które mają znaczenie dla Ciebie i Twojej marki.",
+    "storyTitle": "Skąd wzięło się Lilimi?",
+    "story": "Nazwa Lilimi pochodzi od imienia córki założycielki. To osobisty początek marki i nadzieja, że z czasem stanie się ona wspólnym dziełem mamy i córki.",
+    "approachTitle": "Zaczynamy od Twojego pomysłu",
+    "approach": "Każdy projekt zaczynamy od rozmowy o potrzebach i oczekiwaniach. Ustalamy zakres, omawiamy szczegóły i szukamy rozwiązania dopasowanego do Twojego pomysłu.",
+    "cta": "Opowiedz nam o swoim projekcie"
+  },
+
+  "footer": {
+    "description": "Wzory haftów, personalizowane produkty i strony internetowe tworzone z pomysłem.",
+    "offerTitle": "Oferta",
+    "informationTitle": "Informacje",
+    "about": "O nas",
+    "contact": "Kontakt",
+    "terms": "Regulamin",
+    "privacy": "Polityka prywatności"
   }
 }
 
