@@ -9,5 +9,149 @@
         {{ 'projectInquiry.description' | transloco }}
       </p>
     </header>
+    <form class="project-inquiry__form" novalidate (submit)="onSubmit($event)" (input)="validationPassed.set(false)"
+      (change)="validationPassed.set(false)">
+      <div class="form-field">
+        <label for="inquiry-name">
+          {{ 'projectInquiry.fields.name.label' | transloco }}
+        </label>
+
+        <input id="inquiry-name" type="text" autocomplete="given-name" [formField]="inquiryForm.name"
+          [placeholder]="'projectInquiry.fields.name.placeholder' | transloco" [attr.aria-invalid]="
+            inquiryForm.name().touched() && inquiryForm.name().invalid()
+              ? 'true'
+              : null
+          " [attr.aria-describedby]="
+            inquiryForm.name().touched() && inquiryForm.name().invalid()
+              ? 'inquiry-name-errors'
+              : null
+          " />
+
+        @if (inquiryForm.name().touched() && inquiryForm.name().invalid()) {
+        <ul id="inquiry-name-errors" class="form-field__errors">
+          @for (error of inquiryForm.name().errors(); track error) {
+          <li>{{ error.message! | transloco }}</li>
+          }
+        </ul>
+        }
+      </div>
+      <div class="form-field">
+        <label for="inquiry-email">
+          {{ 'projectInquiry.fields.email.label' | transloco }}
+        </label>
+
+        <input id="inquiry-email" type="email" autocomplete="email" [formField]="inquiryForm.email"
+          [placeholder]="'projectInquiry.fields.email.placeholder' | transloco" [attr.aria-invalid]="
+  inquiryForm.email().touched() && inquiryForm.email().invalid()
+    ? 'true'
+    : null
+" [attr.aria-describedby]="
+  inquiryForm.email().touched() && inquiryForm.email().invalid()
+    ? 'inquiry-email-errors'
+    : null
+" />
+        @if (inquiryForm.email().touched() && inquiryForm.email().invalid()) {
+        <ul id="inquiry-email-errors" class="form-field__errors">
+          @for (error of inquiryForm.email().errors(); track error) {
+          <li>{{ error.message! | transloco }}</li>
+          }
+        </ul>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="inquiry-project-type">
+          {{ 'projectInquiry.fields.projectType.label' | transloco }}
+        </label>
+      
+        <select id="inquiry-project-type" [formField]="inquiryForm.projectType" [attr.aria-invalid]="
+            inquiryForm.projectType().touched() && inquiryForm.projectType().invalid()
+              ? 'true'
+              : null
+          " [attr.aria-describedby]="
+            inquiryForm.projectType().touched() && inquiryForm.projectType().invalid()
+              ? 'inquiry-project-type-errors'
+              : null
+          ">
+          <option value="">
+            {{ 'projectInquiry.fields.projectType.placeholder' | transloco }}
+          </option>
+      
+          @for (type of projectTypes; track type) {
+          <option [value]="type">
+            {{ ('projectInquiry.fields.projectType.options.' + type) | transloco }}
+          </option>
+          }
+        </select>
+      
+        @if (inquiryForm.projectType().touched() && inquiryForm.projectType().invalid()) {
+        <ul id="inquiry-project-type-errors" class="form-field__errors">
+          @for (error of inquiryForm.projectType().errors(); track error) {
+          <li>{{ error.message! | transloco }}</li>
+          }
+        </ul>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="inquiry-description">
+          {{ 'projectInquiry.fields.description.label' | transloco }}
+        </label>
+
+        <textarea id="inquiry-description" rows="6" [formField]="inquiryForm.description"
+          [placeholder]="'projectInquiry.fields.description.placeholder' | transloco" [attr.aria-invalid]="
+  inquiryForm.description().touched() && inquiryForm.description().invalid()
+    ? 'true'
+    : null
+" [attr.aria-describedby]="
+  inquiryForm.description().touched() && inquiryForm.description().invalid()
+    ? 'inquiry-description-errors'
+    : null
+"></textarea>
+        @if (inquiryForm.description().touched() && inquiryForm.description().invalid()) {
+        <ul id="inquiry-description-errors" class="form-field__errors">
+          @for (error of inquiryForm.description().errors(); track error) {
+          <li>{{ error.message! | transloco }}</li>
+          }
+        </ul>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="inquiry-inspiration">
+          {{ 'projectInquiry.fields.inspirationUrl.label' | transloco }}
+        </label>
+
+        <input id="inquiry-inspiration" type="url" [formField]="inquiryForm.inspirationUrl"
+          [placeholder]="'projectInquiry.fields.inspirationUrl.placeholder' | transloco" [attr.aria-invalid]="
+  inquiryForm.inspirationUrl().touched() && inquiryForm.inspirationUrl().invalid()
+    ? 'true'
+    : null
+" [attr.aria-describedby]="
+  inquiryForm.inspirationUrl().touched() && inquiryForm.inspirationUrl().invalid()
+    ? 'inquiry-inspiration-errors'
+    : null
+" /> @if (inquiryForm.inspirationUrl().touched() && inquiryForm.inspirationUrl().invalid()) {
+        <ul id="inquiry-inspiration-errors" class="form-field__errors">
+          @for (error of inquiryForm.inspirationUrl().errors(); track error) {
+          <li>{{ error.message! | transloco }}</li>
+          }
+        </ul>
+        }
+      </div>
+      <button class="button button--primary" type="submit">
+        {{ 'projectInquiry.submit' | transloco }}
+      </button>
+      
+      <p class="project-inquiry__notice">
+        {{ 'projectInquiry.notice' | transloco }}
+      </p>
+      
+      <p class="project-inquiry__status" role="status">
+        @if (validationPassed()) {
+        {{ 'projectInquiry.validationPassed' | transloco }}
+        }
+      </p>
+    </form>
   </div>
 </section>

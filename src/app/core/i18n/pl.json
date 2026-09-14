@@ -83,8 +83,49 @@
   },
 
   "projectInquiry": {
-    "title": "Opowiedz o swoim projekcie",
-    "description": "Napisz, czego potrzebujesz. Na podstawie Twojego opisu przygotuję propozycję realizacji i wycenę."
+    "title": "Zapytanie projektowe",
+    "description": "Opisz swój pomysł, a wrócimy z informacją o możliwości realizacji.",
+    "fields": {
+      "name": {
+        "label": "Imię",
+        "placeholder": "Jan"
+      },
+      "email": {
+        "label": "Adres e-mail",
+        "placeholder": "your@email.com"
+      },
+      "projectType": {
+        "label": "Rodzaj projektu",
+        "placeholder": "Wybierz rodzaj projektu",
+        "options": {
+          "embroideredProduct": "Produkt haftowany",
+          "digitizing": "Digitalizacja haftu",
+          "website": "Strona internetowa",
+          "other": "Inny pomysł"
+        }
+      },
+      "description": {
+        "label": "Opis pomysłu",
+        "placeholder": "Opisz krótko, co chcesz stworzyć"
+      },
+      "inspirationUrl": {
+        "label": "Link do inspiracji (opcjonalnie)",
+        "placeholder": "https://..."
+      }
+    },
+    "submit": "Wyślij zapytanie",
+    "notice": "Wysłanie zapytania nie oznacza złożenia zamówienia.",
+
+    "errors": {
+      "nameRequired": "Podaj imię.",
+      "emailRequired": "Podaj adres e-mail.",
+      "emailInvalid": "Podaj poprawny adres e-mail.",
+      "projectTypeRequired": "Wybierz rodzaj projektu.",
+      "descriptionRequired": "Opisz swój pomysł.",
+      "inspirationUrlInvalid": "Podaj pełny adres zaczynający się od https:// lub http://."
+    },
+
+    "validationPassed": "Dane są poprawne. W tej wersji demonstracyjnej zapytanie nie zostało wysłane."
   }
 }
 

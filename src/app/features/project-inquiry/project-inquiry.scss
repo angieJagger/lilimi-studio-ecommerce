@@ -1,12 +1,19 @@
 .project-inquiry {
   padding-block: var(--spacing-48);
+  background-color: var(--surface-default);
+}
+
+.project-inquiry__intro,
+.project-inquiry__form {
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
 }
 
 .project-inquiry__intro {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-16);
-  max-width: 48rem;
 }
 
 .project-inquiry__intro > .heading-1 {
@@ -20,8 +27,94 @@
   line-height: 1.5;
 }
 
+.project-inquiry__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+  margin-top: var(--spacing-40);
+  padding: var(--spacing-24);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-12);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.form-field > label {
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.333333;
+  text-transform: uppercase;
+}
+
+.form-field > input,
+.form-field > select,
+.form-field > textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: var(--spacing-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-8);
+  background-color: var(--surface-default);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.form-field > textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.form-field > input::placeholder,
+.form-field > textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+.form-field > input:focus-visible,
+.form-field > select:focus-visible,
+.form-field > textarea:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
 @media (min-width: 64rem) {
   .project-inquiry {
     padding-block: var(--spacing-80);
   }
+
+  .project-inquiry__form {
+    padding: var(--spacing-32);
+  }
+}
+
+.form-field__errors {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #b42318;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.form-field > [aria-invalid='true'] {
+  border-color: #b42318;
+}
+
+.project-inquiry__notice,
+.project-inquiry__status {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.project-inquiry__status:empty {
+  display: none;
 }

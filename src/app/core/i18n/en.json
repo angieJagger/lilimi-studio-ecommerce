@@ -83,7 +83,48 @@
   },
 
   "projectInquiry": {
-    "title": "Tell me about your project",
-    "description": "Describe what you need. I'll use your brief to prepare a proposal and a quote."
+    "title": "Project inquiry",
+    "description": "Describe your idea and we'll get back to you about bringing it to life.",
+    "fields": {
+      "name": {
+        "label": "First name",
+        "placeholder": "Alex"
+      },
+      "email": {
+        "label": "Email address",
+        "placeholder": "your@email.com"
+      },
+      "projectType": {
+        "label": "Project type",
+        "placeholder": "Select a project type",
+        "options": {
+          "embroideredProduct": "Embroidered product",
+          "digitizing": "Embroidery digitizing",
+          "website": "Website",
+          "other": "Other idea"
+        }
+      },
+      "description": {
+        "label": "Describe your idea",
+        "placeholder": "Briefly describe what you'd like to create"
+      },
+      "inspirationUrl": {
+        "label": "Inspiration link (optional)",
+        "placeholder": "https://..."
+      }
+    },
+    "submit": "Send inquiry",
+    "notice": "Sending an inquiry does not place an order.",
+
+    "errors": {
+      "nameRequired": "Enter your first name.",
+      "emailRequired": "Enter your email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "projectTypeRequired": "Select a project type.",
+      "descriptionRequired": "Describe your idea.",
+      "inspirationUrlInvalid": "Enter a full URL starting with https:// or http://."
+    },
+
+    "validationPassed": "Your details are valid. This demo has not sent your inquiry."
   }
 }
