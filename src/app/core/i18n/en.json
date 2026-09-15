@@ -16,7 +16,23 @@
   },
 
   "products": {
-    "title": "All products"
+    "title": "All products",
+    "digitalType": "Digital download",
+    "physicalType": "Physical product",
+    "priceFrom": "from",
+    "eyebrow": "SHOP",
+    "description": "Explore embroidery patterns and embroidered products available at Lilimi Studio.",
+    "filters": "Filters",
+    "categories": "Categories",
+    "sorting": {
+      "label": "Sort by",
+      "default": "Default",
+      "priceAscending": "Price: low to high",
+      "priceDescending": "Price: high to low"
+    },
+    "resultCount": "Products: {{ count }}",
+    "showMore": "Show more",
+    "visibleCount": "Showing {{ visible }} of {{ total }} products"
   },
 
   "home": {

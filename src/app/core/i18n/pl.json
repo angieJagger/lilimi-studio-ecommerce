@@ -16,7 +16,23 @@
   },
 
   "products": {
-    "title": "Wszystkie produkty"
+    "title": "Wszystkie produkty",
+    "digitalType": "Plik cyfrowy",
+    "physicalType": "Produkt fizyczny",
+    "priceFrom": "od",
+    "eyebrow": "SKLEP",
+    "description": "Przeglądaj wzory haftów i produkty haftowane dostępne w Lilimi Studio.",
+    "filters": "Filtry",
+    "categories": "Kategorie",
+    "sorting": {
+      "label": "Sortuj",
+      "default": "Domyślnie",
+      "priceAscending": "Cena: rosnąco",
+      "priceDescending": "Cena: malejąco"
+    },
+    "resultCount": "Liczba produktów: {{ count }}",
+    "showMore": "Pokaż więcej",
+    "visibleCount": "Pokazano {{ visible }} z {{ total }} produktów"
   },
 
   "home": {

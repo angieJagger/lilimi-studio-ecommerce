@@ -1,3 +1,123 @@
-<div class="container">
-  <h1 class="heading-1">{{ 'products.title' | transloco }}</h1>
-</div>
+<section class="product-list" aria-labelledby="product-list-title">
+  <div class="container">
+    <header class="product-list__intro">
+      <p class="product-list__eyebrow">
+        {{ 'products.eyebrow' | transloco }}
+      </p>
+    
+      <h1 id="product-list-title" class="heading-1">
+        {{ titleKey() | transloco }}
+      </h1>
+    
+      <p class="product-list__description">
+        {{ 'products.description' | transloco }}
+      </p>
+    </header>
+
+    <div class="product-list__layout">
+      <div class="product-list__toolbar">
+        <p class="product-list__count" role="status">
+          {{ 'products.resultCount' | transloco: { count: products().length } }}
+        </p>
+        <button class="button button--secondary product-list__filter-toggle" type="button" aria-controls="product-filters"
+          [attr.aria-expanded]="filtersOpen()" (click)="toggleFilters()">
+          {{ 'products.filters' | transloco }}
+        </button>
+      
+        <div class="product-list__sorting">
+          <label for="product-sort">
+            {{ 'products.sorting.label' | transloco }}
+          </label>
+      
+          <select id="product-sort" #sortSelect [value]="sort()" (change)="changeSort(sortSelect.value)">
+            <option value="default">
+              {{ 'products.sorting.default' | transloco }}
+            </option>
+            <option value="price-asc">
+              {{ 'products.sorting.priceAscending' | transloco }}
+            </option>
+            <option value="price-desc">
+              {{ 'products.sorting.priceDescending' | transloco }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <aside id="product-filters" class="product-list__filters" [class.product-list__filters--open]="filtersOpen()"
+        aria-labelledby="product-filters-title">
+        <h2 id="product-filters-title" class="product-list__filters-title">
+          {{ 'products.filters' | transloco }}
+        </h2>
+    
+        <nav aria-labelledby="product-categories-title">
+          <h3 id="product-categories-title" class="product-list__filter-label">
+            {{ 'products.categories' | transloco }}
+          </h3>
+    
+          <ul class="product-list__categories">
+            <li>
+              <a [routerLink]="[]" [queryParams]="{ category: null }" queryParamsHandling="merge" [attr.aria-current]="
+                  category() !== 'embroidery-patterns' &&
+                  category() !== 'embroidered-products'
+                    ? 'true'
+                    : null
+                ">
+                {{ 'products.title' | transloco }}
+              </a>
+            </li>
+    
+            <li>
+              <a [routerLink]="[]" [queryParams]="{ category: 'embroidery-patterns' }" queryParamsHandling="merge"
+                [attr.aria-current]="
+                  category() === 'embroidery-patterns' ? 'true' : null
+                ">
+                {{ 'nav.patterns' | transloco }}
+              </a>
+            </li>
+    
+            <li>
+              <a [routerLink]="[]" [queryParams]="{ category: 'embroidered-products' }" queryParamsHandling="merge"
+                [attr.aria-current]="
+                  category() === 'embroidered-products' ? 'true' : null
+                ">
+                {{ 'nav.embroideredProducts' | transloco }}
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+      
+
+    <div class="product-list__grid">
+      @for (product of visibleProducts(); track product.id) {
+      <app-product-card [productName]="product.name[language()]" [description]="product.description[language()]"
+        [typeLabel]="
+            (product.category === 'embroidery-patterns'
+              ? 'products.digitalType'
+              : 'products.physicalType') | transloco
+          " [priceInGrosz]="product.priceInGrosz" [pricePrefix]="
+            product.priceType === 'from'
+              ? ('products.priceFrom' | transloco)
+              : ''
+          " [locale]="language()"></app-product-card>
+      }
+    </div>
+    <div class="product-list__pagination">
+      <p class="product-list__visible-count" role="status">
+        {{
+        'products.visibleCount'
+        | transloco: {
+        visible: visibleProducts().length,
+        total: products().length
+        }
+        }}
+      </p>
+    
+      @if (hasMoreProducts()) {
+      <button class="button button--secondary" type="button" (click)="showMore()">
+        {{ 'products.showMore' | transloco }}
+      </button>
+      }
+    </div>
+  </div>
+  </div>
+</section>
