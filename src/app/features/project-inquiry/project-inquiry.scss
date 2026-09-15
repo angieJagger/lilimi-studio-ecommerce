@@ -118,3 +118,11 @@
 .project-inquiry__status:empty {
   display: none;
 }
+
+.project-inquiry__product-context {
+  margin: 0;
+  padding: var(--spacing-16);
+  background-color: var(--surface-brand-soft);
+  border-radius: var(--radius-8);
+  overflow-wrap: anywhere;
+}

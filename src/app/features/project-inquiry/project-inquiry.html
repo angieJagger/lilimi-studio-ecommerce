@@ -11,6 +11,14 @@
     </header>
     <form class="project-inquiry__form" novalidate (submit)="onSubmit($event)" (input)="validationPassed.set(false)"
       (change)="validationPassed.set(false)">
+      @if (selectedProduct(); as currentProduct) {
+      <p class="project-inquiry__product-context">
+        {{
+        'projectInquiry.productContext'
+        | transloco: { name: currentProduct.name[language()] }
+        }}
+      </p>
+      }
       <div class="form-field">
         <label for="inquiry-name">
           {{ 'projectInquiry.fields.name.label' | transloco }}

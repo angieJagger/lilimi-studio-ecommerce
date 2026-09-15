@@ -1,0 +1,50 @@
+<section class="product-detail">
+  <div class="container">
+    <a [routerLink]="['/', language(), 'products']">
+      {{ 'productDetail.backToProducts' | transloco }}
+    </a>
+
+    @if (product(); as currentProduct) {
+    <div class="product-detail__overview">
+      <div class="product-detail__media" aria-hidden="true"></div>
+    
+      <div class="product-detail__info">
+        <p class="product-detail__type">
+          {{
+          (currentProduct.category === 'embroidery-patterns'
+          ? 'products.digitalType'
+          : 'products.physicalType') | transloco
+          }}
+        </p>
+    
+        <h1 class="heading-1">
+          {{ currentProduct.name[language()] }}
+        </h1>
+    
+        <p class="product-detail__description">
+          {{ currentProduct.description[language()] }}
+        </p>
+    
+        <p class="product-detail__price">
+          @if (currentProduct.priceType === 'from') {
+          <span>{{ 'products.priceFrom' | transloco }}</span>
+          }
+          <span>{{ formattedPrice() }}</span>
+        </p>
+
+        <div class="product-detail__actions">
+          <a class="button button--secondary" [routerLink]="['/', language(), 'project-inquiry']" [queryParams]="{ product: currentProduct.slug }">
+            {{ 'productDetail.askAboutProduct' | transloco }}
+          </a>
+        </div>
+      </div>
+    </div>
+    } @else {
+    <h1 class="heading-1">
+      {{ 'productDetail.notFoundTitle' | transloco }}
+    </h1>
+
+    <p>{{ 'productDetail.notFoundDescription' | transloco }}</p>
+    }
+  </div>
+</section>

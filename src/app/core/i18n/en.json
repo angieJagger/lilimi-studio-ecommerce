@@ -15,6 +15,13 @@
     "switchLabel": "Switch to Polish"
   },
 
+  "productDetail": {
+    "backToProducts": "Back to products",
+    "notFoundTitle": "Product not found",
+    "notFoundDescription": "Check the address or return to the product list.",
+    "askAboutProduct": "Ask about this product"
+  },
+
   "products": {
     "title": "All products",
     "digitalType": "Digital download",
@@ -141,7 +148,8 @@
       "inspirationUrlInvalid": "Enter a full URL starting with https:// or http://."
     },
 
-    "validationPassed": "Your details are valid. This demo has not sent your inquiry."
+    "validationPassed": "Your details are valid. This demo has not sent your inquiry.",
+    "productContext": "Your inquiry concerns: {{ name }}"
   },
 
   "about": {

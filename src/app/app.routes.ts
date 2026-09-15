@@ -40,6 +40,13 @@ const shopRoutes: Routes = [
     path: 'contact',
     loadComponent: () => import('./features/contact/contact').then((m) => m.Contact),
   },
+
+  {
+  path: 'products/:slug',
+    loadComponent: () =>
+      import('./features/products/product-detail/product-detail')
+        .then((m) => m.ProductDetail),
+  },
 ];
 
 export const routes: Routes = [

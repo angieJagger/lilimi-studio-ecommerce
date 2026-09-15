@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectInquiry } from './project-inquiry';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
+import { provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 
 describe('ProjectInquiry', () => {
   let component: ProjectInquiry;
@@ -9,6 +11,7 @@ describe('ProjectInquiry', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProjectInquiry, getTranslocoTestingModule()],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProjectInquiry);
@@ -90,5 +93,58 @@ describe('ProjectInquiry', () => {
     expect(inspiration.getAttribute('aria-invalid')).toBe('true');
     expect(element.querySelector('#inquiry-inspiration-errors')).not.toBeNull();
     expect(element.querySelector('[role="status"]')?.textContent?.trim()).toBe('');
+  });
+});
+
+describe('ProjectInquiry product context', () => {
+  let harness: RouterTestingHarness;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ProjectInquiry, getTranslocoTestingModule()],
+      providers: [
+        provideRouter([
+          {
+            path: 'pl/project-inquiry',
+            component: ProjectInquiry,
+          },
+        ]),
+      ],
+    }).compileComponents();
+
+    harness = await RouterTestingHarness.create();
+  });
+
+  it.each([
+    ['forest-dragon', 'Wzór haftu „Leśny smok”'],
+    ['embroidered-shirt', 'Koszulka z haftem'],
+  ])('should show the product selected through %s', async (slug, name) => {
+    await harness.navigateByUrl(`/pl/project-inquiry?product=${slug}`, ProjectInquiry);
+
+    const element = harness.routeNativeElement!;
+
+    expect(element.querySelector('.project-inquiry__product-context')?.textContent).toContain(name);
+
+    expect(element.querySelector<HTMLTextAreaElement>('#inquiry-description')!.value).toBe('');
+  });
+
+  it('should show a general inquiry form without a product parameter', async () => {
+    await harness.navigateByUrl('/pl/project-inquiry', ProjectInquiry);
+
+    const element = harness.routeNativeElement!;
+
+    expect(element.querySelector('.project-inquiry__product-context')).toBeNull();
+
+    expect(element.querySelector('form')).not.toBeNull();
+  });
+
+  it('should ignore an unknown product and keep the form available', async () => {
+    await harness.navigateByUrl('/pl/project-inquiry?product=unknown-product', ProjectInquiry);
+
+    const element = harness.routeNativeElement!;
+
+    expect(element.querySelector('.project-inquiry__product-context')).toBeNull();
+
+    expect(element.querySelector('form')).not.toBeNull();
   });
 });

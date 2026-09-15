@@ -72,9 +72,10 @@
       </div>
     </div>
     <div class="featured__products">
-      <app-product-card [productName]="'demoProducts.forestDragon.name' | transloco"
+      <a class="featured__product-link" [routerLink]="['/', transloco.getActiveLang(), 'products', 'embroidered-shirt']"
+        [attr.aria-label]="'demoProducts.embroideredShirt.name' | transloco"><app-product-card [productName]="'demoProducts.forestDragon.name' | transloco"
         [typeLabel]="'demoProducts.forestDragon.type' | transloco" description="DST • PES • JEF" [priceInGrosz]="2900"
-        [locale]="transloco.getActiveLang()"></app-product-card>
+        [locale]="transloco.getActiveLang()"></app-product-card></a>
         <app-product-card [productName]="'demoProducts.embroideredShirt.name' | transloco"
           [typeLabel]="'demoProducts.embroideredShirt.type' | transloco"
           [description]="'demoProducts.embroideredShirt.description' | transloco"

@@ -273,3 +273,17 @@
     grid-row: 3;
   }
 }
+
+.product-list__product-link {
+  display: block;
+  min-width: 0;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-12);
+
+  &:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 4px;
+  }
+}

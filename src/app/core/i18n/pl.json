@@ -15,6 +15,13 @@
     "switchLabel": "Zmień język na angielski"
   },
 
+  "productDetail": {
+    "backToProducts": "Wróć do produktów",
+    "notFoundTitle": "Nie znaleziono produktu",
+    "notFoundDescription": "Sprawdź adres lub wróć do listy produktów.",
+    "askAboutProduct": "Zapytaj o produkt"
+  },
+
   "products": {
     "title": "Wszystkie produkty",
     "digitalType": "Plik cyfrowy",
@@ -141,7 +148,8 @@
       "inspirationUrlInvalid": "Podaj pełny adres zaczynający się od https:// lub http://."
     },
 
-    "validationPassed": "Dane są poprawne. W tej wersji demonstracyjnej zapytanie nie zostało wysłane."
+    "validationPassed": "Dane są poprawne. W tej wersji demonstracyjnej zapytanie nie zostało wysłane.",
+    "productContext": "Zapytanie dotyczy: {{ name }}"
   },
 
   "about": {

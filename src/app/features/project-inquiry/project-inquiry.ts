@@ -1,6 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { email, form, FormField, required, validate } from '@angular/forms/signals';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
+import { demoProducts } from '../products/products.data';
 
 type ProjectType = 'embroideredProduct' | 'digitizing' | 'website' | 'other';
 
@@ -18,6 +21,28 @@ interface ProjectInquiryModel {
   templateUrl: './project-inquiry.html',
 })
 export class ProjectInquiry {
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly transloco = inject(TranslocoService);
+  
+  private readonly queryParams = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  
+  private readonly activeLanguage = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
+  
+  protected readonly language = computed<'pl' | 'en'>(() =>
+    this.activeLanguage() === 'en' ? 'en' : 'pl',
+  );
+  
+  protected readonly selectedProduct = computed(() => {
+    const slug = this.queryParams().get('product');
+  
+    return demoProducts.find((product) => product.slug === slug);
+  });
+
   protected readonly projectTypes: readonly ProjectType[] = [
     'embroideredProduct',
     'digitizing',
