@@ -4,6 +4,7 @@
     "embroideredProducts": "Produkty haftowane",
     "digitizing": "Digitalizacja haftu",
     "websites": "Strony internetowe",
+    "cartWithCount": "Koszyk. Liczba produktów: {{ count }}",
     "cart": "Koszyk",
     "account": "Konto",
     "menu": "Menu",

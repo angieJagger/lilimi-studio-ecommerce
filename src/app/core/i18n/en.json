@@ -4,6 +4,7 @@
     "embroideredProducts": "Embroidered products",
     "digitizing": "Embroidery digitizing",
     "websites": "Websites",
+    "cartWithCount": "Cart. Number of products: {{ count }}",
     "cart": "Cart",
     "account": "Account",
     "menu": "Menu",

@@ -16,6 +16,12 @@
     [attr.aria-label]="'language.switchLabel' | transloco" [title]="'language.switchLabel' | transloco">
     {{ transloco.getActiveLang() === 'pl' ? 'PL' : 'EN' }}
   </button>
+  <a class="site-header__cart" [routerLink]="['/', transloco.getActiveLang(), 'cart']" [attr.aria-label]="
+      'nav.cartWithCount' | transloco: { count: cart.itemCount() }
+    ">
+    {{ 'nav.cart' | transloco }}
+    <span aria-hidden="true">({{ cart.itemCount() }})</span>
+  </a>
   <button class="site-header__menu-button" type="button" aria-haspopup="dialog" (click)="mobileMenu.open()">
     {{ 'nav.menu' | transloco }}
   </button>

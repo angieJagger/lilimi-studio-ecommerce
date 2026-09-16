@@ -12,6 +12,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-8) var(--spacing-16);
+  padding-block: var(--spacing-8);
 }
 
 .site-header__brand {
@@ -115,5 +118,29 @@
 @media (min-width: 64rem) {
   .site-header__menu-button {
     display: none;
+  }
+}
+
+.site-header__cart {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  min-height: 44px;
+  padding-inline: var(--spacing-8);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--brand-primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--border-brand);
+    outline-offset: 4px;
   }
 }

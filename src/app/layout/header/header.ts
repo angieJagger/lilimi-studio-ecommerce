@@ -3,6 +3,7 @@ import { PRIMARY_OUTLET, Router, RouterLink, UrlSegment } from '@angular/router'
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { shopNavigation } from '../navigation';
 import { MobileMenu } from '../mobile-menu/mobile-menu';
+import { CartService } from '../../features/cart/cart.service';
 
 
 @Component({
@@ -14,6 +15,7 @@ import { MobileMenu } from '../mobile-menu/mobile-menu';
 export class Header {
   private readonly router = inject(Router);
   protected readonly transloco = inject(TranslocoService);
+  protected readonly cart = inject(CartService);
   protected readonly shopNavigation = shopNavigation;
 
   protected toggleLanguage(): void {
