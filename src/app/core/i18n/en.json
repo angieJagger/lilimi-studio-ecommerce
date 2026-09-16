@@ -16,10 +16,17 @@
   },
 
   "productDetail": {
+    "detailsTitle": "Product details",
+    "fileFormats": "File formats",
+    "madeToOrder": "Made to order",
+    "personalization": "Personalisation available",
+    "yes": "Yes",
+    "no": "No",
     "backToProducts": "Back to products",
     "notFoundTitle": "Product not found",
     "notFoundDescription": "Check the address or return to the product list.",
-    "askAboutProduct": "Ask about this product"
+    "askAboutProduct": "Ask about this product",
+    "relatedTitle": "You may also like"
   },
 
   "products": {

@@ -39,6 +39,67 @@
         </div>
       </div>
     </div>
+    <section class="product-detail__details" aria-labelledby="product-details-title">
+      <h2 id="product-details-title" class="heading-2">
+        {{ 'productDetail.detailsTitle' | transloco }}
+      </h2>
+    
+      <dl class="product-detail__specifications">
+        @if (currentProduct.category === 'embroidery-patterns') {
+        <div>
+          <dt>{{ 'productDetail.fileFormats' | transloco }}</dt>
+          <dd>{{ currentProduct.fileFormats.join(', ') }}</dd>
+        </div>
+        } @else {
+        <div>
+          <dt>{{ 'productDetail.madeToOrder' | transloco }}</dt>
+          <dd>
+            {{
+            (currentProduct.madeToOrder
+            ? 'productDetail.yes'
+            : 'productDetail.no') | transloco
+            }}
+          </dd>
+        </div>
+    
+        <div>
+          <dt>{{ 'productDetail.personalization' | transloco }}</dt>
+          <dd>
+            {{
+            (currentProduct.personalizationAvailable
+            ? 'productDetail.yes'
+            : 'productDetail.no') | transloco
+            }}
+          </dd>
+        </div>
+        }
+      </dl>
+    </section>
+    @if (relatedProducts().length > 0) {
+    <section class="product-detail__related" aria-labelledby="related-products-title">
+      <h2 id="related-products-title" class="heading-2">
+        {{ 'productDetail.relatedTitle' | transloco }}
+      </h2>
+    
+      <div class="product-detail__related-grid">
+        @for (relatedProduct of relatedProducts(); track relatedProduct.id) {
+        <a class="product-detail__related-link" [routerLink]="['/', language(), 'products', relatedProduct.slug]"
+          [attr.aria-label]="relatedProduct.name[language()]">
+          <app-product-card [productName]="relatedProduct.name[language()]"
+            [description]="relatedProduct.description[language()]" [typeLabel]="
+                  (relatedProduct.category === 'embroidery-patterns'
+                    ? 'products.digitalType'
+                    : 'products.physicalType') | transloco
+                " [priceInGrosz]="relatedProduct.priceInGrosz" [pricePrefix]="
+                  relatedProduct.priceType === 'from'
+                    ? ('products.priceFrom' | transloco)
+                    : ''
+                " [locale]="language()"></app-product-card>
+        </a>
+        }
+      </div>
+    </section>
+    }
     } @else {
     <h1 class="heading-1">
       {{ 'productDetail.notFoundTitle' | transloco }}

@@ -72,7 +72,7 @@ describe('ProjectInquiry', () => {
     await fixture.whenStable();
 
     expect(element.querySelector('[aria-invalid="true"]')).toBeNull();
-    expect(element.querySelector('[role="status"]')?.textContent).toContain(
+    expect(element.querySelector('.project-inquiry__status')?.textContent).toContain(
       'zapytanie nie zostało wysłane',
     );
   });
@@ -92,7 +92,7 @@ describe('ProjectInquiry', () => {
 
     expect(inspiration.getAttribute('aria-invalid')).toBe('true');
     expect(element.querySelector('#inquiry-inspiration-errors')).not.toBeNull();
-    expect(element.querySelector('[role="status"]')?.textContent?.trim()).toBe('');
+    expect(element.querySelector('.project-inquiry__status')?.textContent?.trim()).toBe('');
   });
 });
 

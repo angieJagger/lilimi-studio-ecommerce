@@ -55,4 +55,52 @@ describe('ProductDetail', () => {
 
     expect(element.querySelector('a')?.getAttribute('href')).toBe('/pl/products');
   });
+
+  it('should show file formats and other embroidery patterns', async () => {
+    await harness.navigateByUrl('/pl/products/forest-dragon', ProductDetail);
+
+    const element = harness.routeNativeElement!;
+    const details = element.querySelector('.product-detail__details')!;
+
+    expect(details.textContent).toContain('DST, PES, JEF');
+    expect(details.textContent).not.toContain('Możliwość personalizacji');
+
+    const links = Array.from(
+      element.querySelectorAll<HTMLAnchorElement>('.product-detail__related-link'),
+    );
+
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/pl/products/floral-monogram',
+      '/pl/products/butterfly-pattern',
+      '/pl/products/forest-leaves-pattern',
+    ]);
+  });
+
+  it('should show physical product details and update related products', async () => {
+    await harness.navigateByUrl('/pl/products/forest-dragon', ProductDetail);
+
+    await harness.navigateByUrl('/pl/products/embroidered-shirt', ProductDetail);
+
+    const element = harness.routeNativeElement!;
+    const details = element.querySelector('.product-detail__details')!;
+
+    expect(details.textContent).toContain('Wykonywany na zamówienie');
+    expect(details.textContent).toContain('Możliwość personalizacji');
+    expect(details.textContent).not.toContain('Formaty plików');
+
+    const values = Array.from(details.querySelectorAll('dd')).map((value) =>
+      value.textContent?.trim(),
+    );
+
+    expect(values).toEqual(['Tak', 'Tak']);
+
+    const links = Array.from(
+      element.querySelectorAll<HTMLAnchorElement>('.product-detail__related-link'),
+    );
+
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/pl/products/embroidered-sweatshirt',
+      '/pl/products/embroidered-tote-bag',
+    ]);
+  });
 });

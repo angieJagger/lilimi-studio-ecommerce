@@ -155,11 +155,11 @@
         {{ 'projectInquiry.notice' | transloco }}
       </p>
       
-      <p class="project-inquiry__status" role="status">
+      <output class="project-inquiry__status">
         @if (validationPassed()) {
         {{ 'projectInquiry.validationPassed' | transloco }}
         }
-      </p>
+      </output>
     </form>
   </div>
 </section>

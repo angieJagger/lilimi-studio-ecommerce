@@ -16,10 +16,17 @@
   },
 
   "productDetail": {
+    "detailsTitle": "Szczegóły produktu",
+    "fileFormats": "Formaty plików",
+    "madeToOrder": "Wykonywany na zamówienie",
+    "personalization": "Możliwość personalizacji",
+    "yes": "Tak",
+    "no": "Nie",
     "backToProducts": "Wróć do produktów",
     "notFoundTitle": "Nie znaleziono produktu",
     "notFoundDescription": "Sprawdź adres lub wróć do listy produktów.",
-    "askAboutProduct": "Zapytaj o produkt"
+    "askAboutProduct": "Zapytaj o produkt",
+    "relatedTitle": "Może Ci się spodobać"
   },
 
   "products": {

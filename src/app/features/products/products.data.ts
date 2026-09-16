@@ -5,6 +5,7 @@ export const demoProducts: readonly Product[] = [
     id: 'pattern-001',
     slug: 'forest-dragon',
     category: 'embroidery-patterns',
+    fileFormats: ['DST', 'PES', 'JEF'],
     name: {
       pl: 'Wzór haftu „Leśny smok”',
       en: 'Forest Dragon embroidery pattern',
@@ -20,6 +21,8 @@ export const demoProducts: readonly Product[] = [
     id: 'embroidered-001',
     slug: 'embroidered-shirt',
     category: 'embroidered-products',
+    madeToOrder: true,
+    personalizationAvailable: true,
     name: {
       pl: 'Koszulka z haftem',
       en: 'Embroidered T-shirt',
@@ -35,6 +38,7 @@ export const demoProducts: readonly Product[] = [
     id: 'pattern-002',
     slug: 'floral-monogram',
     category: 'embroidery-patterns',
+    fileFormats: ['DST', 'PES', 'JEF'],
     name: {
       pl: 'Monogram kwiatowy',
       en: 'Floral monogram',
@@ -50,6 +54,8 @@ export const demoProducts: readonly Product[] = [
     id: 'embroidered-002',
     slug: 'embroidered-sweatshirt',
     category: 'embroidered-products',
+    madeToOrder: true,
+    personalizationAvailable: true,
     name: {
       pl: 'Bluza z haftem',
       en: 'Embroidered sweatshirt',
@@ -65,6 +71,7 @@ export const demoProducts: readonly Product[] = [
     id: 'pattern-003',
     slug: 'butterfly-pattern',
     category: 'embroidery-patterns',
+    fileFormats: ['DST', 'PES', 'JEF'],
     name: {
       pl: 'Wzór haftu „Motyl”',
       en: 'Butterfly embroidery pattern',
@@ -80,6 +87,8 @@ export const demoProducts: readonly Product[] = [
     id: 'embroidered-003',
     slug: 'embroidered-tote-bag',
     category: 'embroidered-products',
+    madeToOrder: true,
+    personalizationAvailable: true,
     name: {
       pl: 'Torba z haftem',
       en: 'Embroidered tote bag',
@@ -95,6 +104,7 @@ export const demoProducts: readonly Product[] = [
     id: 'pattern-004',
     slug: 'forest-leaves-pattern',
     category: 'embroidery-patterns',
+    fileFormats: ['DST', 'PES', 'JEF'],
     name: {
       pl: 'Wzór haftu „Leśne liście”',
       en: 'Forest Leaves embroidery pattern',

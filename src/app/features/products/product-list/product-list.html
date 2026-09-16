@@ -16,9 +16,9 @@
 
     <div class="product-list__layout">
       <div class="product-list__toolbar">
-        <p class="product-list__count" role="status">
+      <output class="product-list__visible-count">
           {{ 'products.resultCount' | transloco: { count: products().length } }}
-        </p>
+        </output>
         <button class="button button--secondary product-list__filter-toggle" type="button" aria-controls="product-filters"
           [attr.aria-expanded]="filtersOpen()" (click)="toggleFilters()">
           {{ 'products.filters' | transloco }}
@@ -104,7 +104,7 @@
         }
     </div>
     <div class="product-list__pagination">
-      <p class="product-list__visible-count" role="status">
+      <output class="product-list__count">
         {{
         'products.visibleCount'
         | transloco: {
@@ -112,7 +112,7 @@
         total: products().length
         }
         }}
-      </p>
+      </output>
     
       @if (hasMoreProducts()) {
       <button class="button button--secondary" type="button" (click)="showMore()">
