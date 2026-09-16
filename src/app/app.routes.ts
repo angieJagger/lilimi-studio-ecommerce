@@ -42,10 +42,13 @@ const shopRoutes: Routes = [
   },
 
   {
-  path: 'products/:slug',
+    path: 'products/:slug',
     loadComponent: () =>
-      import('./features/products/product-detail/product-detail')
-        .then((m) => m.ProductDetail),
+      import('./features/products/product-detail/product-detail').then((m) => m.ProductDetail),
+  },
+  {
+    path: 'cart',
+    loadComponent: () => import('./features/cart/cart').then((m) => m.Cart),
   },
 ];
 

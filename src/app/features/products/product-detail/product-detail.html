@@ -33,10 +33,29 @@
         </p>
 
         <div class="product-detail__actions">
+          @if (
+          currentProduct.category === 'embroidery-patterns' &&
+          currentProduct.priceType === 'fixed'
+          ) {
+          @if (isInCart()) {
+          <a class="button button--primary" [routerLink]="['/', language(), 'cart']">
+            {{ 'productDetail.goToCart' | transloco }}
+          </a>
+          } @else {
+          <button class="button button--primary" type="button" (click)="addToCart()">
+            {{ 'productDetail.addToCart' | transloco }}
+          </button>
+          }
+          }
           <a class="button button--secondary" [routerLink]="['/', language(), 'project-inquiry']" [queryParams]="{ product: currentProduct.slug }">
             {{ 'productDetail.askAboutProduct' | transloco }}
           </a>
         </div>
+        <output class="product-detail__cart-status">
+          @if (isInCart()) {
+          {{ 'productDetail.inCart' | transloco }}
+          }
+        </output>
       </div>
     </div>
     <section class="product-detail__details" aria-labelledby="product-details-title">

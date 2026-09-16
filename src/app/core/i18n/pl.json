@@ -26,7 +26,24 @@
     "notFoundTitle": "Nie znaleziono produktu",
     "notFoundDescription": "Sprawdź adres lub wróć do listy produktów.",
     "askAboutProduct": "Zapytaj o produkt",
+    "addToCart": "Dodaj do koszyka",
+    "goToCart": "Przejdź do koszyka",
+    "inCart": "Ten wzór jest w Twoim koszyku.",
     "relatedTitle": "Może Ci się spodobać"
+  },
+
+  "cart": {
+    "remove": "Usuń",
+    "removeProduct": "Usuń z koszyka: {{ name }}",
+    "summary": "Podsumowanie",
+    "productsSubtotal": "Produkty",
+    "delivery": "Dostawa",
+    "digitalDelivery": "Pliki do pobrania — bez kosztów dostawy",
+    "title": "Twój koszyk",
+    "description": "Sprawdź produkty przed przejściem do płatności.",
+    "emptyTitle": "Twój koszyk jest pusty",
+    "emptyDescription": "Przejrzyj ofertę i wybierz coś dla siebie.",
+    "browseProducts": "Przeglądaj produkty"
   },
 
   "products": {

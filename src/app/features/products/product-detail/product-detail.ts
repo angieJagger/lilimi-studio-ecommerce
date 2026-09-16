@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { demoProducts } from '../products.data';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
+import { CartService } from '../../cart/cart.service';
 
 @Component({
   imports: [RouterLink, TranslocoPipe, ProductCard],
@@ -14,6 +15,7 @@ import { ProductCard } from '../../../shared/components/product-card/product-car
 export class ProductDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly transloco = inject(TranslocoService);
+  private readonly cart = inject(CartService);
 
   private readonly params = toSignal(this.route.paramMap, {
     initialValue: this.route.snapshot.paramMap,
@@ -32,6 +34,20 @@ export class ProductDetail {
 
     return demoProducts.find((product) => product.slug === slug);
   });
+
+  protected readonly isInCart = computed(() => {
+    const product = this.product();
+
+    return product ? this.cart.patterns().some((item) => item.id === product.id) : false;
+  });
+
+  protected addToCart(): void {
+    const product = this.product();
+
+    if (product?.category === 'embroidery-patterns' && product.priceType === 'fixed') {
+      this.cart.addPattern(product);
+    }
+  }
 
   protected readonly relatedProducts = computed(() => {
     const currentProduct = this.product();

@@ -72,16 +72,35 @@
       </div>
     </div>
     <div class="featured__products">
-      <a class="featured__product-link" [routerLink]="['/', transloco.getActiveLang(), 'products', 'embroidered-shirt']"
-        [attr.aria-label]="'demoProducts.embroideredShirt.name' | transloco"><app-product-card [productName]="'demoProducts.forestDragon.name' | transloco"
-        [typeLabel]="'demoProducts.forestDragon.type' | transloco" description="DST • PES • JEF" [priceInGrosz]="2900"
-        [locale]="transloco.getActiveLang()"></app-product-card></a>
-        <app-product-card [productName]="'demoProducts.embroideredShirt.name' | transloco"
-          [typeLabel]="'demoProducts.embroideredShirt.type' | transloco"
-          [description]="'demoProducts.embroideredShirt.description' | transloco"
-          [pricePrefix]="'demoProducts.embroideredShirt.pricePrefix' | transloco" [priceInGrosz]="8900"
-          [locale]="transloco.getActiveLang()"></app-product-card>
-    </div>
+  <a
+    class="featured__product-link"
+    [routerLink]="['/', transloco.getActiveLang(), 'products', 'forest-dragon']"
+    [attr.aria-label]="'demoProducts.forestDragon.name' | transloco"
+  >
+    <app-product-card
+      [productName]="'demoProducts.forestDragon.name' | transloco"
+      [typeLabel]="'demoProducts.forestDragon.type' | transloco"
+      description="DST • PES • JEF"
+      [priceInGrosz]="2900"
+      [locale]="transloco.getActiveLang()"
+    ></app-product-card>
+  </a>
+
+  <a
+    class="featured__product-link"
+    [routerLink]="['/', transloco.getActiveLang(), 'products', 'embroidered-shirt']"
+    [attr.aria-label]="'demoProducts.embroideredShirt.name' | transloco"
+  >
+    <app-product-card
+      [productName]="'demoProducts.embroideredShirt.name' | transloco"
+      [typeLabel]="'demoProducts.embroideredShirt.type' | transloco"
+      [description]="'demoProducts.embroideredShirt.description' | transloco"
+      [pricePrefix]="'demoProducts.embroideredShirt.pricePrefix' | transloco"
+      [priceInGrosz]="8900"
+      [locale]="transloco.getActiveLang()"
+    ></app-product-card>
+  </a>
+</div>
   </div>
 </section>
 

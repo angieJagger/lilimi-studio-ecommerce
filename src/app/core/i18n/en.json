@@ -26,7 +26,24 @@
     "notFoundTitle": "Product not found",
     "notFoundDescription": "Check the address or return to the product list.",
     "askAboutProduct": "Ask about this product",
+    "addToCart": "Add to cart",
+    "goToCart": "Go to cart",
+    "inCart": "This pattern is in your cart.",
     "relatedTitle": "You may also like"
+  },
+
+  "cart": {
+    "remove": "Remove",
+    "removeProduct": "Remove from cart: {{ name }}",
+    "summary": "Order summary",
+    "productsSubtotal": "Products",
+    "delivery": "Delivery",
+    "digitalDelivery": "Downloadable files — no delivery charge",
+    "title": "Your cart",
+    "description": "Review your products before proceeding to payment.",
+    "emptyTitle": "Your cart is empty",
+    "emptyDescription": "Browse the collection and find something you like.",
+    "browseProducts": "Browse products"
   },
 
   "products": {

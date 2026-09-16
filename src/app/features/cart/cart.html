@@ -1,0 +1,78 @@
+<section class="cart" aria-labelledby="cart-title">
+  <div class="container">
+    <header class="cart__intro">
+      <h1 id="cart-title" class="heading-1">
+        {{ 'cart.title' | transloco }}
+      </h1>
+
+      <p>{{ 'cart.description' | transloco }}</p>
+    </header>
+
+    @if (cart.itemCount() === 0) {
+    <div class="cart__empty">
+      <h2 class="heading-2">
+        {{ 'cart.emptyTitle' | transloco }}
+      </h2>
+    
+      <p>{{ 'cart.emptyDescription' | transloco }}</p>
+    
+      <a class="button button--primary" [routerLink]="['/', language(), 'products']">
+        {{ 'cart.browseProducts' | transloco }}
+      </a>
+    </div>
+    } @else {
+    <div class="cart__layout">
+      <ul class="cart__items">
+        @for (product of cart.patterns(); track product.id) {
+        <li class="cart__item">
+          <div class="cart__media" aria-hidden="true"></div>
+    
+          <div class="cart__item-content">
+            <h2 class="cart__item-title">
+              <a [routerLink]="['/', language(), 'products', product.slug]">
+                {{ product.name[language()] }}
+              </a>
+            </h2>
+    
+            <p class="cart__item-type">
+              {{ 'products.digitalType' | transloco }}
+            </p>
+    
+            <p>
+              1 × {{ priceFormatter().format(product.priceInGrosz / 100) }}
+            </p>
+    
+            <button class="cart__remove" type="button" [attr.aria-label]="
+                    'cart.removeProduct'
+                      | transloco: { name: product.name[language()] }
+                  " (click)="cart.removeProduct(product.id)">
+              {{ 'cart.remove' | transloco }}
+            </button>
+          </div>
+        </li>
+        }
+      </ul>
+    
+      <aside class="cart__summary" aria-labelledby="cart-summary-title">
+        <h2 id="cart-summary-title" class="cart__summary-title">
+          {{ 'cart.summary' | transloco }}
+        </h2>
+    
+        <dl class="cart__totals">
+          <div>
+            <dt>{{ 'cart.productsSubtotal' | transloco }}</dt>
+            <dd>
+              {{ priceFormatter().format(cart.subtotalInGrosz() / 100) }}
+            </dd>
+          </div>
+    
+          <div>
+            <dt>{{ 'cart.delivery' | transloco }}</dt>
+            <dd>{{ 'cart.digitalDelivery' | transloco }}</dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+    }
+  </div>
+</section>

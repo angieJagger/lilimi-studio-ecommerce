@@ -146,3 +146,9 @@
     gap: var(--spacing-24);
   }
 }
+
+.product-detail__cart-status {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
