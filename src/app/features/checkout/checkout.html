@@ -14,7 +14,8 @@
     </a>
     } @else {
     <div class="checkout__layout">
-      <form class="checkout__form" novalidate (submit)="$event.preventDefault()">
+      <form id="checkout-form" class="checkout__form" novalidate [hidden]="checkoutStep() !== 'details'"
+        (submit)="continueToReview($event)">
         <fieldset class="checkout__contact">
           <legend>{{ 'checkout.contactTitle' | transloco }}</legend>
 
@@ -62,10 +63,22 @@
           @for (method of deliveryMethods; track method.id) {
           <label class="checkout__delivery-option">
             <input type="radio" name="deliveryMethod" [value]="method.id" [checked]="selectedDeliveryId() === method.id"
-              (change)="selectDelivery(method.id)" />
-
+              (change)="selectDelivery(method.id)" [attr.aria-invalid]="
+                  submissionAttempted() && deliveryMissing() ? 'true' : null
+                " [attr.aria-describedby]="
+                  submissionAttempted() && deliveryMissing()
+                    ? 'checkout-delivery-error'
+                    : null
+                " />
+          
             <span>{{ method.labelKey | transloco }}</span>
           </label>
+          }
+          
+          @if (submissionAttempted() && deliveryMissing()) {
+          <p id="checkout-delivery-error" class="checkout__errors">
+            {{ 'checkout.errors.deliveryRequired' | transloco }}
+          </p>
           }
 
           @if (selectedDelivery()?.priceInGrosz === null) {
@@ -117,6 +130,41 @@
         }
       </form>
 
+      @if (checkoutStep() === 'review') {
+      <section class="checkout__review" aria-labelledby="checkout-review-title">
+        <h2 id="checkout-review-title">
+          {{ 'checkout.review.title' | transloco }}
+        </h2>
+      
+        <h3>{{ 'checkout.contactTitle' | transloco }}</h3>
+        <p>{{ contactModel().fullName }}</p>
+        <p>{{ contactModel().email }}</p>
+      
+        @if (contactModel().phone) {
+        <p>{{ contactModel().phone }}</p>
+        }
+      
+        @if (requiresAddress()) {
+        <h3>{{ 'checkout.address.title' | transloco }}</h3>
+        <p>{{ addressModel().addressLine1 }}</p>
+      
+        @if (addressModel().addressLine2) {
+        <p>{{ addressModel().addressLine2 }}</p>
+        }
+      
+        <p>
+          {{ addressModel().postalCode }}
+          {{ addressModel().city }}
+        </p>
+        <p>{{ 'checkout.address.country' | transloco }}</p>
+        }
+      
+        <button class="button button--secondary" type="button" (click)="returnToDetails()">
+          {{ 'checkout.review.edit' | transloco }}
+        </button>
+      </section>
+      }
+
       <aside class="checkout__summary" aria-labelledby="checkout-summary-title">
         <h2 id="checkout-summary-title">
           {{ 'cart.summary' | transloco }}
@@ -161,6 +209,12 @@
             </dd>
           </div>
         </dl>
+
+        @if (checkoutStep() === 'details') {
+        <button class="button button--primary" type="submit" form="checkout-form">
+          {{ 'checkout.review.continue' | transloco }}
+        </button>
+        }
 
         <a [routerLink]="['/', language(), 'cart']">
           {{ 'checkout.backToCart' | transloco }}

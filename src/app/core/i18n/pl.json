@@ -74,7 +74,8 @@
       "emailRequired": "Podaj adres e-mail.",
       "emailInvalid": "Podaj poprawny adres e-mail.",
       "addressRequired": "Uzupełnij to pole.",
-      "postalCodeInvalid": "Podaj kod pocztowy w formacie 00-001."
+      "postalCodeInvalid": "Podaj kod pocztowy w formacie 00-001.",
+      "deliveryRequired": "Wybierz sposób dostawy."
     },
 
     "delivery": {
@@ -99,7 +100,12 @@
       "city": "Miejscowość"
     },
     "total": "Razem",
-    "totalPending": "Oczekuje na koszt dostawy"
+    "totalPending": "Oczekuje na koszt dostawy",
+    "review": {
+      "title": "Sprawdź dane zamówienia",
+      "continue": "Przejdź do podsumowania",
+      "edit": "Popraw dane"
+    }
   },
 
   "cart": {

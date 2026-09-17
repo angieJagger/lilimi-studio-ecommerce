@@ -134,3 +134,22 @@
     background-color: var(--surface-brand-soft);
   }
 }
+
+.checkout__form[hidden] {
+  display: none;
+}
+
+.checkout__review {
+  min-width: 0;
+  padding: var(--spacing-24);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-8);
+
+  h2 {
+    margin-top: 0;
+  }
+
+  p {
+    overflow-wrap: anywhere;
+  }
+}

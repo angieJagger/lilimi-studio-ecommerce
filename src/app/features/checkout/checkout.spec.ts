@@ -70,6 +70,23 @@ describe('Checkout', () => {
     await fixture.whenStable();
   }
 
+  async function fillField(name: string, value: string): Promise<void> {
+    const input = element.querySelector<HTMLInputElement>(`#checkout-${name}`)!;
+
+    input.value = value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    await fixture.whenStable();
+  }
+
+  async function continueToReview(): Promise<void> {
+    element
+      .querySelector<HTMLButtonElement>('button[type="submit"][form="checkout-form"]')!
+      .click();
+
+    await fixture.whenStable();
+  }
+
   it('should show a return to products for an empty cart', () => {
     expect(element.textContent).toContain('Twój koszyk jest pusty');
     expect(element.querySelector('form')).toBeNull();
@@ -124,5 +141,96 @@ describe('Checkout', () => {
 
     expect(postalCode.getAttribute('aria-invalid')).toBeNull();
     expect(element.querySelector('#checkout-postalCode-errors')).toBeNull();
+  });
+
+  it('should show required contact errors when continuing with empty fields', async () => {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+
+    await continueToReview();
+
+    expect(element.querySelector('#checkout-fullName')?.getAttribute('aria-invalid')).toBe('true');
+
+    expect(element.querySelector('#checkout-email')?.getAttribute('aria-invalid')).toBe('true');
+
+    expect(element.querySelector('.checkout__review')).toBeNull();
+  });
+
+  it('should reject a name containing only spaces', async () => {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+
+    await fillField('fullName', '   ');
+    await fillField('email', 'anna@example.com');
+    await continueToReview();
+
+    expect(element.querySelector('#checkout-fullName')?.getAttribute('aria-invalid')).toBe('true');
+
+    expect(element.querySelector('.checkout__review')).toBeNull();
+  });
+
+  it('should require a courier and address for a physical product', async () => {
+    await addSweatshirt();
+
+    await fillField('fullName', 'Anna Kowalska');
+    await fillField('email', 'anna@example.com');
+    await continueToReview();
+
+    expect(element.querySelector('#checkout-delivery-error')).not.toBeNull();
+    expect(element.querySelector('.checkout__review')).toBeNull();
+
+    await selectCourier();
+    await continueToReview();
+
+    expect(element.querySelector('#checkout-delivery-error')).toBeNull();
+
+    for (const name of ['addressLine1', 'postalCode', 'city']) {
+      expect(element.querySelector(`#checkout-${name}`)?.getAttribute('aria-invalid')).toBe('true');
+    }
+
+    expect(element.querySelector('.checkout__review')).toBeNull();
+
+    await fillField('addressLine1', 'ul. Kwiatowa 10');
+    await fillField('postalCode', '00-001');
+    await fillField('city', 'Warszawa');
+    await continueToReview();
+
+    const review = element.querySelector('.checkout__review');
+
+    expect(review).not.toBeNull();
+    expect(review?.textContent).toContain('ul. Kwiatowa 10');
+    expect(review?.textContent).toContain('Warszawa');
+  });
+
+  it('should review a digital order and preserve contact details when editing', async () => {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+
+    await fillField('fullName', 'Anna Kowalska');
+    await fillField('email', 'anna@example.com');
+    await continueToReview();
+
+    const review = element.querySelector('.checkout__review');
+
+    expect(review).not.toBeNull();
+    expect(review?.textContent).toContain('Anna Kowalska');
+    expect(review?.textContent).toContain('anna@example.com');
+
+    expect(element.querySelector<HTMLFormElement>('#checkout-form')?.hidden).toBe(true);
+
+    review!.querySelector<HTMLButtonElement>('button')!.click();
+    await fixture.whenStable();
+
+    expect(element.querySelector('.checkout__review')).toBeNull();
+
+    expect(element.querySelector<HTMLFormElement>('#checkout-form')?.hidden).toBe(false);
+
+    expect(element.querySelector<HTMLInputElement>('#checkout-fullName')?.value).toBe(
+      'Anna Kowalska',
+    );
+
+    expect(element.querySelector<HTMLInputElement>('#checkout-email')?.value).toBe(
+      'anna@example.com',
+    );
   });
 });

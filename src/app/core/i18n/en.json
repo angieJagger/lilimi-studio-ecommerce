@@ -74,7 +74,8 @@
       "emailRequired": "Enter your email address.",
       "emailInvalid": "Enter a valid email address.",
       "addressRequired": "Complete this field.",
-      "postalCodeInvalid": "Enter a postal code in the format 00-001."
+      "postalCodeInvalid": "Enter a postal code in the format 00-001.",
+      "deliveryRequired": "Choose a delivery method."
     },
 
     "delivery": {
@@ -100,7 +101,12 @@
       "city": "City or town"
     },
     "total": "Total",
-    "totalPending": "Pending delivery cost"
+    "totalPending": "Pending delivery cost",
+    "review": {
+      "title": "Review your order details",
+      "continue": "Continue to review",
+      "edit": "Edit details"
+    }
   },
 
   "cart": {

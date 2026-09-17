@@ -150,6 +150,17 @@ export class Checkout {
       message: 'checkout.errors.nameRequired',
     });
 
+    validate(path.fullName, ({ value }) => {
+      const name = value();
+
+      return name.length > 0 && name.trim() === ''
+        ? {
+            kind: 'blank',
+            message: 'checkout.errors.nameRequired',
+          }
+        : undefined;
+    });
+
     required(path.email, {
       message: 'checkout.errors.emailRequired',
     });
@@ -164,4 +175,46 @@ export class Checkout {
     { name: 'email', type: 'email', autocomplete: 'email' },
     { name: 'phone', type: 'tel', autocomplete: 'tel' },
   ] as const;
+
+  protected readonly submissionAttempted = signal(false);
+  protected readonly checkoutStep = signal<'details' | 'review'>('details');
+
+  protected readonly deliveryMissing = computed(
+    () => this.requiresShipping() && !this.selectedDelivery(),
+  );
+
+  protected readonly canContinue = computed(
+    () =>
+      this.cart.isReady() &&
+      this.cart.itemCount() > 0 &&
+      this.contactForm().valid() &&
+      (!this.requiresAddress() || this.addressForm().valid()) &&
+      !this.deliveryMissing() &&
+      this.totalInGrosz() !== null,
+  );
+
+  protected continueToReview(event: Event): void {
+    event.preventDefault();
+    this.submissionAttempted.set(true);
+
+    for (const field of this.contactFields) {
+      this.contactForm[field.name]().markAsTouched();
+    }
+
+    if (this.requiresAddress()) {
+      for (const field of this.addressFields) {
+        this.addressForm[field.name]().markAsTouched();
+      }
+    }
+
+    if (!this.canContinue()) {
+      return;
+    }
+
+    this.checkoutStep.set('review');
+  }
+
+  protected returnToDetails(): void {
+    this.checkoutStep.set('details');
+  }
 }
