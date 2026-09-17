@@ -33,6 +33,76 @@
     "relatedTitle": "You may also like"
   },
 
+  "configurator": {
+    "title": "Choose your sweatshirt options",
+    "fit": "Fit",
+    "size": "Size",
+    "selectSize": "Select a size",
+    "color": "Colour",
+    "embroidery": "Embroidery size and placement",
+    "price": "Price including embroidery",
+    "fits": {
+      "women": "Women's",
+      "men": "Men's",
+      "children": "Children's"
+    },
+    "colors": {
+      "white": "White",
+      "navy": "Navy",
+      "grey": "Grey",
+      "black": "Black"
+    },
+    "placements": {
+      "chest": "On the chest",
+      "back": "On the back"
+    },
+    "addedCount": "Added to cart. Number of units added: {{ count }}"
+  },
+
+  "checkout": {
+    "title": "Order details",
+    "loading": "Loading your cart…",
+    "contactTitle": "Contact details",
+    "backToCart": "Back to cart",
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email address",
+      "phone": "Phone number (optional)"
+    },
+    "errors": {
+      "nameRequired": "Enter your full name.",
+      "emailRequired": "Enter your email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "addressRequired": "Complete this field.",
+      "postalCodeInvalid": "Enter a postal code in the format 00-001."
+    },
+
+    "delivery": {
+      "title": "Delivery method",
+      "polandOnly": "Delivery within Poland.",
+      "notSelected": "Select a delivery method",
+      "pricePending": "The cost of this delivery method has not been set yet.",
+      "methods": {
+        "dhlCourier": "DHL courier",
+        "dpdCourier": "DPD courier",
+        "inpostCourier": "InPost courier",
+        "inpostLocker": "InPost parcel locker",
+        "priceUnknown": "cost not set"
+      }
+    },
+
+    "address": {
+      "title": "Delivery address",
+      "country": "Delivery country: Poland",
+      "addressLine1": "Street and building number",
+      "addressLine2": "Apartment / additional address details (optional)",
+      "postalCode": "Postal code",
+      "city": "City or town"
+    },
+    "total": "Total",
+    "totalPending": "Pending delivery cost"
+  },
+
   "cart": {
     "remove": "Remove",
     "removeProduct": "Remove from cart: {{ name }}",
@@ -44,7 +114,12 @@
     "description": "Review your products before proceeding to payment.",
     "emptyTitle": "Your cart is empty",
     "emptyDescription": "Browse the collection and find something you like.",
-    "browseProducts": "Browse products"
+    "browseProducts": "Browse products",
+    "physicalDelivery": "Delivery cost will be confirmed before payment",
+    "quantity": "Quantity",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "proceedToCheckout": "Proceed to checkout"
   },
 
   "products": {

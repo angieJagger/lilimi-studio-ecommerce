@@ -1,0 +1,79 @@
+<fieldset class="configurator">
+  <legend>{{ 'configurator.title' | transloco }}</legend>
+
+  <div class="configurator__fields">
+    <label class="configurator__field">
+      <span>{{ 'configurator.fit' | transloco }}</span>
+
+      <select #fitSelect [value]="selectedFit()" (change)="changeFit(fitSelect.value)">
+        @for (fit of fits; track fit) {
+        <option [value]="fit">
+          {{ ('configurator.fits.' + fit) | transloco }}
+        </option>
+        }
+      </select>
+    </label>
+
+    <label class="configurator__field">
+      <span>{{ 'configurator.size' | transloco }}</span>
+
+      <select #sizeSelect required [value]="selectedSize()" (change)="changeSize(sizeSelect.value)">
+        <option value="" disabled>
+          {{ 'configurator.selectSize' | transloco }}
+        </option>
+
+        @for (size of availableSizes(); track size) {
+        <option [value]="size">{{ size }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="configurator__field">
+      <span>{{ 'configurator.color' | transloco }}</span>
+
+      <select #colorSelect [value]="selectedColor()" (change)="changeColor(colorSelect.value)">
+        @for (color of colors; track color) {
+        <option [value]="color">
+          {{ ('configurator.colors.' + color) | transloco }}
+        </option>
+        }
+      </select>
+    </label>
+
+    <label class="configurator__field">
+      <span>{{ 'configurator.embroidery' | transloco }}</span>
+
+      <select #embroiderySelect [value]="selectedEmbroidery()" (change)="changeEmbroidery(embroiderySelect.value)">
+        @for (option of embroideryOptions; track option.id) {
+        <option [value]="option.id">
+          {{ option.widthMm / 10 }} × {{ option.heightMm / 10 }} cm —
+          {{ ('configurator.placements.' + option.placement) | transloco }}
+        </option>
+        }
+      </select>
+    </label>
+  </div>
+
+  <output class="configurator__price">
+    {{ 'configurator.price' | transloco }}: {{ formattedPrice() }}
+  </output>
+  <div class="configurator__actions">
+    <button class="button button--primary" type="button" [disabled]="!configurationComplete()" (click)="addToCart()">
+      {{ 'productDetail.addToCart' | transloco }}
+    </button>
+
+    <a class="button button--secondary" [routerLink]="['/', language(), 'cart']">
+      {{ 'productDetail.goToCart' | transloco }}
+    </a>
+  </div>
+
+  @if (!configurationComplete()) {
+  <p>{{ 'configurator.selectSize' | transloco }}</p>
+  }
+
+  <output class="configurator__status">
+    @if (addedCount() > 0) {
+    {{ 'configurator.addedCount' | transloco: { count: addedCount() } }}
+    }
+  </output>
+</fieldset>

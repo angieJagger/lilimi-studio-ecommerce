@@ -13,9 +13,9 @@
       <h2 class="heading-2">
         {{ 'cart.emptyTitle' | transloco }}
       </h2>
-    
+
       <p>{{ 'cart.emptyDescription' | transloco }}</p>
-    
+
       <a class="button button--primary" [routerLink]="['/', language(), 'products']">
         {{ 'cart.browseProducts' | transloco }}
       </a>
@@ -26,22 +26,22 @@
         @for (product of cart.patterns(); track product.id) {
         <li class="cart__item">
           <div class="cart__media" aria-hidden="true"></div>
-    
+
           <div class="cart__item-content">
             <h2 class="cart__item-title">
               <a [routerLink]="['/', language(), 'products', product.slug]">
                 {{ product.name[language()] }}
               </a>
             </h2>
-    
+
             <p class="cart__item-type">
               {{ 'products.digitalType' | transloco }}
             </p>
-    
+
             <p>
               1 × {{ priceFormatter().format(product.priceInGrosz / 100) }}
             </p>
-    
+
             <button class="cart__remove" type="button" [attr.aria-label]="
                     'cart.removeProduct'
                       | transloco: { name: product.name[language()] }
@@ -51,13 +51,72 @@
           </div>
         </li>
         }
+        @for (line of sweatshirtLines(); track line.key) {
+        <li class="cart__item">
+          <div class="cart__media" aria-hidden="true"></div>
+
+          <div class="cart__item-content">
+            <h2 class="cart__item-title">
+              <a [routerLink]="['/', language(), 'products', line.product.slug]">
+                {{ line.product.name[language()] }}
+              </a>
+            </h2>
+
+            <p>{{ line.pattern.name[language()] }}</p>
+
+            <p>
+              {{ ('configurator.fits.' + line.item.configuration.fit) | transloco }}
+              · {{ line.item.configuration.size }}
+              · {{ ('configurator.colors.' + line.item.configuration.color) | transloco }}
+            </p>
+
+            <p>
+              {{ line.embroidery.widthMm / 10 }} ×
+              {{ line.embroidery.heightMm / 10 }} cm —
+              {{ ('configurator.placements.' + line.embroidery.placement) | transloco }}
+            </p>
+
+            <p>
+              {{ line.item.quantity }} ×
+              {{ priceFormatter().format(line.unitPriceInGrosz / 100) }}
+            </p>
+
+            <fieldset class="cart__quantity">
+              <legend>{{ 'cart.quantity' | transloco }}</legend>
+
+              <div class="cart__quantity-controls">
+                <button type="button" [disabled]="line.item.quantity <= 1" [attr.aria-label]="'cart.decreaseQuantity' | transloco"
+                  (click)="cart.updateSweatshirtQuantity(
+                    line.key,
+                    line.item.quantity - 1
+                  )">
+                  <span aria-hidden="true">−</span>
+                </button>
+
+                <output>{{ line.item.quantity }}</output>
+
+                <button type="button" [attr.aria-label]="'cart.increaseQuantity' | transloco" (click)="cart.updateSweatshirtQuantity(
+                    line.key,
+                    line.item.quantity + 1
+                  )">
+                  <span aria-hidden="true">+</span>
+                </button>
+              </div>
+            </fieldset>
+
+            <button class="cart__remove" type="button" (click)="cart.removeSweatshirt(line.key)">
+              {{ 'cart.remove' | transloco }}
+            </button>
+          </div>
+        </li>
+        }
       </ul>
-    
+
       <aside class="cart__summary" aria-labelledby="cart-summary-title">
         <h2 id="cart-summary-title" class="cart__summary-title">
           {{ 'cart.summary' | transloco }}
         </h2>
-    
+
         <dl class="cart__totals">
           <div>
             <dt>{{ 'cart.productsSubtotal' | transloco }}</dt>
@@ -65,12 +124,21 @@
               {{ priceFormatter().format(cart.subtotalInGrosz() / 100) }}
             </dd>
           </div>
-    
+
           <div>
             <dt>{{ 'cart.delivery' | transloco }}</dt>
-            <dd>{{ 'cart.digitalDelivery' | transloco }}</dd>
+            <dd>
+              {{
+              (cart.sweatshirts().length > 0
+              ? 'cart.physicalDelivery'
+              : 'cart.digitalDelivery') | transloco
+              }}
+            </dd>
           </div>
         </dl>
+        <a class="button button--primary cart__checkout" [routerLink]="['/', language(), 'checkout']">
+          {{ 'cart.proceedToCheckout' | transloco }}
+        </a>
       </aside>
     </div>
     }

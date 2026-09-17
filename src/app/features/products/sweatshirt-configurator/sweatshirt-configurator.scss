@@ -1,0 +1,77 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.configurator {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: var(--spacing-16);
+    padding: 0;
+    font-weight: 600;
+  }
+}
+
+.configurator__fields {
+  display: grid;
+  gap: var(--spacing-16);
+}
+
+.configurator__field {
+  display: grid;
+  gap: var(--spacing-8);
+  min-width: 0;
+  font-size: 0.875rem;
+
+  select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: var(--spacing-12);
+    border: 1px solid var(--border-brand);
+    border-radius: var(--radius-8);
+    background-color: var(--surface-default);
+    color: var(--text-primary);
+    font: inherit;
+
+    &:focus-visible {
+      outline: 2px solid var(--brand-primary);
+      outline-offset: 3px;
+    }
+  }
+}
+
+.configurator__price {
+  display: block;
+  margin-top: var(--spacing-24);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.configurator__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+  margin-top: var(--spacing-24);
+
+  .button {
+    flex: 1;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.configurator__status {
+  display: block;
+  margin-top: var(--spacing-12);
+  color: var(--text-secondary);
+}

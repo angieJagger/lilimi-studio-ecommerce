@@ -33,6 +33,75 @@
     "relatedTitle": "Może Ci się spodobać"
   },
 
+  "configurator": {
+    "title": "Wybierz wariant bluzy",
+    "fit": "Krój",
+    "size": "Rozmiar",
+    "selectSize": "Wybierz rozmiar",
+    "color": "Kolor",
+    "embroidery": "Wielkość i miejsce haftu",
+    "price": "Cena produktu z haftem",
+    "fits": {
+      "women": "Damski",
+      "men": "Męski",
+      "children": "Dziecięcy"
+    },
+    "colors": {
+      "white": "Biały",
+      "navy": "Granatowy",
+      "grey": "Szary",
+      "black": "Czarny"
+    },
+    "placements": {
+      "chest": "Na piersi",
+      "back": "Na plecach"
+    },
+    "addedCount": "Dodano do koszyka. Liczba dodanych sztuk: {{ count }}"
+  },
+
+  "checkout": {
+    "title": "Dane zamówienia",
+    "loading": "Wczytywanie koszyka…",
+    "contactTitle": "Dane kontaktowe",
+    "backToCart": "Wróć do koszyka",
+    "fields": {
+      "fullName": "Imię i nazwisko",
+      "email": "Adres e-mail",
+      "phone": "Telefon (opcjonalnie)"
+    },
+    "errors": {
+      "nameRequired": "Podaj imię i nazwisko.",
+      "emailRequired": "Podaj adres e-mail.",
+      "emailInvalid": "Podaj poprawny adres e-mail.",
+      "addressRequired": "Uzupełnij to pole.",
+      "postalCodeInvalid": "Podaj kod pocztowy w formacie 00-001."
+    },
+
+    "delivery": {
+      "title": "Sposób dostawy",
+      "polandOnly": "Dostawa na terenie Polski.",
+      "notSelected": "Wybierz sposób dostawy",
+      "pricePending": "Koszt tej metody dostawy nie został jeszcze ustalony.",
+      "methods": {
+        "dhlCourier": "Kurier DHL",
+        "dpdCourier": "Kurier DPD",
+        "inpostCourier": "Kurier InPost",
+        "inpostLocker": "Paczkomat InPost",
+        "priceUnknown": "koszt nieustalony"
+      }
+    },
+    "address": {
+      "title": "Adres dostawy",
+      "country": "Kraj dostawy: Polska",
+      "addressLine1": "Ulica i numer domu",
+      "addressLine2": "Numer mieszkania / dodatkowe dane adresowe (opcjonalnie)",
+      "postalCode": "Kod pocztowy",
+      "city": "Miejscowość"
+    },
+    "total": "Razem",
+    "totalPending": "Oczekuje na koszt dostawy"
+  },
+
   "cart": {
     "remove": "Usuń",
     "removeProduct": "Usuń z koszyka: {{ name }}",
@@ -44,7 +113,12 @@
     "description": "Sprawdź produkty przed przejściem do płatności.",
     "emptyTitle": "Twój koszyk jest pusty",
     "emptyDescription": "Przejrzyj ofertę i wybierz coś dla siebie.",
-    "browseProducts": "Przeglądaj produkty"
+    "browseProducts": "Przeglądaj produkty",
+    "physicalDelivery": "Koszt dostawy zostanie ustalony przed płatnością",
+    "quantity": "Liczba sztuk",
+    "decreaseQuantity": "Zmniejsz liczbę sztuk",
+    "increaseQuantity": "Zwiększ liczbę sztuk",
+    "proceedToCheckout": "Przejdź do zamówienia"
   },
 
   "products": {

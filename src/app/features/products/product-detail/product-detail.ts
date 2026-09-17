@@ -5,9 +5,10 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { demoProducts } from '../products.data';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
 import { CartService } from '../../cart/cart.service';
+import { SweatshirtConfigurator } from '../sweatshirt-configurator/sweatshirt-configurator';
 
 @Component({
-  imports: [RouterLink, TranslocoPipe, ProductCard],
+  imports: [RouterLink, TranslocoPipe, ProductCard, SweatshirtConfigurator],
   selector: 'app-product-detail',
   styleUrl: './product-detail.scss',
   templateUrl: './product-detail.html',

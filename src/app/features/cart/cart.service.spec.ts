@@ -2,9 +2,18 @@ import { TestBed } from '@angular/core/testing';
 import { CartService } from './cart.service';
 import { EmbroideryPattern } from '../products/product.model';
 import { vi } from 'vitest';
+import { SweatshirtConfiguration } from './cart-item.model';
+import { getCartItemKey } from './cart-item-key';
 
 describe('CartService', () => {
   let cart: CartService;
+
+  const sweatshirtConfiguration: SweatshirtConfiguration = {
+    fit: 'women',
+    size: 'M',
+    color: 'black',
+    embroideryOptionId: 'small-front',
+  };
 
   const pattern: EmbroideryPattern = {
     id: 'test-pattern',
@@ -26,6 +35,118 @@ describe('CartService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     cart = TestBed.inject(CartService);
+  });
+
+  it('should increase quantity for the same sweatshirt configuration', () => {
+    // Arrange
+    cart.addSweatshirt(sweatshirtConfiguration);
+
+    // Act
+    const added = cart.addSweatshirt(sweatshirtConfiguration);
+
+    // Assert
+    expect(added).toBe(true);
+    expect(cart.sweatshirts()).toHaveLength(1);
+    expect(cart.sweatshirts()[0].quantity).toBe(2);
+    expect(cart.itemCount()).toBe(2);
+    expect(cart.subtotalInGrosz()).toBe(29800);
+  });
+
+  it('should keep different sweatshirt sizes as separate items', () => {
+    // Arrange
+    cart.addSweatshirt(sweatshirtConfiguration);
+
+    // Act
+    cart.addSweatshirt({
+      ...sweatshirtConfiguration,
+      size: 'L',
+    });
+
+    // Assert
+    expect(cart.sweatshirts()).toHaveLength(2);
+
+    expect(
+      cart.sweatshirts().map((item) => ({
+        size: item.configuration.size,
+        quantity: item.quantity,
+      })),
+    ).toEqual([
+      { size: 'M', quantity: 1 },
+      { size: 'L', quantity: 1 },
+    ]);
+
+    expect(cart.itemCount()).toBe(2);
+    expect(cart.subtotalInGrosz()).toBe(29800);
+  });
+
+  it('should calculate the price of a child sweatshirt with large embroidery', () => {
+    // Act
+    const added = cart.addSweatshirt({
+      ...sweatshirtConfiguration,
+      fit: 'children',
+      size: '92',
+      embroideryOptionId: 'large-back',
+    });
+
+    // Assert
+    expect(added).toBe(true);
+    expect(cart.itemCount()).toBe(1);
+    expect(cart.subtotalInGrosz()).toBe(14900);
+  });
+
+  it('should reject a size that does not belong to the selected fit', () => {
+    // Act
+    const added = cart.addSweatshirt({
+      ...sweatshirtConfiguration,
+      fit: 'children',
+      size: 'M',
+    });
+
+    // Assert
+    expect(added).toBe(false);
+    expect(cart.sweatshirts()).toEqual([]);
+    expect(cart.itemCount()).toBe(0);
+    expect(cart.subtotalInGrosz()).toBe(0);
+  });
+
+  it('should calculate the subtotal for digital and physical products together', () => {
+    cart.addPattern(pattern);
+    cart.addSweatshirt(sweatshirtConfiguration);
+
+    expect(cart.itemCount()).toBe(2);
+    expect(cart.subtotalInGrosz()).toBe(17800);
+  });
+
+  it('should remove only the selected sweatshirt configuration', () => {
+    // Arrange
+    cart.addSweatshirt(sweatshirtConfiguration);
+    cart.addSweatshirt({
+      ...sweatshirtConfiguration,
+      size: 'L',
+    });
+
+    const mediumItem = cart.sweatshirts().find((item) => item.configuration.size === 'M')!;
+
+    // Act
+    cart.removeSweatshirt(getCartItemKey(mediumItem));
+
+    // Assert
+    expect(cart.sweatshirts()).toHaveLength(1);
+    expect(cart.sweatshirts()[0].configuration.size).toBe('L');
+    expect(cart.itemCount()).toBe(1);
+    expect(cart.subtotalInGrosz()).toBe(14900);
+  });
+
+  it('should clear both digital and physical products', () => {
+    cart.addPattern(pattern);
+    cart.addSweatshirt(sweatshirtConfiguration);
+
+    cart.clear();
+
+    expect(cart.patterns()).toEqual([]);
+    expect(cart.sweatshirts()).toEqual([]);
+    expect(cart.itemCount()).toBe(0);
+    expect(cart.subtotalInGrosz()).toBe(0);
   });
 
   it('should start with an empty cart', () => {
@@ -104,6 +225,7 @@ describe('CartService', () => {
 
 describe('CartService persistence', () => {
   const storageKey = 'lilimi.cart.v1';
+  const sweatshirtStorageKey = 'lilimi.cart.sweatshirts.v1';
   let storage: Map<string, string>;
 
   beforeEach(() => {
@@ -208,5 +330,141 @@ describe('CartService persistence', () => {
 
     // Assert
     expect(JSON.parse(storage.get(storageKey)!)).toEqual([]);
+  });
+
+  it('should restore a sweatshirt configuration and quantity', () => {
+    // Arrange
+    storage.set(
+      sweatshirtStorageKey,
+      JSON.stringify([
+        {
+          kind: 'sweatshirt',
+          productId: 'embroidered-002',
+          patternId: 'pattern-001',
+          configuration: {
+            fit: 'children',
+            size: '92',
+            color: 'navy',
+            embroideryOptionId: 'large-back',
+          },
+          quantity: 2,
+        },
+      ]),
+    );
+
+    // Act
+    const cart = TestBed.inject(CartService);
+    TestBed.tick();
+
+    // Assert
+    expect(cart.sweatshirts()).toEqual([
+      {
+        kind: 'sweatshirt',
+        productId: 'embroidered-002',
+        patternId: 'pattern-001',
+        configuration: {
+          fit: 'children',
+          size: '92',
+          color: 'navy',
+          embroideryOptionId: 'large-back',
+        },
+        quantity: 2,
+      },
+    ]);
+
+    expect(cart.itemCount()).toBe(2);
+    expect(cart.subtotalInGrosz()).toBe(29800);
+  });
+
+  it('should save a sweatshirt configuration after adding it', () => {
+    // Arrange
+    const cart = TestBed.inject(CartService);
+    TestBed.tick();
+
+    // Act
+    cart.addSweatshirt({
+      fit: 'women',
+      size: 'M',
+      color: 'black',
+      embroideryOptionId: 'small-front',
+    });
+
+    // Assert
+    expect(JSON.parse(storage.get(sweatshirtStorageKey)!)).toEqual([
+      {
+        kind: 'sweatshirt',
+        productId: 'embroidered-002',
+        patternId: 'pattern-001',
+        configuration: {
+          fit: 'women',
+          size: 'M',
+          color: 'black',
+          embroideryOptionId: 'small-front',
+        },
+        quantity: 1,
+      },
+    ]);
+  });
+
+  it('should reject stored sweatshirts with an invalid size or quantity', () => {
+    // Arrange
+    const validItem = {
+      kind: 'sweatshirt',
+      productId: 'embroidered-002',
+      patternId: 'pattern-001',
+      configuration: {
+        fit: 'children',
+        size: '92',
+        color: 'navy',
+        embroideryOptionId: 'large-back',
+      },
+      quantity: 1,
+    };
+
+    storage.set(
+      sweatshirtStorageKey,
+      JSON.stringify([
+        {
+          ...validItem,
+          configuration: {
+            ...validItem.configuration,
+            size: 'M',
+          },
+        },
+        { ...validItem, quantity: 0 },
+        { ...validItem, quantity: -1 },
+        { ...validItem, quantity: 1.5 },
+        validItem,
+      ]),
+    );
+
+    // Act
+    const cart = TestBed.inject(CartService);
+    TestBed.tick();
+
+    // Assert
+    expect(cart.sweatshirts()).toEqual([validItem]);
+    expect(cart.itemCount()).toBe(1);
+    expect(cart.subtotalInGrosz()).toBe(14900);
+  });
+
+  it('should persist an empty sweatshirt list after clearing the cart', () => {
+    // Arrange
+    const cart = TestBed.inject(CartService);
+    TestBed.tick();
+
+    cart.addSweatshirt({
+      fit: 'women',
+      size: 'M',
+      color: 'black',
+      embroideryOptionId: 'small-front',
+    });
+
+    // Act
+    cart.clear();
+
+    // Assert
+    expect(cart.sweatshirts()).toEqual([]);
+    expect(JSON.parse(storage.get(sweatshirtStorageKey)!)).toEqual([]);
   });
 });

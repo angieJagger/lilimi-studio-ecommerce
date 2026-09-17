@@ -25,12 +25,16 @@
           {{ currentProduct.description[language()] }}
         </p>
     
+        @if (currentProduct.slug === 'embroidered-sweatshirt') {
+        <app-sweatshirt-configurator></app-sweatshirt-configurator>
+        } @else {
         <p class="product-detail__price">
           @if (currentProduct.priceType === 'from') {
           <span>{{ 'products.priceFrom' | transloco }}</span>
           }
           <span>{{ formattedPrice() }}</span>
         </p>
+        }
 
         <div class="product-detail__actions">
           @if (

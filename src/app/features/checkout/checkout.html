@@ -1,0 +1,172 @@
+<section class="checkout" aria-labelledby="checkout-title">
+  <div class="container">
+    <h1 id="checkout-title" class="heading-1">
+      {{ 'checkout.title' | transloco }}
+    </h1>
+
+    @if (!cart.isReady()) {
+    <p>{{ 'checkout.loading' | transloco }}</p>
+    } @else if (cart.itemCount() === 0) {
+    <p>{{ 'cart.emptyTitle' | transloco }}</p>
+
+    <a class="button button--primary" [routerLink]="['/', language(), 'products']">
+      {{ 'cart.browseProducts' | transloco }}
+    </a>
+    } @else {
+    <div class="checkout__layout">
+      <form class="checkout__form" novalidate (submit)="$event.preventDefault()">
+        <fieldset class="checkout__contact">
+          <legend>{{ 'checkout.contactTitle' | transloco }}</legend>
+
+          @for (field of contactFields; track field.name) {
+          <div class="checkout__field">
+            <label [for]="'checkout-' + field.name">
+              {{ ('checkout.fields.' + field.name) | transloco }}
+            </label>
+
+            <input [id]="'checkout-' + field.name" [type]="field.type" [autocomplete]="field.autocomplete"
+              [formField]="contactForm[field.name]" [attr.aria-invalid]="
+                    contactForm[field.name]().touched() &&
+                    contactForm[field.name]().invalid()
+                      ? 'true'
+                      : null
+                  " [attr.aria-describedby]="
+                    contactForm[field.name]().touched() &&
+                    contactForm[field.name]().invalid()
+                      ? 'checkout-' + field.name + '-errors'
+                      : null
+                  " />
+
+            @if (
+            contactForm[field.name]().touched() &&
+            contactForm[field.name]().invalid()
+            ) {
+            <ul class="checkout__errors" [id]="'checkout-' + field.name + '-errors'">
+              @for (
+              error of contactForm[field.name]().errors();
+              track error
+              ) {
+              <li>{{ error.message! | transloco }}</li>
+              }
+            </ul>
+            }
+          </div>
+          }
+        </fieldset>
+        @if (requiresShipping()) {
+        <fieldset class="checkout__delivery">
+          <legend>{{ 'checkout.delivery.title' | transloco }}</legend>
+
+          <p>{{ 'checkout.delivery.polandOnly' | transloco }}</p>
+
+          @for (method of deliveryMethods; track method.id) {
+          <label class="checkout__delivery-option">
+            <input type="radio" name="deliveryMethod" [value]="method.id" [checked]="selectedDeliveryId() === method.id"
+              (change)="selectDelivery(method.id)" />
+
+            <span>{{ method.labelKey | transloco }}</span>
+          </label>
+          }
+
+          @if (selectedDelivery()?.priceInGrosz === null) {
+          <p>{{ 'checkout.delivery.pricePending' | transloco }}</p>
+          }
+        </fieldset>
+        }
+        @if (requiresAddress()) {
+        <fieldset class="checkout__address">
+          <legend>{{ 'checkout.address.title' | transloco }}</legend>
+        
+          <p>{{ 'checkout.address.country' | transloco }}</p>
+        
+          @for (field of addressFields; track field.name) {
+          <div class="checkout__field">
+            <label [for]="'checkout-' + field.name">
+              {{ ('checkout.address.' + field.name) | transloco }}
+            </label>
+        
+            <input [id]="'checkout-' + field.name" type="text" [autocomplete]="field.autocomplete"
+              [formField]="addressForm[field.name]" [attr.aria-invalid]="
+                    addressForm[field.name]().touched() &&
+                    addressForm[field.name]().invalid()
+                      ? 'true'
+                      : null
+                  " [attr.aria-describedby]="
+                    addressForm[field.name]().touched() &&
+                    addressForm[field.name]().invalid()
+                      ? 'checkout-' + field.name + '-errors'
+                      : null
+                  " />
+        
+            @if (
+            addressForm[field.name]().touched() &&
+            addressForm[field.name]().invalid()
+            ) {
+            <ul class="checkout__errors" [id]="'checkout-' + field.name + '-errors'">
+              @for (
+              error of addressForm[field.name]().errors();
+              track error
+              ) {
+              <li>{{ error.message! | transloco }}</li>
+              }
+            </ul>
+            }
+          </div>
+          }
+        </fieldset>
+        }
+      </form>
+
+      <aside class="checkout__summary" aria-labelledby="checkout-summary-title">
+        <h2 id="checkout-summary-title">
+          {{ 'cart.summary' | transloco }}
+        </h2>
+
+        <p>
+          {{ 'products.resultCount' | transloco: { count: cart.itemCount() } }}
+        </p>
+
+        <dl>
+          <div class="checkout__total">
+            <dt>{{ 'cart.productsSubtotal' | transloco }}</dt>
+            <dd>{{ formattedSubtotal() }}</dd>
+          </div>
+        
+          <div class="checkout__total">
+            <dt>{{ 'cart.delivery' | transloco }}</dt>
+            <dd>
+              @if (!requiresShipping()) {
+              {{ formattedDeliveryPrice() }}
+              } @else if (selectedDelivery(); as delivery) {
+              {{ delivery.labelKey | transloco }}
+              @if (formattedDeliveryPrice(); as price) {
+              — {{ price }}
+              } @else {
+              — {{ 'checkout.delivery.priceUnknown' | transloco }}
+              }
+              } @else {
+              {{ 'checkout.delivery.notSelected' | transloco }}
+              }
+            </dd>
+          </div>
+        
+          <div class="checkout__total checkout__total--final">
+            <dt>{{ 'checkout.total' | transloco }}</dt>
+            <dd>
+              @if (formattedTotal(); as total) {
+              {{ total }}
+              } @else {
+              {{ 'checkout.totalPending' | transloco }}
+              }
+            </dd>
+          </div>
+        </dl>
+
+        <a [routerLink]="['/', language(), 'cart']">
+          {{ 'checkout.backToCart' | transloco }}
+        </a>
+      </aside>
+    </div>
+    }
+  </div>
+</section>
