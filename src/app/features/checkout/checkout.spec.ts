@@ -233,4 +233,92 @@ describe('Checkout', () => {
       'anna@example.com',
     );
   });
+
+  it('should prepare a digital order without an address or prices', async () => {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+
+    await fillField('fullName', '  Anna Kowalska  ');
+    await fillField('email', 'anna@example.com');
+    await continueToReview();
+
+    const request = fixture.componentInstance['orderRequest']();
+
+    expect(request).toEqual({
+      language: 'pl',
+      contact: {
+        fullName: 'Anna Kowalska',
+        email: 'anna@example.com',
+      },
+      delivery: {
+        kind: 'digital',
+      },
+      items: [
+        {
+          kind: 'digital',
+          productId: pattern.id,
+          quantity: 1,
+        },
+      ],
+    });
+  });
+
+  it('should prepare a mixed order with the selected variant and quantity', async () => {
+    cart.addPattern(pattern);
+    await addSweatshirt();
+    await addSweatshirt();
+
+    await fillField('fullName', 'Anna Kowalska');
+    await fillField('email', 'anna@example.com');
+    await fillField('phone', ' 500600700 ');
+
+    await selectCourier();
+
+    await fillField('addressLine1', '  ul. Kwiatowa 10  ');
+    await fillField('addressLine2', '  mieszkanie 5  ');
+    await fillField('postalCode', '00-001');
+    await fillField('city', '  Warszawa  ');
+    await continueToReview();
+
+    const request = fixture.componentInstance['orderRequest']();
+
+    expect(request).toEqual({
+      language: 'pl',
+      contact: {
+        fullName: 'Anna Kowalska',
+        email: 'anna@example.com',
+        phone: '500600700',
+      },
+      delivery: {
+        kind: 'courier',
+        methodId: 'dhl-courier',
+        address: {
+          addressLine1: 'ul. Kwiatowa 10',
+          addressLine2: 'mieszkanie 5',
+          postalCode: '00-001',
+          city: 'Warszawa',
+          countryCode: 'PL',
+        },
+      },
+      items: [
+        {
+          kind: 'digital',
+          productId: pattern.id,
+          quantity: 1,
+        },
+        {
+          kind: 'sweatshirt',
+          productId: 'embroidered-002',
+          patternId: 'pattern-001',
+          configuration: {
+            fit: 'women',
+            size: 'M',
+            color: 'black',
+            embroideryOptionId: 'small-front',
+          },
+          quantity: 2,
+        },
+      ],
+    });
+  });
 });

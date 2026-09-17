@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CartService } from '../cart/cart.service';
 import { deliveryMethods, DeliveryMethodId } from './delivery.model';
+import type { CreateOrderRequest, OrderDelivery, OrderItem } from './order.model';
 
 @Component({
   selector: 'app-checkout',
@@ -193,6 +194,80 @@ export class Checkout {
       this.totalInGrosz() !== null,
   );
 
+  protected readonly orderRequest = computed<CreateOrderRequest | null>(() => {
+    if (!this.canContinue()) {
+      return null;
+    }
+
+    const contact = this.contactModel();
+    const phone = contact.phone.trim();
+
+    let delivery: OrderDelivery;
+
+    if (this.requiresShipping()) {
+      const method = this.selectedDelivery();
+
+      if (!method || method.kind !== 'courier' || method.id === 'inpost-locker') {
+        return null;
+      }
+
+      const address = this.addressModel();
+      const addressLine2 = address.addressLine2.trim();
+
+      delivery = {
+        kind: 'courier',
+        methodId: method.id,
+        address: {
+          addressLine1: address.addressLine1.trim(),
+          ...(addressLine2 ? { addressLine2 } : {}),
+          postalCode: address.postalCode.trim(),
+          city: address.city.trim(),
+          countryCode: 'PL',
+        },
+      };
+    } else {
+      delivery = {
+        kind: 'digital',
+      };
+    }
+
+    const items: OrderItem[] = [];
+
+    for (const product of this.cart.patterns()) {
+      items.push({
+        kind: 'digital',
+        productId: product.id,
+        quantity: 1,
+      });
+    }
+
+    for (const item of this.cart.sweatshirts()) {
+      items.push({
+        kind: 'sweatshirt',
+        productId: item.productId,
+        patternId: item.patternId,
+        configuration: {
+          fit: item.configuration.fit,
+          size: item.configuration.size,
+          color: item.configuration.color,
+          embroideryOptionId: item.configuration.embroideryOptionId,
+        },
+        quantity: item.quantity,
+      });
+    }
+
+    return {
+      language: this.language(),
+      contact: {
+        fullName: contact.fullName.trim(),
+        email: contact.email.trim(),
+        ...(phone ? { phone } : {}),
+      },
+      delivery,
+      items,
+    };
+  });
+
   protected continueToReview(event: Event): void {
     event.preventDefault();
     this.submissionAttempted.set(true);
@@ -207,7 +282,7 @@ export class Checkout {
       }
     }
 
-    if (!this.canContinue()) {
+    if (this.orderRequest() === null) {
       return;
     }
 

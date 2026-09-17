@@ -3,9 +3,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CartService } from './cart.service';
-import { demoProducts } from '../products/products.data';
-import { dragonEmbroideryOptions } from '../products/embroidered-product-options';
-import { getCartItemKey } from './cart-item-key';
 
 @Component({
   selector: 'app-cart',
@@ -33,6 +30,6 @@ export class Cart {
         currency: 'PLN',
       }),
   );
-  
+
   protected readonly sweatshirtLines = this.cart.sweatshirtLines;
 }
