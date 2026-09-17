@@ -170,6 +170,56 @@
           {{ 'cart.summary' | transloco }}
         </h2>
 
+        <h3>{{ 'checkout.review.products' | transloco }}</h3>
+        
+        <ul class="checkout__review-items">
+          @for (product of cart.patterns(); track product.id) {
+          <li class="checkout__review-item">
+            <h4>{{ product.name[language()] }}</h4>
+            <p>{{ 'products.digitalType' | transloco }}</p>
+        
+            <p>
+              1 × {{ priceFormatter().format(product.priceInGrosz / 100) }}
+            </p>
+          </li>
+          }
+        
+          @for (line of cart.sweatshirtLines(); track line.key) {
+          <li class="checkout__review-item">
+            <h4>{{ line.product.name[language()] }}</h4>
+            <p>{{ line.pattern.name[language()] }}</p>
+        
+            <p>
+              {{ ('configurator.fits.' + line.item.configuration.fit) | transloco }}
+              · {{ line.item.configuration.size }}
+              · {{ ('configurator.colors.' + line.item.configuration.color) | transloco }}
+            </p>
+        
+            <p>
+              {{ line.embroidery.widthMm / 10 }} ×
+              {{ line.embroidery.heightMm / 10 }} cm —
+              {{ ('configurator.placements.' + line.embroidery.placement) | transloco }}
+            </p>
+        
+            <p>
+              {{ line.item.quantity }} ×
+              {{ priceFormatter().format(line.unitPriceInGrosz / 100) }}
+            </p>
+        
+            <p>
+              <strong>
+                {{ 'checkout.review.lineTotal' | transloco }}:
+                {{
+                priceFormatter().format(
+                line.unitPriceInGrosz * line.item.quantity / 100
+                )
+                }}
+              </strong>
+            </p>
+          </li>
+          }
+        </ul>
+
         <p>
           {{ 'products.resultCount' | transloco: { count: cart.itemCount() } }}
         </p>

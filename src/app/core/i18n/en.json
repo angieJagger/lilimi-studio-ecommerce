@@ -105,7 +105,9 @@
     "review": {
       "title": "Review your order details",
       "continue": "Continue to review",
-      "edit": "Edit details"
+      "edit": "Edit details",
+      "products": "Ordered products",
+      "lineTotal": "Line total"
     }
   },
 

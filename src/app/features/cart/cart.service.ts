@@ -30,6 +30,33 @@ export class CartService {
 
   readonly sweatshirts = this.sweatshirtsState.asReadonly();
 
+  readonly sweatshirtLines = computed(() =>
+    this.sweatshirts().flatMap((item) => {
+      const product = demoProducts.find((product) => product.id === item.productId);
+
+      const pattern = demoProducts.find((product) => product.id === item.patternId);
+
+      const embroidery = dragonEmbroideryOptions.find(
+        (option) => option.id === item.configuration.embroideryOptionId,
+      );
+
+      if (!product || !pattern || !embroidery) {
+        return [];
+      }
+
+      return [
+        {
+          key: getCartItemKey(item),
+          item,
+          product,
+          pattern,
+          embroidery,
+          unitPriceInGrosz: this.getSweatshirtUnitPrice(item),
+        },
+      ];
+    }),
+  );
+
   readonly itemCount = computed(
     () =>
       this.patterns().length + this.sweatshirts().reduce((total, item) => total + item.quantity, 0),

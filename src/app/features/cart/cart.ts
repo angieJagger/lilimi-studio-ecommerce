@@ -26,33 +26,6 @@ export class Cart {
 
   protected readonly cart = inject(CartService);
 
-  protected readonly sweatshirtLines = computed(() =>
-    this.cart.sweatshirts().flatMap((item) => {
-      const product = demoProducts.find((product) => product.id === item.productId);
-
-      const pattern = demoProducts.find((product) => product.id === item.patternId);
-
-      const embroidery = dragonEmbroideryOptions.find(
-        (option) => option.id === item.configuration.embroideryOptionId,
-      );
-
-      if (!product || !pattern || !embroidery) {
-        return [];
-      }
-
-      return [
-        {
-          key: getCartItemKey(item),
-          item,
-          product,
-          pattern,
-          embroidery,
-          unitPriceInGrosz: this.cart.getSweatshirtUnitPrice(item),
-        },
-      ];
-    }),
-  );
-
   protected readonly priceFormatter = computed(
     () =>
       new Intl.NumberFormat(this.language(), {
@@ -60,4 +33,6 @@ export class Cart {
         currency: 'PLN',
       }),
   );
+  
+  protected readonly sweatshirtLines = this.cart.sweatshirtLines;
 }

@@ -153,3 +153,26 @@
     overflow-wrap: anywhere;
   }
 }
+
+.checkout__review-items {
+  display: grid;
+  gap: var(--spacing-16);
+  margin: 0 0 var(--spacing-24);
+  padding: 0;
+  list-style: none;
+}
+
+.checkout__review-item {
+  min-width: 0;
+  padding-bottom: var(--spacing-16);
+  border-bottom: 1px solid var(--border-brand);
+
+  h4 {
+    margin: 0 0 var(--spacing-8);
+    font-size: 1rem;
+  }
+
+  p {
+    margin: var(--spacing-8) 0 0;
+  }
+}
