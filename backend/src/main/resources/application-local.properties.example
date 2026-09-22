@@ -1,0 +1,3 @@
+spring.datasource.url=jdbc:postgresql://localhost:15432/lilimi
+spring.datasource.username=lilimi
+spring.datasource.password=replace-with-your-local-password

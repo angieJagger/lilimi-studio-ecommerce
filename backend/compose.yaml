@@ -1,0 +1,22 @@
+name: lilimi-local
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: lilimi
+      POSTGRES_USER: lilimi
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in backend/.env}
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lilimi -d lilimi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:
