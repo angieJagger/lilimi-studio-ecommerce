@@ -31,4 +31,13 @@ public class ProductController {
       productService.getActiveProductBySlug(slug)
     );
   }
+
+  @GetMapping("/{slug}/variants")
+  public ResponseEntity<List<GarmentVariantResponse>> getVariants(
+    @PathVariable("slug") String slug
+  ) {
+    return ResponseEntity.of(
+      productService.getActiveVariantsBySlug(slug)
+    );
+  }
 }

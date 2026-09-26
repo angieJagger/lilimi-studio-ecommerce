@@ -14,6 +14,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static org.hamcrest.Matchers.hasSize;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(PostgresTestConfiguration.class)
@@ -76,6 +78,62 @@ class ProductControllerTest {
                 """, "embroidered-002");
 
     mockMvc.perform(get("/api/products/embroidered-sweatshirt"))
+      .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldReturnAllActiveSweatshirtVariants() throws Exception {
+    mockMvc.perform(get("/api/products/embroidered-sweatshirt/variants"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$", hasSize(184)));
+  }
+
+  @Test
+  void shouldReturnCorrectPriceForSelectedVariant() throws Exception {
+    mockMvc.perform(get("/api/products/embroidered-sweatshirt/variants"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath(
+        "$[?(@.fit == 'women' && @.size == 'M' " +
+          "&& @.color == 'black' " +
+          "&& @.embroideryOptionId == 'small-front')].priceInGrosz"
+      ).value(org.hamcrest.Matchers.contains(14900)))
+      .andExpect(jsonPath(
+        "$[?(@.fit == 'children' && @.size == '92' " +
+          "&& @.color == 'black' " +
+          "&& @.embroideryOptionId == 'large-back')].priceInGrosz"
+      ).value(org.hamcrest.Matchers.contains(14900)));
+  }
+
+  @Test
+  void shouldExcludeInactiveVariants() throws Exception {
+    jdbcTemplate.update("""
+            UPDATE garment_variants
+            SET active = FALSE
+            WHERE product_id = ?
+              AND color = 'black'
+            """, "embroidered-002");
+
+    mockMvc.perform(get("/api/products/embroidered-sweatshirt/variants"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$", hasSize(138)))
+      .andExpect(jsonPath("$[?(@.color == 'black')]").isEmpty());
+  }
+
+  @Test
+  void shouldReturnNotFoundWhenAllVariantsAreInactive() throws Exception {
+    jdbcTemplate.update("""
+            UPDATE garment_variants
+            SET active = FALSE
+            WHERE product_id = ?
+            """, "embroidered-002");
+
+    mockMvc.perform(get("/api/products/embroidered-sweatshirt/variants"))
+      .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldReturnNotFoundForDigitalProductVariants() throws Exception {
+    mockMvc.perform(get("/api/products/forest-dragon/variants"))
       .andExpect(status().isNotFound());
   }
 }

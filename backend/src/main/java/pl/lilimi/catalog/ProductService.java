@@ -90,6 +90,35 @@ public class ProductService {
       });
   }
 
+  public Optional<List<GarmentVariantResponse>> getActiveVariantsBySlug(
+    String slug
+  ) {
+    List<GarmentVariantView> variants =
+      productRepository.findActiveGarmentVariantsBySlug(slug);
+
+    if (variants.isEmpty()) {
+      return Optional.empty();
+    }
+
+    List<GarmentVariantResponse> response = variants.stream()
+      .map(variant -> new GarmentVariantResponse(
+        variant.getId(),
+        variant.getPatternId(),
+        variant.getFit(),
+        variant.getSize(),
+        variant.getColor(),
+        variant.getEmbroideryOptionId(),
+        variant.getWidthMm(),
+        variant.getHeightMm(),
+        variant.getPlacement(),
+        variant.getPriceInGrosz(),
+        "PLN"
+      ))
+      .toList();
+
+    return Optional.of(response);
+  }
+
   private ProductResponse toResponse(
     Product product,
     List<ProductTranslation> translations,
