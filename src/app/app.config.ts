@@ -4,10 +4,12 @@ import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideTransloco } from '@jsverse/transloco';
 import { TranslationLoader } from './core/i18n/translation-loader';
+import { provideHttpClient } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideHttpClient(),
     provideRouter(
       routes,
       withInMemoryScrolling({

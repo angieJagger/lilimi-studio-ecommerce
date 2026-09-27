@@ -146,7 +146,11 @@
     },
     "resultCount": "Liczba produktów: {{ count }}",
     "showMore": "Pokaż więcej",
-    "visibleCount": "Pokazano {{ visible }} z {{ total }} produktów"
+    "visibleCount": "Pokazano {{ visible }} z {{ total }} produktów",
+    "loading": "Ładowanie produktów…",
+    "loadError": "Nie udało się pobrać produktów. Spróbuj ponownie.",
+    "retry": "Spróbuj ponownie",
+    "empty": "Brak produktów w tej kategorii."
   },
 
   "home": {

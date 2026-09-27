@@ -14,6 +14,18 @@
       </p>
     </header>
 
+    @if (catalogState().status === 'loading') {
+    <output>{{ 'products.loading' | transloco }}</output>
+    } @else if (catalogState().status === 'error') {
+    <div>
+      <p role="alert">{{ 'products.loadError' | transloco }}</p>
+    
+      <button class="button button--secondary" type="button" (click)="reloadProducts()">
+        {{ 'products.retry' | transloco }}
+      </button>
+    </div>
+    } @else {
+
     <div class="product-list__layout">
       <div class="product-list__toolbar">
       <output class="product-list__visible-count">
@@ -93,7 +105,7 @@
             [attr.aria-label]="product.name[language()]">
             <app-product-card [productName]="product.name[language()]" [description]="product.description[language()]"
             [typeLabel]="
-                (product.category === 'embroidery-patterns'
+                (product.productType === 'digital'
                   ? 'products.digitalType'
                   : 'products.physicalType') | transloco
               " [priceInGrosz]="product.priceInGrosz" [pricePrefix]="
@@ -101,6 +113,8 @@
                   ? ('products.priceFrom' | transloco)
                   : ''
               " [locale]="language()"></app-product-card></a>
+        } @empty {
+        <p>{{ 'products.empty' | transloco }}</p>
         }
     </div>
     <div class="product-list__pagination">
@@ -121,5 +135,6 @@
       }
     </div>
   </div>
+}
   </div>
 </section>

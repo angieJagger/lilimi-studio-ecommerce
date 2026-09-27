@@ -147,7 +147,11 @@
     },
     "resultCount": "Products: {{ count }}",
     "showMore": "Show more",
-    "visibleCount": "Showing {{ visible }} of {{ total }} products"
+    "visibleCount": "Showing {{ visible }} of {{ total }} products",
+    "loading": "Loading products…",
+    "loadError": "Could not load products. Please try again.",
+    "retry": "Try again",
+    "empty": "There are no products in this category."
   },
 
   "home": {

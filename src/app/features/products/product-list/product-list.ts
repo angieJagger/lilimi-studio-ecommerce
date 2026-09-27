@@ -2,10 +2,23 @@ import { Component, computed, inject, signal, linkedSignal } from '@angular/core
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { demoProducts } from '../products.data';
+import { catchError, map, of, startWith, Subject, switchMap, timeout } from 'rxjs';
+import { ProductApiService } from '../product-api.service';
+import type { ProductApiResponse } from '../product-api.model';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
 
 type ProductSort = 'default' | 'price-asc' | 'price-desc';
+
+interface CatalogState {
+  readonly status: 'loading' | 'ready' | 'error';
+  readonly products: readonly ProductApiResponse[];
+}
+
+const loadingState: CatalogState = {
+  status: 'loading',
+  products: [],
+};
+
 @Component({
   imports: [TranslocoPipe, ProductCard, RouterLink],
   selector: 'app-product-list',
@@ -13,6 +26,35 @@ type ProductSort = 'default' | 'price-asc' | 'price-desc';
   templateUrl: './product-list.html',
 })
 export class ProductList {
+  private readonly productApi = inject(ProductApiService);
+  private readonly reloadRequests = new Subject<void>();
+
+  protected readonly catalogState = toSignal(
+    this.reloadRequests.pipe(
+      startWith(undefined),
+      switchMap(() =>
+        this.productApi.getProducts().pipe(
+          timeout(10_000),
+          map((products): CatalogState => ({
+            status: 'ready',
+            products,
+          })),
+          catchError(() =>
+            of<CatalogState>({
+              status: 'error',
+              products: [],
+            }),
+          ),
+          startWith(loadingState),
+        ),
+      ),
+    ),
+    { initialValue: loadingState },
+  );
+
+  protected reloadProducts(): void {
+    this.reloadRequests.next();
+  }
   protected readonly filtersOpen = signal(false);
   protected toggleFilters(): void {
     this.filtersOpen.update((open) => !open);
@@ -37,11 +79,19 @@ export class ProductList {
 
   protected readonly products = computed(() => {
     const category = this.category();
+    const allProducts = this.catalogState().products;
 
-    const filteredProducts =
-      category === 'embroidery-patterns' || category === 'embroidered-products'
-        ? demoProducts.filter((product) => product.category === category)
-        : demoProducts;
+    const filteredProducts = allProducts.filter((product) => {
+      if (category === 'embroidery-patterns') {
+        return product.productType === 'digital';
+      }
+
+      if (category === 'embroidered-products') {
+        return product.productType !== 'digital';
+      }
+
+      return true;
+    });
 
     switch (this.sort()) {
       case 'price-asc':

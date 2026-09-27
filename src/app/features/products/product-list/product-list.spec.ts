@@ -5,13 +5,44 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { ProductList } from './product-list';
 
+import { of } from 'rxjs';
+import { ProductApiService } from '../product-api.service';
+import type { ProductApiResponse } from '../product-api.model';
+import { demoProducts } from '../products.data';
+
 describe('ProductList', () => {
   let harness: RouterTestingHarness;
+
+  const apiProducts: readonly ProductApiResponse[] = demoProducts.map((product) => ({
+    id: product.id,
+    slug: product.slug,
+    productType:
+      product.category === 'embroidery-patterns'
+        ? 'digital'
+        : product.slug === 'embroidered-shirt'
+          ? 'tshirt'
+          : product.slug === 'embroidered-tote-bag'
+            ? 'tote'
+            : 'sweatshirt',
+    name: product.name,
+    description: product.description,
+    priceInGrosz: product.priceInGrosz,
+    priceType: product.priceType,
+    currency: 'PLN',
+  }));
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductList, getTranslocoTestingModule()],
-      providers: [provideRouter([{ path: 'pl/products', component: ProductList }])],
+      providers: [
+        provideRouter([{ path: 'pl/products', component: ProductList }]),
+        {
+          provide: ProductApiService,
+          useValue: {
+            getProducts: () => of(apiProducts),
+          },
+        },
+      ],
     }).compileComponents();
 
     harness = await RouterTestingHarness.create();

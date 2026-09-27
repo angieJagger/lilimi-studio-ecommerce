@@ -207,7 +207,7 @@ export class Checkout {
     if (this.requiresShipping()) {
       const method = this.selectedDelivery();
 
-      if (!method || method.kind !== 'courier' || method.id === 'inpost-locker') {
+      if (method?.kind !== 'courier' || method.id === 'inpost-locker') {
         return null;
       }
 
