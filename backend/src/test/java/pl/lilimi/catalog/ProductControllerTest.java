@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,7 +39,11 @@ class ProductControllerTest {
         .value("Wzór haftu „Leśny smok”"))
       .andExpect(jsonPath("$.priceInGrosz").value(2900))
       .andExpect(jsonPath("$.priceType").value("fixed"))
-      .andExpect(jsonPath("$.currency").value("PLN"));
+      .andExpect(jsonPath("$.currency").value("PLN"))
+      .andExpect(jsonPath("$.fileFormats")
+        .value(containsInAnyOrder("DST", "PES", "JEF")))
+      .andExpect(jsonPath("$.madeToOrder").value(false))
+      .andExpect(jsonPath("$.personalizationAvailable").value(false));
   }
 
   @Test

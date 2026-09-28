@@ -29,6 +29,10 @@ describe('ProductList', () => {
     priceInGrosz: product.priceInGrosz,
     priceType: product.priceType,
     currency: 'PLN',
+    fileFormats: product.category === 'embroidery-patterns' ? product.fileFormats : [],
+    madeToOrder: product.category === 'embroidered-products' ? product.madeToOrder : false,
+    personalizationAvailable:
+      product.category === 'embroidered-products' ? product.personalizationAvailable : false,
   }));
 
   beforeEach(async () => {

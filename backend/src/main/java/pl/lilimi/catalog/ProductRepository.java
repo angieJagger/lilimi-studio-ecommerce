@@ -82,4 +82,16 @@ public interface ProductRepository extends JpaRepository<Product, String> {
   List<GarmentVariantView> findActiveGarmentVariantsBySlug(
     @Param("slug") String slug
   );
+
+  @Query(value = """
+      SELECT
+          product_id AS "productId",
+          file_format AS "fileFormat"
+      FROM product_file_formats
+      WHERE product_id IN (:productIds)
+      ORDER BY product_id, file_format
+      """, nativeQuery = true)
+  List<ProductFileFormatView> findFileFormats(
+    @Param("productIds") Collection<String> productIds
+  );
 }

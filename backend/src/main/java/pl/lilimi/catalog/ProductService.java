@@ -52,6 +52,9 @@ public class ProductService {
           price -> price
         ));
 
+    Map<String, List<String>> fileFormatsByProduct =
+      getFileFormatsByProduct(productIds);
+
     return products.stream()
       .filter(product -> pricesByProduct.containsKey(product.getId()))
       .map(product -> toResponse(
@@ -60,7 +63,11 @@ public class ProductService {
           product.getId(),
           List.of()
         ),
-        pricesByProduct.get(product.getId())
+        pricesByProduct.get(product.getId()),
+        fileFormatsByProduct.getOrDefault(
+          product.getId(),
+          List.of()
+        )
       ))
       .toList();
   }
@@ -82,10 +89,14 @@ public class ProductService {
         List<ProductTranslation> translations =
           translationRepository.findAllByIdProductIdIn(productIds);
 
+        List<String> fileFormats = getFileFormatsByProduct(productIds)
+          .getOrDefault(product.getId(), List.of());
+
         return Optional.of(toResponse(
           product,
           translations,
-          price.get()
+          price.get(),
+          fileFormats
         ));
       });
   }
@@ -119,10 +130,25 @@ public class ProductService {
     return Optional.of(response);
   }
 
+  private Map<String, List<String>> getFileFormatsByProduct(
+    List<String> productIds
+  ) {
+    return productRepository.findFileFormats(productIds)
+      .stream()
+      .collect(Collectors.groupingBy(
+        ProductFileFormatView::getProductId,
+        Collectors.mapping(
+          ProductFileFormatView::getFileFormat,
+          Collectors.toList()
+        )
+      ));
+  }
+
   private ProductResponse toResponse(
     Product product,
     List<ProductTranslation> translations,
-    ProductPriceView price
+    ProductPriceView price,
+    List<String> fileFormats
   ) {
     Map<String, String> names = new HashMap<>();
     Map<String, String> descriptions = new HashMap<>();
@@ -142,7 +168,10 @@ public class ProductService {
       descriptions,
       price.getPriceInGrosz(),
       price.getPriceType(),
-      "PLN"
+      "PLN",
+      fileFormats,
+      product.isMadeToOrder(),
+      product.isPersonalizationAvailable()
     );
   }
 }

@@ -4,7 +4,17 @@
       {{ 'productDetail.backToProducts' | transloco }}
     </a>
 
-    @if (product(); as currentProduct) {
+        @if (detailState().status === 'loading') {
+        <output>{{ 'productDetail.loading' | transloco }}</output>
+        } @else if (detailState().status === 'error') {
+        <p role="alert">
+          {{ 'productDetail.loadError' | transloco }}
+        </p>
+        
+        <button class="button button--primary" type="button" (click)="reloadProduct()">
+          {{ 'productDetail.retry' | transloco }}
+        </button>
+        } @else if (product(); as currentProduct) {
     <div class="product-detail__overview">
       <div class="product-detail__media" aria-hidden="true"></div>
     

@@ -26,6 +26,12 @@ public class Product {
   @Column(name = "active", nullable = false)
   private boolean active;
 
+  @Column(name = "made_to_order", nullable = false)
+  private boolean madeToOrder;
+
+  @Column(name = "personalization_available", nullable = false)
+  private boolean personalizationAvailable;
+
   @Column(
     name = "created_at",
     nullable = false,
@@ -56,5 +62,13 @@ public class Product {
 
   public Instant getCreatedAt() {
     return createdAt;
+  }
+
+  public boolean isMadeToOrder() {
+    return madeToOrder;
+  }
+
+  public boolean isPersonalizationAvailable() {
+    return personalizationAvailable;
   }
 }

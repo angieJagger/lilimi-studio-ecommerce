@@ -9,4 +9,7 @@ export interface ProductApiResponse {
   readonly priceInGrosz: number;
   readonly priceType: 'fixed' | 'from';
   readonly currency: 'PLN';
+  readonly fileFormats: readonly string[];
+  readonly madeToOrder: boolean;
+  readonly personalizationAvailable: boolean;
 }

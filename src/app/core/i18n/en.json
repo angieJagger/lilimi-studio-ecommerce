@@ -30,7 +30,10 @@
     "addToCart": "Add to cart",
     "goToCart": "Go to cart",
     "inCart": "This pattern is in your cart.",
-    "relatedTitle": "You may also like"
+    "relatedTitle": "You may also like",
+    "loading": "Loading product…",
+    "loadError": "Could not load the product. Please try again.",
+    "retry": "Try again"
   },
 
   "configurator": {

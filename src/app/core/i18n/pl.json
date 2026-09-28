@@ -30,8 +30,11 @@
     "addToCart": "Dodaj do koszyka",
     "goToCart": "Przejdź do koszyka",
     "inCart": "Ten wzór jest w Twoim koszyku.",
-    "relatedTitle": "Może Ci się spodobać"
-  },
+    "relatedTitle": "Może Ci się spodobać",
+    "loading": "Ładowanie produktu…",
+  "loadError": "Nie udało się pobrać produktu. Spróbuj ponownie.",
+  "retry": "Spróbuj ponownie"
+    },
 
   "configurator": {
     "title": "Wybierz wariant bluzy",
