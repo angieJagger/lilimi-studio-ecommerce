@@ -1,20 +1,22 @@
-import { afterNextRender, computed, Injectable, signal } from '@angular/core';
+import { afterNextRender, computed, inject, Injectable, signal } from '@angular/core';
+
 import { EmbroideryPattern } from '../products/product.model';
 import { demoProducts } from '../products/products.data';
 import {
   garmentColors,
   garmentSizes,
-  dragonEmbroideryOptions,
-  sweatshirtPricesInGrosz,
+  dragonEmbroideryOptions
 } from '../products/embroidered-product-options';
 import { SweatshirtCartItem, SweatshirtConfiguration } from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
 import { readStoredSweatshirts } from './cart-storage';
+import { SweatshirtVariantsService } from '../products/sweatshirt-variants.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CartService {
+  private readonly variantsService = inject(SweatshirtVariantsService);
   private readonly storageKey = 'lilimi.cart.v1';
   private readonly sweatshirtStorageKey = 'lilimi.cart.sweatshirts.v1';
   private readonly patternsState = signal<readonly EmbroideryPattern[]>([]);
@@ -62,19 +64,41 @@ export class CartService {
       this.patterns().length + this.sweatshirts().reduce((total, item) => total + item.quantity, 0),
   );
 
-  readonly subtotalInGrosz = computed(() => {
-    const patternsSubtotal = this.patterns().reduce(
-      (total, product) => total + product.priceInGrosz,
-      0,
-    );
+  readonly subtotalInGrosz = computed<number | null>(() => {
+    let total = this.patterns().reduce((sum, product) => sum + product.priceInGrosz, 0);
 
-    const sweatshirtsSubtotal = this.sweatshirts().reduce(
-      (total, item) => total + this.getSweatshirtUnitPrice(item) * item.quantity,
-      0,
-    );
+    for (const item of this.sweatshirts()) {
+      const price = this.getSweatshirtUnitPrice(item);
 
-    return patternsSubtotal + sweatshirtsSubtotal;
+      if (price === null) {
+        return null;
+      }
+
+      total += price * item.quantity;
+    }
+
+    return total;
   });
+
+  readonly pricingStatus = computed<'ready' | 'loading' | 'error' | 'unavailable'>(() => {
+    if (this.sweatshirts().length === 0) {
+      return 'ready';
+    }
+
+    const state = this.variantsService.state();
+
+    if (state.status !== 'ready') {
+      return state.status;
+    }
+
+    return this.sweatshirts().some((item) => this.getSweatshirtUnitPrice(item) === null)
+      ? 'unavailable'
+      : 'ready';
+  });
+
+  reloadPrices(): void {
+    this.variantsService.reload();
+  }
 
   constructor() {
     afterNextRender(() => {
@@ -128,8 +152,23 @@ export class CartService {
     this.save();
   }
 
-  getSweatshirtUnitPrice(item: SweatshirtCartItem): number {
-    return sweatshirtPricesInGrosz[item.configuration.fit][item.configuration.embroideryOptionId];
+  getSweatshirtUnitPrice(item: SweatshirtCartItem): number | null {
+    if (item.productId !== 'embroidered-002') {
+      return null;
+    }
+
+    const variant = this.variantsService
+      .variants()
+      .find(
+        (variant) =>
+          variant.patternId === item.patternId &&
+          variant.fit === item.configuration.fit &&
+          variant.size === item.configuration.size &&
+          variant.color === item.configuration.color &&
+          variant.embroideryOptionId === item.configuration.embroideryOptionId,
+      );
+
+    return variant?.priceInGrosz ?? null;
   }
 
   addSweatshirt(configuration: SweatshirtConfiguration): boolean {
@@ -152,6 +191,10 @@ export class CartService {
       configuration: { ...configuration },
       quantity: 1,
     };
+
+        if (this.getSweatshirtUnitPrice(newItem) === null) {
+          return false;
+        }
 
     const key = getCartItemKey(newItem);
 

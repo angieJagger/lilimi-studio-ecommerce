@@ -21,6 +21,17 @@
       </a>
     </div>
     } @else {
+      @if (cart.pricingStatus() === 'loading') {
+      <output>{{ 'cart.pricingLoading' | transloco }}</output>
+      } @else if (cart.pricingStatus() === 'error') {
+      <p role="alert">{{ 'cart.pricingError' | transloco }}</p>
+      
+      <button class="button button--secondary" type="button" (click)="cart.reloadPrices()">
+        {{ 'cart.retryPricing' | transloco }}
+      </button>
+      } @else if (cart.pricingStatus() === 'unavailable') {
+      <p role="alert">{{ 'cart.pricingUnavailable' | transloco }}</p>
+      }
     <div class="cart__layout">
       <ul class="cart__items">
         @for (product of cart.patterns(); track product.id) {
@@ -78,7 +89,7 @@
 
             <p>
               {{ line.item.quantity }} ×
-              {{ priceFormatter().format(line.unitPriceInGrosz / 100) }}
+              {{ formatPrice(line.unitPriceInGrosz) }}
             </p>
 
             <fieldset class="cart__quantity">
@@ -121,7 +132,7 @@
           <div>
             <dt>{{ 'cart.productsSubtotal' | transloco }}</dt>
             <dd>
-              {{ priceFormatter().format(cart.subtotalInGrosz() / 100) }}
+              {{ formatPrice(cart.subtotalInGrosz()) }}
             </dd>
           </div>
 
@@ -136,9 +147,11 @@
             </dd>
           </div>
         </dl>
+        @if (cart.pricingStatus() === 'ready') {
         <a class="button button--primary cart__checkout" [routerLink]="['/', language(), 'checkout']">
           {{ 'cart.proceedToCheckout' | transloco }}
         </a>
+        }
       </aside>
     </div>
     }

@@ -59,7 +59,11 @@
       "chest": "Na piersi",
       "back": "Na plecach"
     },
-    "addedCount": "Dodano do koszyka. Liczba dodanych sztuk: {{ count }}"
+    "addedCount": "Dodano do koszyka. Liczba dodanych sztuk: {{ count }}",
+    "loading": "Ładowanie dostępnych wariantów…",
+    "loadError": "Nie udało się pobrać wariantów produktu.",
+    "retry": "Spróbuj ponownie",
+    "unavailable": "Ten produkt nie ma obecnie dostępnych wariantów."
   },
 
   "checkout": {
@@ -129,7 +133,11 @@
     "quantity": "Liczba sztuk",
     "decreaseQuantity": "Zmniejsz liczbę sztuk",
     "increaseQuantity": "Zwiększ liczbę sztuk",
-    "proceedToCheckout": "Przejdź do zamówienia"
+    "proceedToCheckout": "Przejdź do zamówienia",
+    "pricingLoading": "Pobieranie aktualnych cen…",
+    "pricingError": "Nie udało się pobrać cen produktów.",
+    "retryPricing": "Pobierz ceny ponownie",
+    "pricingUnavailable": "Co najmniej jeden wariant jest niedostępny. Wróć do koszyka, usuń pozycję bez ceny i wybierz inny wariant."
   },
 
   "products": {

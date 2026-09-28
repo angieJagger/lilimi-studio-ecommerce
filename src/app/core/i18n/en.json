@@ -59,7 +59,11 @@
       "chest": "On the chest",
       "back": "On the back"
     },
-    "addedCount": "Added to cart. Number of units added: {{ count }}"
+    "addedCount": "Added to cart. Number of units added: {{ count }}",
+    "loading": "Loading available variants…",
+    "loadError": "Could not load product variants.",
+    "retry": "Try again",
+    "unavailable": "This product currently has no available variants."
   },
 
   "checkout": {
@@ -130,7 +134,11 @@
     "quantity": "Quantity",
     "decreaseQuantity": "Decrease quantity",
     "increaseQuantity": "Increase quantity",
-    "proceedToCheckout": "Proceed to checkout"
+    "proceedToCheckout": "Proceed to checkout",
+    "pricingLoading": "Loading current prices…",
+    "pricingError": "Could not load product prices.",
+    "retryPricing": "Retry loading prices",
+    "pricingUnavailable": "At least one variant is unavailable. Return to your cart, remove the item without a price and choose another variant."
   },
 
   "products": {

@@ -97,13 +97,14 @@ export class Checkout {
   });
 
   protected readonly totalInGrosz = computed<number | null>(() => {
+    const subtotal = this.cart.subtotalInGrosz();
     const deliveryPrice = this.deliveryPriceInGrosz();
 
-    if (deliveryPrice === null) {
+    if (subtotal === null || deliveryPrice === null) {
       return null;
     }
 
-    return this.cart.subtotalInGrosz() + deliveryPrice;
+    return subtotal + deliveryPrice;
   });
 
   private readonly transloco = inject(TranslocoService);
@@ -125,7 +126,7 @@ export class Checkout {
   );
 
   protected readonly formattedSubtotal = computed(() =>
-    this.priceFormatter().format(this.cart.subtotalInGrosz() / 100),
+    this.formatPrice(this.cart.subtotalInGrosz()),
   );
 
   protected readonly formattedDeliveryPrice = computed(() => {
@@ -291,5 +292,11 @@ export class Checkout {
 
   protected returnToDetails(): void {
     this.checkoutStep.set('details');
+  }
+
+  protected formatPrice(priceInGrosz: number | null, quantity = 1): string {
+    return priceInGrosz === null
+      ? '—'
+      : this.priceFormatter().format((priceInGrosz * quantity) / 100);
   }
 }

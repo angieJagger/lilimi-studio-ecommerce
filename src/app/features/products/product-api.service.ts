@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../core/api/api-base-url';
 import type { ProductApiResponse } from './product-api.model';
+import type { GarmentVariantApiResponse } from './garment-variant-api.model';
 
 @Injectable({
   providedIn: 'root',
@@ -18,6 +19,12 @@ export class ProductApiService {
   getProduct(slug: string): Observable<ProductApiResponse> {
     return this.http.get<ProductApiResponse>(
       `${this.baseUrl}/products/${encodeURIComponent(slug)}`,
+    );
+  }
+
+  getVariants(slug: string): Observable<readonly GarmentVariantApiResponse[]> {
+    return this.http.get<readonly GarmentVariantApiResponse[]>(
+      `${this.baseUrl}/products/${encodeURIComponent(slug)}/variants`,
     );
   }
 }

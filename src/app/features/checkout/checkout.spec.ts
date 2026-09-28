@@ -6,6 +6,7 @@ import { Checkout } from './checkout';
 import { CartService } from '../cart/cart.service';
 import { EmbroideryPattern } from '../products/product.model';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
+import { provideSweatshirtVariantsTesting } from '../../testing/sweatshirt-variants-testing';
 
 describe('Checkout', () => {
   let fixture: ComponentFixture<Checkout>;
@@ -37,7 +38,7 @@ describe('Checkout', () => {
 
     await TestBed.configureTestingModule({
       imports: [Checkout, getTranslocoTestingModule()],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideSweatshirtVariantsTesting()],
     }).compileComponents();
 
     cart = TestBed.inject(CartService);

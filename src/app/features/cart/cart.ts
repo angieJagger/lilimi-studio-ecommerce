@@ -32,4 +32,8 @@ export class Cart {
   );
 
   protected readonly sweatshirtLines = this.cart.sweatshirtLines;
+
+  protected formatPrice(priceInGrosz: number | null): string {
+    return priceInGrosz === null ? '—' : this.priceFormatter().format(priceInGrosz / 100);
+  }
 }

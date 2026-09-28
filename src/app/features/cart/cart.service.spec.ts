@@ -4,6 +4,13 @@ import { EmbroideryPattern } from '../products/product.model';
 import { vi } from 'vitest';
 import { SweatshirtConfiguration } from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
+import {
+  createSweatshirtVariantsMock,
+  provideSweatshirtVariantsTesting,
+  testSweatshirtVariants,
+} from '../../testing/sweatshirt-variants-testing';
+import { SweatshirtVariantsService } from '../products/sweatshirt-variants.service';
+
 
 describe('CartService', () => {
   let cart: CartService;
@@ -33,9 +40,56 @@ describe('CartService', () => {
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideSweatshirtVariantsTesting()],
+    });
     cart = TestBed.inject(CartService);
   });
+
+    it('should use the API price and update the subtotal when it changes', () => {
+      const variants = TestBed.inject(SweatshirtVariantsService) as unknown as ReturnType<
+        typeof createSweatshirtVariantsMock
+      >;
+
+      cart.addSweatshirt(sweatshirtConfiguration);
+      cart.addSweatshirt(sweatshirtConfiguration);
+
+      expect(cart.subtotalInGrosz()).toBe(29800);
+
+      variants.state.set({
+        status: 'ready',
+        variants: testSweatshirtVariants.map((variant) =>
+          variant.id === 'test-women-m-black-small' ? { ...variant, priceInGrosz: 15900 } : variant,
+        ),
+      });
+
+      expect(cart.sweatshirtLines()[0]?.unitPriceInGrosz).toBe(15900);
+      expect(cart.subtotalInGrosz()).toBe(31800);
+      expect(cart.pricingStatus()).toBe('ready');
+    });
+
+    it('should keep an unavailable item but prevent pricing and adding it again', () => {
+      const variants = TestBed.inject(SweatshirtVariantsService) as unknown as ReturnType<
+        typeof createSweatshirtVariantsMock
+      >;
+
+      cart.addSweatshirt(sweatshirtConfiguration);
+
+      variants.state.set({
+        status: 'ready',
+        variants: testSweatshirtVariants.filter(
+          (variant) => variant.id !== 'test-women-m-black-small',
+        ),
+      });
+
+      expect(cart.sweatshirts()).toHaveLength(1);
+      expect(cart.sweatshirtLines()[0]?.unitPriceInGrosz).toBeNull();
+      expect(cart.subtotalInGrosz()).toBeNull();
+      expect(cart.pricingStatus()).toBe('unavailable');
+
+      expect(cart.addSweatshirt(sweatshirtConfiguration)).toBe(false);
+      expect(cart.sweatshirts()[0]?.quantity).toBe(1);
+    });
 
   it('should increase quantity for the same sweatshirt configuration', () => {
     // Arrange
@@ -238,7 +292,9 @@ describe('CartService persistence', () => {
       },
     });
 
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideSweatshirtVariantsTesting()],
+    });
   });
 
   afterEach(() => {

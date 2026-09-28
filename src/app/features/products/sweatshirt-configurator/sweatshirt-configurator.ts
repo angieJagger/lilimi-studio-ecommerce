@@ -1,18 +1,17 @@
-import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal } from '@angular/core';
 import {
-  dragonEmbroideryOptions,
   EmbroideryOptionId,
   garmentColors,
   GarmentColor,
   garmentFits,
   GarmentFit,
-  garmentSizes,
-  sweatshirtPricesInGrosz,
+  garmentSizes
 } from '../embroidered-product-options';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../cart/cart.service';
+import { SweatshirtVariantsService } from '../sweatshirt-variants.service';
 
 
 @Component({
@@ -30,6 +29,15 @@ export class SweatshirtConfigurator {
 
   private readonly cart = inject(CartService);
 
+  private readonly variantsService = inject(SweatshirtVariantsService);
+
+  protected readonly variantsState = this.variantsService.state;
+  protected readonly variants = this.variantsService.variants;
+
+  protected reloadVariants(): void {
+    this.variantsService.reload();
+  }
+
   protected readonly language = computed<'pl' | 'en'>(() =>
     this.activeLanguage() === 'en' ? 'en' : 'pl',
   );
@@ -45,15 +53,17 @@ export class SweatshirtConfigurator {
   });
 
   protected addToCart(): void {
-    if (!this.configurationComplete()) {
+    const variant = this.selectedVariant();
+
+    if (!variant) {
       return;
     }
 
     const added = this.cart.addSweatshirt({
-      fit: this.selectedFit(),
-      size: this.selectedSize(),
-      color: this.selectedColor(),
-      embroideryOptionId: this.selectedEmbroidery(),
+      fit: variant.fit,
+      size: variant.size,
+      color: variant.color,
+      embroideryOptionId: variant.embroideryOptionId,
     });
 
     if (added) {
@@ -61,38 +71,109 @@ export class SweatshirtConfigurator {
     }
   }
 
-  protected readonly fits = garmentFits;
-  protected readonly colors = garmentColors;
-  protected readonly embroideryOptions = dragonEmbroideryOptions;
+  private readonly dragonVariants = computed(() =>
+    this.variants().filter((variant) => variant.patternId === 'pattern-001'),
+  );
 
-  protected readonly selectedFit = signal<GarmentFit>('women');
-  protected readonly selectedColor = signal<GarmentColor>('black');
-  protected readonly selectedEmbroidery = signal<EmbroideryOptionId>('small-front');
+  protected readonly fits = computed(() =>
+    garmentFits.filter((fit) => this.dragonVariants().some((variant) => variant.fit === fit)),
+  );
 
-  protected readonly availableSizes = computed(() => garmentSizes[this.selectedFit()]);
+  protected readonly colors = computed(() =>
+    garmentColors.filter((color) =>
+      this.dragonVariants().some(
+        (variant) => variant.fit === this.selectedFit() && variant.color === color,
+      ),
+    ),
+  );
+
+  protected readonly embroideryOptions = computed(() => {
+    const matchingVariants = this.dragonVariants().filter(
+      (variant) => variant.fit === this.selectedFit() && variant.color === this.selectedColor(),
+    );
+
+    return [
+      ...new Map(
+        matchingVariants.map((variant) => [
+          variant.embroideryOptionId,
+          {
+            id: variant.embroideryOptionId,
+            widthMm: variant.widthMm,
+            heightMm: variant.heightMm,
+            placement: variant.placement,
+          },
+        ]),
+      ).values(),
+    ];
+  });
+
+  protected readonly selectedFit = linkedSignal({
+    source: this.fits,
+    computation: (fits): GarmentFit | undefined => (fits.includes('women') ? 'women' : fits[0]),
+  });
+
+  protected readonly selectedColor = linkedSignal({
+    source: this.colors,
+    computation: (colors): GarmentColor | undefined =>
+      colors.includes('black') ? 'black' : colors[0],
+  });
+
+  protected readonly selectedEmbroidery = linkedSignal({
+    source: this.embroideryOptions,
+    computation: (options): EmbroideryOptionId | undefined =>
+      options.find((option) => option.id === 'small-front')?.id ?? options[0]?.id,
+  });
+
+  protected readonly availableSizes = computed(() => {
+    const fit = this.selectedFit();
+
+    if (!fit) {
+      return [];
+    }
+
+    return garmentSizes[fit].filter((size) =>
+      this.dragonVariants().some(
+        (variant) =>
+          variant.fit === fit &&
+          variant.color === this.selectedColor() &&
+          variant.embroideryOptionId === this.selectedEmbroidery() &&
+          variant.size === size,
+      ),
+    );
+  });
 
   protected readonly selectedSize = linkedSignal({
-    source: this.selectedFit,
+    source: this.availableSizes,
     computation: (): string => '',
   });
 
-  protected readonly priceInGrosz = computed(
-    () => sweatshirtPricesInGrosz[this.selectedFit()][this.selectedEmbroidery()],
+  protected readonly selectedVariant = computed(() =>
+    this.dragonVariants().find(
+      (variant) =>
+        variant.fit === this.selectedFit() &&
+        variant.color === this.selectedColor() &&
+        variant.embroideryOptionId === this.selectedEmbroidery() &&
+        variant.size === this.selectedSize(),
+    ),
   );
 
-  protected readonly formattedPrice = computed(() =>
-    new Intl.NumberFormat(this.activeLanguage(), {
-      style: 'currency',
-      currency: 'PLN',
-    }).format(this.priceInGrosz() / 100),
-  );
+  protected readonly priceInGrosz = computed(() => this.selectedVariant()?.priceInGrosz ?? null);
 
-  protected readonly configurationComplete = computed(() =>
-    this.availableSizes().includes(this.selectedSize()),
-  );
+  protected readonly formattedPrice = computed(() => {
+    const price = this.priceInGrosz();
+
+    return price === null
+      ? '—'
+      : new Intl.NumberFormat(this.activeLanguage(), {
+          style: 'currency',
+          currency: 'PLN',
+        }).format(price / 100);
+  });
+
+  protected readonly configurationComplete = computed(() => this.selectedVariant() !== undefined);
 
   protected changeFit(value: string): void {
-    const fit = this.fits.find((item) => item === value);
+    const fit = this.fits().find((item) => item === value);
 
     if (fit) {
       this.selectedFit.set(fit);
@@ -106,7 +187,7 @@ export class SweatshirtConfigurator {
   }
 
   protected changeColor(value: string): void {
-    const color = this.colors.find((item) => item === value);
+    const color = this.colors().find((item) => item === value);
 
     if (color) {
       this.selectedColor.set(color);
@@ -114,7 +195,7 @@ export class SweatshirtConfigurator {
   }
 
   protected changeEmbroidery(value: string): void {
-    const option = this.embroideryOptions.find((item) => item.id === value);
+    const option = this.embroideryOptions().find((item) => item.id === value);
 
     if (option) {
       this.selectedEmbroidery.set(option.id);

@@ -13,6 +13,17 @@
       {{ 'cart.browseProducts' | transloco }}
     </a>
     } @else {
+      @if (cart.pricingStatus() === 'loading') {
+      <output>{{ 'cart.pricingLoading' | transloco }}</output>
+      } @else if (cart.pricingStatus() === 'error') {
+      <p role="alert">{{ 'cart.pricingError' | transloco }}</p>
+      
+      <button class="button button--secondary" type="button" (click)="cart.reloadPrices()">
+        {{ 'cart.retryPricing' | transloco }}
+      </button>
+      } @else if (cart.pricingStatus() === 'unavailable') {
+      <p role="alert">{{ 'cart.pricingUnavailable' | transloco }}</p>
+      }
     <div class="checkout__layout">
       <form id="checkout-form" class="checkout__form" novalidate [hidden]="checkoutStep() !== 'details'"
         (submit)="continueToReview($event)">
@@ -203,17 +214,13 @@
         
             <p>
               {{ line.item.quantity }} ×
-              {{ priceFormatter().format(line.unitPriceInGrosz / 100) }}
+              {{ formatPrice(line.unitPriceInGrosz) }}
             </p>
         
             <p>
               <strong>
                 {{ 'checkout.review.lineTotal' | transloco }}:
-                {{
-                priceFormatter().format(
-                line.unitPriceInGrosz * line.item.quantity / 100
-                )
-                }}
+                {{ formatPrice(line.unitPriceInGrosz, line.item.quantity) }}
               </strong>
             </p>
           </li>
@@ -253,6 +260,8 @@
             <dd>
               @if (formattedTotal(); as total) {
               {{ total }}
+              } @else if (cart.pricingStatus() !== 'ready') {
+              —
               } @else {
               {{ 'checkout.totalPending' | transloco }}
               }

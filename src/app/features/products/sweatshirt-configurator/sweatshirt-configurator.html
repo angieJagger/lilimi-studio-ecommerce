@@ -1,3 +1,16 @@
+@if (variantsState().status === 'loading') {
+<output>{{ 'configurator.loading' | transloco }}</output>
+} @else if (variantsState().status === 'error') {
+<p role="alert">
+  {{ 'configurator.loadError' | transloco }}
+</p>
+
+<button class="button button--primary" type="button" (click)="reloadVariants()">
+  {{ 'configurator.retry' | transloco }}
+</button>
+} @else if (variants().length === 0) {
+<p>{{ 'configurator.unavailable' | transloco }}</p>
+} @else {
 <fieldset class="configurator">
   <legend>{{ 'configurator.title' | transloco }}</legend>
 
@@ -6,7 +19,7 @@
       <span>{{ 'configurator.fit' | transloco }}</span>
 
       <select #fitSelect [value]="selectedFit()" (change)="changeFit(fitSelect.value)">
-        @for (fit of fits; track fit) {
+        @for (fit of fits(); track fit) {
         <option [value]="fit">
           {{ ('configurator.fits.' + fit) | transloco }}
         </option>
@@ -32,7 +45,7 @@
       <span>{{ 'configurator.color' | transloco }}</span>
 
       <select #colorSelect [value]="selectedColor()" (change)="changeColor(colorSelect.value)">
-        @for (color of colors; track color) {
+        @for (color of colors(); track color) {
         <option [value]="color">
           {{ ('configurator.colors.' + color) | transloco }}
         </option>
@@ -44,7 +57,7 @@
       <span>{{ 'configurator.embroidery' | transloco }}</span>
 
       <select #embroiderySelect [value]="selectedEmbroidery()" (change)="changeEmbroidery(embroiderySelect.value)">
-        @for (option of embroideryOptions; track option.id) {
+        @for (option of embroideryOptions(); track option.id) {
         <option [value]="option.id">
           {{ option.widthMm / 10 }} × {{ option.heightMm / 10 }} cm —
           {{ ('configurator.placements.' + option.placement) | transloco }}
@@ -77,3 +90,4 @@
     }
   </output>
 </fieldset>
+}

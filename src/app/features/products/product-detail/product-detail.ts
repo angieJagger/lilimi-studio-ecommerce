@@ -20,7 +20,6 @@ import {
 import { ProductApiService } from '../product-api.service';
 import { mapApiProductToProduct } from '../product-api.mapper';
 import type { Product } from '../product.model';
-import { demoProducts } from '../products.data';
 
 type ProductDetailState =
   | { status: 'loading' }
