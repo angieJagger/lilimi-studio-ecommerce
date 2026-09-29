@@ -11,15 +11,17 @@ import { SweatshirtCartItem, SweatshirtConfiguration } from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
 import { readStoredSweatshirts } from './cart-storage';
 import { SweatshirtVariantsService } from '../products/sweatshirt-variants.service';
+import { ProductCatalogService } from '../products/product-catalog.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CartService {
+  private readonly catalog = inject(ProductCatalogService);
   private readonly variantsService = inject(SweatshirtVariantsService);
   private readonly storageKey = 'lilimi.cart.v1';
   private readonly sweatshirtStorageKey = 'lilimi.cart.sweatshirts.v1';
-  private readonly patternsState = signal<readonly EmbroideryPattern[]>([]);
+  private readonly patternIdsState = signal<readonly string[]>([]);
 
   private readonly sweatshirtsState = signal<readonly SweatshirtCartItem[]>([]);
 
@@ -28,43 +30,51 @@ export class CartService {
   private readonly readyState = signal(false);
   readonly isReady = this.readyState.asReadonly();
 
-  readonly patterns = this.patternsState.asReadonly();
+  readonly patterns = computed(() =>
+    this.patternIdsState().flatMap((id) => {
+      const product = this.catalog.productsById().get(id);
+
+      return product?.category === 'embroidery-patterns' && product.priceType === 'fixed'
+        ? [product]
+        : [];
+    }),
+  );
+
+  readonly unavailablePatternIds = computed(() => {
+    if (this.catalog.state().status !== 'ready') {
+      return [];
+    }
+
+    const availableIds = new Set(this.patterns().map((product) => product.id));
+
+    return this.patternIdsState().filter((id) => !availableIds.has(id));
+  });
 
   readonly sweatshirts = this.sweatshirtsState.asReadonly();
 
   readonly sweatshirtLines = computed(() =>
-    this.sweatshirts().flatMap((item) => {
-      const product = demoProducts.find((product) => product.id === item.productId);
-
-      const pattern = demoProducts.find((product) => product.id === item.patternId);
-
-      const embroidery = dragonEmbroideryOptions.find(
+    this.sweatshirts().map((item) => ({
+      key: getCartItemKey(item),
+      item,
+      product: this.catalog.productsById().get(item.productId),
+      pattern: this.catalog.productsById().get(item.patternId),
+      embroidery: dragonEmbroideryOptions.find(
         (option) => option.id === item.configuration.embroideryOptionId,
-      );
-
-      if (!product || !pattern || !embroidery) {
-        return [];
-      }
-
-      return [
-        {
-          key: getCartItemKey(item),
-          item,
-          product,
-          pattern,
-          embroidery,
-          unitPriceInGrosz: this.getSweatshirtUnitPrice(item),
-        },
-      ];
-    }),
+      ),
+      unitPriceInGrosz: this.getSweatshirtUnitPrice(item),
+    })),
   );
 
   readonly itemCount = computed(
     () =>
-      this.patterns().length + this.sweatshirts().reduce((total, item) => total + item.quantity, 0),
+      this.patternIdsState().length +
+      this.sweatshirts().reduce((total, item) => total + item.quantity, 0),
   );
 
   readonly subtotalInGrosz = computed<number | null>(() => {
+    if (this.pricingStatus() !== 'ready') {
+      return null;
+    }
     let total = this.patterns().reduce((sum, product) => sum + product.priceInGrosz, 0);
 
     for (const item of this.sweatshirts()) {
@@ -81,38 +91,50 @@ export class CartService {
   });
 
   readonly pricingStatus = computed<'ready' | 'loading' | 'error' | 'unavailable'>(() => {
-    if (this.sweatshirts().length === 0) {
-      return 'ready';
+    const needsCatalog = this.patternIdsState().length > 0 || this.sweatshirts().length > 0;
+    const needsVariants = this.sweatshirts().length > 0;
+
+    const catalogStatus = needsCatalog ? this.catalog.state().status : 'ready';
+
+    const variantsStatus = needsVariants ? this.variantsService.state().status : 'ready';
+
+    if (catalogStatus === 'error' || variantsStatus === 'error') {
+      return 'error';
     }
 
-    const state = this.variantsService.state();
-
-    if (state.status !== 'ready') {
-      return state.status;
+    if (catalogStatus === 'loading' || variantsStatus === 'loading') {
+      return 'loading';
     }
 
-    return this.sweatshirts().some((item) => this.getSweatshirtUnitPrice(item) === null)
+        const unavailableSweatshirt = this.sweatshirts().some(
+          (item) =>
+            !this.catalog.productsById().has(item.productId) ||
+            !this.catalog.productsById().has(item.patternId) ||
+            this.getSweatshirtUnitPrice(item) === null,
+        );
+
+    return this.unavailablePatternIds().length > 0 || unavailableSweatshirt
       ? 'unavailable'
       : 'ready';
   });
 
   reloadPrices(): void {
-    this.variantsService.reload();
+    if (this.patternIdsState().length > 0 || this.sweatshirts().length > 0) {
+      this.catalog.reload();
+    }
+
+    if (this.sweatshirts().length > 0) {
+      this.variantsService.reload();
+    }
   }
 
   constructor() {
     afterNextRender(() => {
-      const savedPatterns = this.readStoredPatterns();
+      const savedPatternIds = this.readStoredPatternIds();
 
-      this.patternsState.update((currentPatterns) => {
-        const merged = new Map(savedPatterns.map((product) => [product.id, product]));
-
-        for (const product of currentPatterns) {
-          merged.set(product.id, product);
-        }
-
-        return [...merged.values()];
-      });
+      this.patternIdsState.update((currentIds) => [
+        ...new Set([...savedPatternIds, ...currentIds]),
+      ]);
 
       const savedSweatshirts = this.loadSweatshirts();
 
@@ -131,23 +153,19 @@ export class CartService {
       return;
     }
 
-    this.patternsState.update((patterns) => {
-      const alreadyAdded = patterns.some((item) => item.id === product.id);
-
-      return alreadyAdded ? patterns : [...patterns, product];
-    });
+    this.patternIdsState.update((ids) => (ids.includes(product.id) ? ids : [...ids, product.id]));
 
     this.save();
   }
 
   removeProduct(productId: string): void {
-    this.patternsState.update((patterns) => patterns.filter((product) => product.id !== productId));
+    this.patternIdsState.update((ids) => ids.filter((id) => id !== productId));
 
     this.save();
   }
 
   clear(): void {
-    this.patternsState.set([]);
+    this.patternIdsState.set([]);
     this.sweatshirtsState.set([]);
     this.save();
   }
@@ -192,9 +210,9 @@ export class CartService {
       quantity: 1,
     };
 
-        if (this.getSweatshirtUnitPrice(newItem) === null) {
-          return false;
-        }
+    if (this.getSweatshirtUnitPrice(newItem) === null) {
+      return false;
+    }
 
     const key = getCartItemKey(newItem);
 
@@ -221,7 +239,7 @@ export class CartService {
     this.save();
   }
 
-  private readStoredPatterns(): EmbroideryPattern[] {
+  private readStoredPatternIds(): string[] {
     try {
       const stored = localStorage.getItem(this.storageKey);
 
@@ -235,17 +253,12 @@ export class CartService {
         return [];
       }
 
-      const ids = new Set(parsed.filter((id): id is string => typeof id === 'string'));
-
-      return [...ids].flatMap((id) => {
-        const product = demoProducts.find((item) => item.id === id);
-
-        return product?.category === 'embroidery-patterns' && product.priceType === 'fixed'
-          ? [product]
-          : [];
-      });
+      return [
+        ...new Set(
+          parsed.filter((id): id is string => typeof id === 'string' && id.trim().length > 0),
+        ),
+      ];
     } catch {
-      // Keep the cart usable when storage is unavailable or malformed.
       return [];
     }
   }
@@ -256,7 +269,7 @@ export class CartService {
     }
 
     try {
-      const ids = this.patterns().map((product) => product.id);
+      const ids = this.patternIdsState();
 
       localStorage.setItem(this.storageKey, JSON.stringify(ids));
       localStorage.setItem(this.sweatshirtStorageKey, JSON.stringify(this.sweatshirts()));

@@ -137,7 +137,9 @@
     "pricingLoading": "Pobieranie aktualnych cen…",
     "pricingError": "Nie udało się pobrać cen produktów.",
     "retryPricing": "Pobierz ceny ponownie",
-    "pricingUnavailable": "Co najmniej jeden wariant jest niedostępny. Wróć do koszyka, usuń pozycję bez ceny i wybierz inny wariant."
+    "unavailableDigitalProduct": "Niedostępny produkt cyfrowy",
+    "productReference": "Kod produktu",
+    "pricingUnavailable": "Co najmniej jeden produkt lub wariant jest niedostępny. Usuń niedostępną pozycję w koszyku, aby kontynuować."
   },
 
   "products": {

@@ -10,6 +10,12 @@ import {
   testSweatshirtVariants,
 } from '../../testing/sweatshirt-variants-testing';
 import { SweatshirtVariantsService } from '../products/sweatshirt-variants.service';
+import {
+  createProductCatalogMock,
+  provideProductCatalogTesting,
+  testCatalogProducts,
+} from '../../testing/product-catalog-testing';
+import { ProductCatalogService } from '../products/product-catalog.service';
 
 
 describe('CartService', () => {
@@ -41,7 +47,7 @@ describe('CartService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideSweatshirtVariantsTesting()],
+      providers: [provideSweatshirtVariantsTesting(), provideProductCatalogTesting()],
     });
     cart = TestBed.inject(CartService);
   });
@@ -293,7 +299,7 @@ describe('CartService persistence', () => {
     });
 
     TestBed.configureTestingModule({
-      providers: [provideSweatshirtVariantsTesting()],
+      providers: [provideSweatshirtVariantsTesting(), provideProductCatalogTesting()],
     });
   });
 
@@ -301,22 +307,29 @@ describe('CartService persistence', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should restore valid patterns without duplicates', () => {
-    // Arrange
-    storage.set(
-      storageKey,
-      JSON.stringify(['pattern-001', 'pattern-001', 'unknown-product', 'embroidered-001', 123]),
-    );
+    it('should restore unique IDs and retain unavailable products', () => {
+      storage.set(
+        storageKey,
+        JSON.stringify(['pattern-001', 'pattern-001', 'unknown-product', 'embroidered-001', 123]),
+      );
 
-    // Act
-    const cart = TestBed.inject(CartService);
-    TestBed.tick();
+      const cart = TestBed.inject(CartService);
+      TestBed.tick();
 
-    // Assert
-    expect(cart.patterns().map((product) => product.id)).toEqual(['pattern-001']);
-    expect(cart.itemCount()).toBe(1);
-    expect(cart.subtotalInGrosz()).toBe(2900);
-  });
+      expect(cart.patterns().map((product) => product.id)).toEqual(['pattern-001']);
+
+      expect(cart.unavailablePatternIds()).toEqual(['unknown-product', 'embroidered-001']);
+
+      expect(cart.itemCount()).toBe(3);
+      expect(cart.subtotalInGrosz()).toBeNull();
+      expect(cart.pricingStatus()).toBe('unavailable');
+
+      expect(JSON.parse(storage.get(storageKey)!)).toEqual([
+        'pattern-001',
+        'unknown-product',
+        'embroidered-001',
+      ]);
+    });
 
   it('should recover from malformed stored data', () => {
     // Arrange
@@ -523,4 +536,49 @@ describe('CartService persistence', () => {
     expect(cart.sweatshirts()).toEqual([]);
     expect(JSON.parse(storage.get(sweatshirtStorageKey)!)).toEqual([]);
   });
+
+    it('should preserve stored IDs during loading and errors, then use the current API price', () => {
+      storage.set(storageKey, JSON.stringify(['pattern-001']));
+
+      const catalog = TestBed.inject(ProductCatalogService) as unknown as ReturnType<
+        typeof createProductCatalogMock
+      >;
+
+      catalog.state.set({ status: 'loading' });
+
+      const cart = TestBed.inject(CartService);
+      TestBed.tick();
+
+      expect(cart.itemCount()).toBe(1);
+      expect(cart.patterns()).toHaveLength(0);
+      expect(cart.unavailablePatternIds()).toHaveLength(0);
+      expect(cart.pricingStatus()).toBe('loading');
+      expect(cart.subtotalInGrosz()).toBeNull();
+      expect(JSON.parse(storage.get(storageKey)!)).toEqual(['pattern-001']);
+
+      catalog.state.set({ status: 'error' });
+
+      expect(cart.itemCount()).toBe(1);
+      expect(cart.pricingStatus()).toBe('error');
+      expect(cart.unavailablePatternIds()).toHaveLength(0);
+      expect(cart.subtotalInGrosz()).toBeNull();
+      expect(JSON.parse(storage.get(storageKey)!)).toEqual(['pattern-001']);
+
+      cart.reloadPrices();
+
+      expect(catalog.reload).toHaveBeenCalledOnce();
+
+      catalog.state.set({
+        status: 'ready',
+        products: testCatalogProducts.map((product) =>
+          product.id === 'pattern-001' ? { ...product, priceInGrosz: 3900 } : product,
+        ),
+      });
+
+      expect(cart.itemCount()).toBe(1);
+      expect(cart.patterns()[0]?.priceInGrosz).toBe(3900);
+      expect(cart.subtotalInGrosz()).toBe(3900);
+      expect(cart.pricingStatus()).toBe('ready');
+      expect(JSON.parse(storage.get(storageKey)!)).toEqual(['pattern-001']);
+    });
 });

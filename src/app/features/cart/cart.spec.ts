@@ -3,6 +3,7 @@ import { Cart } from './cart';
 import { provideRouter } from '@angular/router';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
 import { provideSweatshirtVariantsTesting } from '../../testing/sweatshirt-variants-testing';
+import { provideProductCatalogTesting } from '../../testing/product-catalog-testing';
 
 describe('Cart', () => {
   let component: Cart;
@@ -11,7 +12,11 @@ describe('Cart', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Cart, getTranslocoTestingModule()],
-      providers: [provideRouter([]), provideSweatshirtVariantsTesting()],
+      providers: [
+        provideRouter([]),
+        provideSweatshirtVariantsTesting(),
+        provideProductCatalogTesting(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Cart);

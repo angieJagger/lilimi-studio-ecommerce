@@ -9,6 +9,7 @@ import { of, throwError } from 'rxjs';
 import { ProductApiService } from '../product-api.service';
 import type { ProductApiResponse } from '../product-api.model';
 import { vi } from 'vitest';
+import { provideProductCatalogTesting } from '../../../testing/product-catalog-testing';
 
 describe('ProductDetail', () => {
   let harness: RouterTestingHarness;
@@ -93,6 +94,7 @@ describe('ProductDetail', () => {
             },
           },
         },
+        provideProductCatalogTesting(),
       ],
     }).compileComponents();
 

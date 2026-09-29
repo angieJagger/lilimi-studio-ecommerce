@@ -197,8 +197,23 @@
         
           @for (line of cart.sweatshirtLines(); track line.key) {
           <li class="checkout__review-item">
-            <h4>{{ line.product.name[language()] }}</h4>
-            <p>{{ line.pattern.name[language()] }}</p>
+            <h4>
+              @if (line.product; as product) {
+              {{ product.name[language()] }}
+              } @else {
+              {{ 'cart.productReference' | transloco }}:
+              {{ line.item.productId }}
+              }
+            </h4>
+            
+            <p>
+              @if (line.pattern; as pattern) {
+              {{ pattern.name[language()] }}
+              } @else {
+              {{ 'cart.productReference' | transloco }}:
+              {{ line.item.patternId }}
+              }
+            </p>
         
             <p>
               {{ ('configurator.fits.' + line.item.configuration.fit) | transloco }}
@@ -206,11 +221,13 @@
               · {{ ('configurator.colors.' + line.item.configuration.color) | transloco }}
             </p>
         
+            @if (line.embroidery; as embroidery) {
             <p>
-              {{ line.embroidery.widthMm / 10 }} ×
-              {{ line.embroidery.heightMm / 10 }} cm —
-              {{ ('configurator.placements.' + line.embroidery.placement) | transloco }}
+              {{ embroidery.widthMm / 10 }} ×
+              {{ embroidery.heightMm / 10 }} cm —
+              {{ ('configurator.placements.' + embroidery.placement) | transloco }}
             </p>
+            }
         
             <p>
               {{ line.item.quantity }} ×

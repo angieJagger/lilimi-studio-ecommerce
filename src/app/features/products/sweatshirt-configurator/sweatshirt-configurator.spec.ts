@@ -3,6 +3,7 @@ import { SweatshirtConfigurator } from './sweatshirt-configurator';
 import { provideRouter } from '@angular/router';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { provideSweatshirtVariantsTesting } from '../../../testing/sweatshirt-variants-testing';
+import { provideProductCatalogTesting } from '../../../testing/product-catalog-testing';
 
 describe('SweatshirtConfigurator', () => {
   let component: SweatshirtConfigurator;
@@ -11,7 +12,11 @@ describe('SweatshirtConfigurator', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SweatshirtConfigurator, getTranslocoTestingModule()],
-      providers: [provideSweatshirtVariantsTesting(), provideRouter([])],
+      providers: [
+        provideSweatshirtVariantsTesting(),
+        provideRouter([]),
+        provideProductCatalogTesting(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SweatshirtConfigurator);

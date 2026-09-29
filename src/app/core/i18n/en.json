@@ -138,7 +138,9 @@
     "pricingLoading": "Loading current prices…",
     "pricingError": "Could not load product prices.",
     "retryPricing": "Retry loading prices",
-    "pricingUnavailable": "At least one variant is unavailable. Return to your cart, remove the item without a price and choose another variant."
+    "unavailableDigitalProduct": "Unavailable digital product",
+    "productReference": "Product reference",
+    "pricingUnavailable": "At least one product or variant is unavailable. Remove the unavailable item from your cart to continue."
   },
 
   "products": {

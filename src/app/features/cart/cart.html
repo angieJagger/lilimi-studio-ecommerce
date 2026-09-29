@@ -34,6 +34,21 @@
       }
     <div class="cart__layout">
       <ul class="cart__items">
+        @for (id of cart.unavailablePatternIds(); track id) {
+        <li class="cart__item">
+          <div class="cart__item-content">
+            <h2 class="cart__item-title">
+              {{ 'cart.unavailableDigitalProduct' | transloco }}
+            </h2>
+        
+            <p>{{ 'cart.productReference' | transloco }}: {{ id }}</p>
+        
+            <button class="cart__remove" type="button" (click)="cart.removeProduct(id)">
+              {{ 'cart.remove' | transloco }}
+            </button>
+          </div>
+        </li>
+        }
         @for (product of cart.patterns(); track product.id) {
         <li class="cart__item">
           <div class="cart__media" aria-hidden="true"></div>
@@ -68,12 +83,24 @@
 
           <div class="cart__item-content">
             <h2 class="cart__item-title">
-              <a [routerLink]="['/', language(), 'products', line.product.slug]">
-                {{ line.product.name[language()] }}
+              @if (line.product; as product) {
+              <a [routerLink]="['/', language(), 'products', product.slug]">
+                {{ product.name[language()] }}
               </a>
+              } @else {
+              {{ 'cart.productReference' | transloco }}:
+              {{ line.item.productId }}
+              }
             </h2>
-
-            <p>{{ line.pattern.name[language()] }}</p>
+            
+            <p>
+              @if (line.pattern; as pattern) {
+              {{ pattern.name[language()] }}
+              } @else {
+              {{ 'cart.productReference' | transloco }}:
+              {{ line.item.patternId }}
+              }
+            </p>
 
             <p>
               {{ ('configurator.fits.' + line.item.configuration.fit) | transloco }}
@@ -81,11 +108,13 @@
               · {{ ('configurator.colors.' + line.item.configuration.color) | transloco }}
             </p>
 
+            @if (line.embroidery; as embroidery) {
             <p>
-              {{ line.embroidery.widthMm / 10 }} ×
-              {{ line.embroidery.heightMm / 10 }} cm —
-              {{ ('configurator.placements.' + line.embroidery.placement) | transloco }}
+              {{ embroidery.widthMm / 10 }} ×
+              {{ embroidery.heightMm / 10 }} cm —
+              {{ ('configurator.placements.' + embroidery.placement) | transloco }}
             </p>
+            }
 
             <p>
               {{ line.item.quantity }} ×
