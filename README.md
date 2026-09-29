@@ -1,89 +1,128 @@
 # Lilimi Studio
 
-An e-commerce application for digital machine embroidery patterns and embroidered clothing, developed for the Lilimi Studio brand.
+**A graphic design and web development studio with an integrated shop for digital embroidery patterns and embroidered clothing.**
 
-The project combines an Angular storefront with a Java / Spring Boot backend and PostgreSQL.
+I am building Lilimi for my own planned studio. The project brings together two parts of that business: discussing custom design and development work, and buying ready-made products. It is also where I practise building an application across Angular, Java and PostgreSQL—from interface behaviour to database migrations and integration tests.
 
-> Work in progress. The storefront currently uses local demo product data. The backend product catalog is available and tested independently. Order submission and payments are not connected yet.
+Angular 22 · Java 21 · Spring Boot 4 · PostgreSQL 17
 
-## Implemented features
+[What works](#what-works-today) · [Engineering decisions](#engineering-decisions) · [Code tour](#code-tour) · [Run locally](#run-locally)
 
-### Storefront
+> **In development.** The catalogue, product details, clothing variants and cart use the backend API. Checkout currently validates customer details and displays an order review; it does not submit orders or take payments. A public demo is planned but is not deployed yet.
 
-- Polish and English versions using Transloco.
-- Responsive product catalog with filtering, sorting and incremental loading.
-- Product detail pages and related products.
-- Sweatshirt configuration: fit, size, color and embroidery option.
-- Cart with quantity controls, item removal and local persistence.
-- Checkout contact and address validation.
-- Courier selection and delivery totals.
-- Order review and preparation of order request data.
-- Contact and project inquiry forms with client-side validation.
+![Lilimi homepage with graphic design and web development services](docs/screenshots/home-desktop.png)
 
-### Backend
+## What works today
 
-- PostgreSQL schema managed with Flyway migrations.
-- Product catalog with Polish and English translations.
-- Fixed prices for digital products.
-- Starting prices calculated from active clothing variants.
-- Product lookup by slug.
-- HTTP 404 responses for unavailable or unknown products.
-- Integration tests using a separate PostgreSQL container.
+### Studio website
 
-## Technology stack
+- Responsive homepage introducing graphic design, UX/UI and web development services.
+- Polish and English interfaces with Transloco.
+- About and contact pages, plus a project inquiry form with client-side validation. The inquiry form is being adapted to the expanded service offer.
 
-| Area | Technologies |
+### Shop
+
+- API-backed product catalogue with category filtering, sorting and a “show more” interaction.
+- Product details, file formats and related products loaded from the API.
+- Sweatshirt configuration by fit, size, colour and embroidery option, using available backend variants.
+- Variant-specific prices shared by the configurator and cart.
+- Cart quantity controls, removal and persistence across page reloads.
+- Digital product IDs and garment configurations stored locally; current product information and prices fetched from the backend.
+- Loading, retry and unavailable-item states. A failed catalogue request does not erase saved cart IDs, and incomplete pricing prevents checkout progression.
+- Checkout contact/address validation, courier selection and an order review. Delivery currently uses illustrative rates for Poland.
+
+## A closer look
+
+The main demonstration flow is **catalogue → product → configuration → cart → checkout review**.
+
+![Sweatshirt configurator showing an available fit, size, colour and embroidery option](docs/screenshots/configurator-desktop.png)
+
+**Configuration:** available combinations come from the API. A size must be selected before the item can be added; changing earlier options resets that selection.
+
+![Cart with a digital pattern and two embroidered sweatshirts](docs/screenshots/cart-desktop.png)
+
+**Mixed cart:** digital patterns and physical items share a subtotal, while physical items retain their individual configuration and quantity.
+
+![Lilimi homepage on a mobile viewport](docs/screenshots/home-mobile.png)
+
+**Mobile:** service cards stack vertically and navigation moves into a separate menu.
+
+### Design process
+
+- [UI designs — Figma (Polish)](https://www.figma.com/design/sIEFBWbYgUeox8HFAzdfSK/Lilimi-Studio---UX-UI-Design?node-id=1-2&t=JX1Vs5xUUwrYHqwn-1)
+- [Sitemap and user flows — FigJam (Polish)](https://www.figma.com/board/cihOaxBQda1CJVEy0FxpWV/Lilimi-Studio---Sitemap---User-Flows?node-id=0-1&t=cGEjnJFJ3WfLNDon-1)
+
+These files document the initial concept and planned user journeys.
+Some flows describe features that are not implemented yet.
+The application is evolving towards a service-first studio website,
+so the design documentation is being updated alongside development.
+
+## Engineering decisions
+
+| Decision | Reason |
 | --- | --- |
-| Frontend | Angular 22, TypeScript, SCSS, Transloco |
-| Backend | Java 21, Spring Boot 4.1.1, Maven |
-| Persistence | Spring Data JPA, Hibernate, PostgreSQL 17 |
-| Database migrations | Flyway |
-| Testing | Vitest, JUnit, AssertJ, MockMvc, Testcontainers |
-| Local infrastructure | Docker Compose |
+| Prices use integer grosz amounts | Monetary values travel through the API without decimal currency arithmetic. `14900` represents PLN 149.00. |
+| Catalogue price and variant price are separate | A garment's “from” price is the minimum active variant price. The selected configuration has its own price. |
+| Saved cart selection is separate from fetched data | Temporary API failures must not silently delete a customer's selections or turn an unknown price into zero. |
+| Backend responses are mapped to frontend product models | API product types and the interface's product categories serve different purposes. The mapping is explicit. |
+| Flyway owns schema changes | Database structure and seed data are reproducible through versioned migrations. |
+| Backend integration tests use PostgreSQL containers | Repository queries and migrations are tested against PostgreSQL rather than a substitute in-memory database. |
 
-## Repository structure
+Prices displayed by the frontend are not yet a completed order-pricing mechanism. Server-side validation and recalculation when submitting an order are planned before real sales.
 
-```text
-.
-├── src/                       # Angular application
-├── public/                    # Frontend assets
-├── angular.json
-├── package.json
-└── backend/
-    ├── src/main/java/         # Spring Boot application
-    ├── src/main/resources/    # Configuration and Flyway migrations
-    ├── src/test/java/         # Backend tests
-    ├── compose.yaml           # Local PostgreSQL
-    ├── pom.xml
-    └── mvnw.cmd
+## Architecture
+
+```mermaid
+flowchart LR
+    UI[Angular components] --> State[Services and signals]
+    State --> API[Spring Boot REST API]
+    State --> Storage[Local storage: cart selections]
+    API --> Service[Catalogue service]
+    Service --> Repository[Spring Data JPA repositories]
+    Repository --> DB[(PostgreSQL)]
+    Flyway[Flyway migrations] --> DB
 ```
 
-## Prerequisites
+| Layer | Tools |
+| --- | --- |
+| Frontend | Angular 22, TypeScript, signals, RxJS, SCSS, Transloco, Angular SSR |
+| Backend | Java 21, Spring Boot 4.1.1, Maven, Spring Data JPA, Hibernate |
+| Database | PostgreSQL 17, Flyway |
+| Tests | Vitest, Angular TestBed, JUnit, MockMvc, Testcontainers |
+| Local environment | Docker Compose for PostgreSQL, Maven Wrapper |
 
-- Node.js and npm compatible with Angular 22.
-- JDK 21.
-- Docker Desktop with Linux containers running.
+## Code tour
 
-Maven Wrapper is included, so a separate Maven installation is not required.
+Useful starting points for reviewing the implementation:
 
-The commands below use Windows PowerShell.
+- [Product API mapping](src/app/features/products/product-api.mapper.ts) — translation between the API response and frontend product models.
+- [Shared variant state](src/app/features/products/sweatshirt-variants.service.ts) — loading, error handling and retry for garment variants.
+- [Cart service](src/app/features/cart/cart.service.ts) — persistence, availability and totals.
+- [Cart tests](src/app/features/cart/cart.service.spec.ts) — API price changes, unavailable variants and persistence during failed requests.
+- [Product service](backend/src/main/java/pl/lilimi/catalog/ProductService.java) — assembly of catalogue responses from product, translation, price and specification data.
+- [API integration tests](backend/src/test/java/pl/lilimi/catalog/ProductControllerTest.java) — product lookup, unavailable products and garment variants.
+- [Database migrations](backend/src/main/resources/db/migration) — schema and initial catalogue data.
+
+```text
+src/app/
+├── core/          # API configuration and translations
+├── features/      # Home, services, products, cart, checkout and inquiries
+├── layout/        # Shared layout and navigation
+├── shared/        # Reusable interface components
+└── testing/       # Test providers and fixtures
+backend/
+├── src/main/java/pl/lilimi/  # Application and catalogue backend
+├── src/main/resources/      # Configuration and Flyway migrations
+├── src/test/java/           # Backend tests
+├── compose.yaml            # Local PostgreSQL service
+└── pom.xml
+```
 
 ## Run locally
 
-### 1. Start the frontend
+Prerequisites: **Node.js compatible with Angular 22, npm, JDK 21 and Docker with Linux containers**. Maven Wrapper is included. The commands below use Windows PowerShell and start from the repository root.
 
-From the repository root:
-
-```powershell
-npm ci
-npm start
-```
-
-Open http://localhost:4200.
-
-### 2. Configure the backend
-
-From the repository root:
+### 1. Configure and start the database
 
 ```powershell
 cd backend
@@ -91,115 +130,74 @@ Copy-Item .env.example .env
 Copy-Item src/main/resources/application-local.properties.example src/main/resources/application-local.properties
 ```
 
-For the first setup, replace the password placeholder in both copied files with the same local password.
-
-If these files already exist, keep your existing configuration instead of overwriting it.
-
-The `.env` file is read by Docker Compose. Spring Boot reads `application-local.properties` when the `local` profile is active.
-
-Both local configuration files are excluded from Git. Never commit real credentials or API tokens.
-
-Changing these files does not change the password of a PostgreSQL user already stored in an existing Docker volume.
-
-### 3. Start PostgreSQL
-
-From `backend`:
+Run these copies only for first-time setup. Replace the password placeholders in both copied files with the same local password. Real local configuration files are ignored by Git.
 
 ```powershell
 docker compose up -d --wait
 ```
 
-PostgreSQL is available at `localhost:15432`. This is a database port, not a website.
+PostgreSQL is exposed on `127.0.0.1:15432` and uses a persistent Docker volume. Changing the environment file does not reset the database password in an existing volume.
 
-Database files are stored in a named Docker volume.
+### 2. Start the backend
 
-### 4. Start Spring Boot
-
-Ensure your terminal uses JDK 21:
+From `backend`, check that Maven uses JDK 21 and start the local profile:
 
 ```powershell
 .\mvnw.cmd -version
-```
-
-Then run:
-
-```powershell
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Alternatively, run `LilimiBackendApplication` in IntelliJ IDEA with JDK 21 and the following program argument:
+Flyway applies pending migrations on startup. Health check: [localhost:8080/actuator/health](http://localhost:8080/actuator/health).
 
-```text
---spring.profiles.active=local
+### 3. Start the frontend
+
+In another terminal, from the repository root:
+
+```powershell
+npm ci
+npm start
 ```
 
-Flyway applies pending migrations during startup.
+Open [localhost:4200/pl](http://localhost:4200/pl) or [localhost:4200/en](http://localhost:4200/en).
 
-Health endpoint: http://localhost:8080/actuator/health
+The development proxy forwards browser `/api` requests to the backend. Server-rendered requests use `BACKEND_API_URL`, defaulting to `http://127.0.0.1:8080/api`.
 
-## Product API
+## API
 
-| Method | Path | Description |
+| Method | Endpoint | Purpose |
 | --- | --- | --- |
-| GET | `/api/products` | Active products with available prices |
-| GET | `/api/products/{slug}` | A single available product |
+| GET | `/api/products` | Active catalogue products with available prices |
+| GET | `/api/products/{slug}` | Product details and specifications |
+| GET | `/api/products/{slug}/variants` | Available garment configurations and prices |
 | GET | `/actuator/health` | Application health |
 
-Example product URLs:
+Try `forest-dragon` for a digital pattern and `embroidered-sweatshirt` for a physical product. Unknown or unavailable products return HTTP 404.
 
-- http://localhost:8080/api/products/forest-dragon
-- http://localhost:8080/api/products/embroidered-sweatshirt
+## Verification
 
-Prices are represented as integer grosz amounts in PLN. For example, `12900` means PLN 129.00.
-
-For clothing, `priceType: "from"` represents the cheapest active variant, not the price of every configuration.
-
-## Tests and builds
-
-### Frontend
-
-From the repository root:
+Frontend, from the repository root:
 
 ```powershell
 npx ng test --watch=false
 npm run build
 ```
 
-### Backend
-
-From `backend`, with Docker Desktop running:
-
-```powershell
-.\mvnw.cmd test
-```
-
-To run tests and package the application:
+Backend, from `backend`, with Docker running:
 
 ```powershell
 .\mvnw.cmd verify
 ```
 
-Backend integration tests create their own PostgreSQL container and apply the migrations. They do not use the local development database.
+Backend integration tests create a separate PostgreSQL container and apply the migrations; they do not use the development database. Frontend component and service tests use controlled API responses and test providers.
 
-## Database migrations
+Examples of behaviour covered by tests include changing product routes, retrying failed requests, reacting to variant price changes, blocking unavailable configurations, and preserving cart IDs while the catalogue is unavailable.
 
-Migration scripts are stored in:
+## Next milestones
 
-```text
-backend/src/main/resources/db/migration
-```
+- Adapt the inquiry form to graphic design, UX/UI and web development services, with embroidery digitization inside the graphic design offer.
+- Add portfolio work and replace visual placeholders with original project assets.
+- Publish an explicitly labelled AWS demonstration environment.
+- Implement order submission, server-side price validation and persistence.
+- Integrate payments, transactional emails and controlled delivery of purchased digital files.
 
-Do not modify migrations that have already been applied. Introduce database changes in a new versioned migration.
-
-## Planned work
-
-- Connect the Angular storefront to the backend API.
-- Expose product configuration options and variant prices.
-- Implement server-side order validation, pricing and persistence.
-- Integrate payments and payment notifications.
-- Provide secure access to purchased digital files.
-- Add customer accounts and order history.
-- Implement delivery workflows and transactional emails.
-- Support embroidery digitization inquiries and quotes.
-- Add product and order administration.
-- Prepare brand graphics, production deployment and end-to-end tests.
+The current code also retains some embroidery-specific assumptions, including local option metadata used in cart descriptions. These will be revisited as the catalogue and ordering workflow expand.
