@@ -9,7 +9,11 @@
     "account": "Konto",
     "menu": "Menu",
     "closeMenu": "Zamknij menu",
-    "mainNavigation": "Nawigacja główna"
+    "mainNavigation": "Nawigacja główna",
+    "services": "Usługi",
+    "shop": "Sklep",
+    "about": "O Lilimi",
+    "contact": "Kontakt"
   },
 
   "language": {
@@ -168,50 +172,59 @@
 
   "home": {
     "hero": {
-      "eyebrow": "Haft • Pliki cyfrowe • Strony WWW",
-      "title": "Twórcze projekty dla Ciebie i Twojej marki",
-      "description": "Wzory haftów, personalizowane produkty i proste strony internetowe — gotowe lub tworzone na zamówienie",
-      "mediaPlaceholder": "Miejsce na zdjęcie / realizację",
-      "viewOffer": "Zobacz ofertę",
-      "requestProject": "Zleć projekt"
+      "eyebrow": "Projektowanie graficzne • UX/UI • Programowanie",
+      "title": "Grafika, strony i aplikacje dla Twojej marki",
+      "description": "Łączę projektowanie graficzne z programowaniem. Tworzę identyfikację wizualną, materiały graficzne oraz strony i aplikacje internetowe dopasowane do Twoich potrzeb.",
+      "mediaPlaceholder": "Miejsce na wybraną realizację Lilimi",
+      "viewOffer": "Poznaj usługi",
+      "requestProject": "Porozmawiajmy o projekcie"
     },
 
     "offer": {
-      "title": "Znajdź coś dla siebie",
-      "view": "Zobacz"
+      "title": "W czym mogę Ci pomóc?",
+      "inquire": "Zapytaj o projekt",
+      "graphic": {
+        "title": "Projektowanie graficzne i UX/UI",
+        "description": "Projekty stron i interfejsów, identyfikacja wizualna oraz materiały do druku i internetu. Przygotowuję również grafikę do haftu maszynowego — digitalizację."
+      },
+      "web": {
+        "title": "Strony i aplikacje internetowe",
+        "description": "Responsywne strony i aplikacje dopasowane do Twoich potrzeb. Pomagam przejść od pomysłu i projektu interfejsu do działającego rozwiązania."
+      }
     },
 
     "customOrder": {
-      "eyebrow": "MASZ WŁASNY POMYSŁ?",
-      "title": "Stwórzmy coś razem",
-      "description": "Opowiedz, czego potrzebujesz, a przygotuję propozycję dopasowaną do Twojego projektu.",
-      "cta": "Zleć projekt"
+      "eyebrow": "POROZMAWIAJMY O TWOIM PROJEKCIE",
+      "title": "Czego potrzebuje Twoja marka?",
+      "description": "Projektu graficznego, strony czy aplikacji? Opisz swój pomysł i etap, na którym jesteś. Wspólnie ustalimy, jak mogę Ci pomóc.",
+      "cta": "Zapytaj o współpracę"
     },
 
     "featured": {
-      "eyebrow": "Polecane produkty",
-      "title": "Wybrane dla Ciebie",
-      "viewAll": "Zobacz wszystkie"
+      "eyebrow": "SKLEP LILIMI",
+      "title": "Wzory i produkty z haftem",
+      "viewAll": "Przejdź do sklepu",
+      "empty": "Obecnie nie ma polecanych produktów. Sprawdź pełny katalog w sklepie."
     },
 
     "process": {
-      "eyebrow": "KROK PO KROKU",
+      "eyebrow": "OD POMYSŁU DO REALIZACJI",
       "title": "Jak wygląda współpraca?",
       "steps": {
         "choose": {
-          "title": "Wybierz ofertę",
-          "description": "Znajdź gotowy produkt lub usługę dopasowaną do Twojego pomysłu."
+          "title": "Opowiedz, czego potrzebujesz",
+          "description": "Napisz, co chcesz stworzyć, dla kogo i jaki cel ma spełniać projekt. Nie musisz mieć gotowego briefu — pomogę doprecyzować zakres."
         },
         "describe": {
-          "title": "Opowiedz o pomyśle",
-          "description": "Opisz swoje potrzeby, prześlij inspiracje i ustalmy szczegóły realizacji."
+          "title": "Ustalamy zakres i wycenę",
+          "description": "Uzgadniamy materiały, termin, sposób realizacji i liczbę rund poprawek. Pracę rozpoczynam po zaakceptowaniu ustaleń."
         },
         "receive": {
-          "title": "Zaakceptuj i odbierz",
-          "description": "Zatwierdź przygotowany projekt i odbierz gotową realizację."
+          "title": "Tworzę i przekazuję projekt",
+          "description": "Przygotowuję realizację i omawiam z Tobą postępy. Po uzgodnionych poprawkach przekazuję gotowe materiały lub wdrażam stronę czy aplikację."
         }
       }
-  }
+    }
 
   },
 

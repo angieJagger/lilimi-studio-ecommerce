@@ -1,7 +1,6 @@
 import { afterNextRender, computed, inject, Injectable, signal } from '@angular/core';
 
 import { EmbroideryPattern } from '../products/product.model';
-import { demoProducts } from '../products/products.data';
 import {
   garmentColors,
   garmentSizes,

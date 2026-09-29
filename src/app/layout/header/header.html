@@ -5,8 +5,10 @@
     </a>
     <nav class="site-header__navigation" [attr.aria-label]="'nav.mainNavigation' | transloco">
       @for (item of shopNavigation; track item.labelKey) {
-      <a class="site-header__link" [routerLink]="['/', transloco.getActiveLang(), item.path]"
-        [queryParams]="item.queryParams">
+      <a class="site-header__link"
+        [routerLink]="['/', transloco.getActiveLang(), item.path]"
+        [queryParams]="item.queryParams"
+        [fragment]="item.fragment">
         {{ item.labelKey | transloco }}
       </a>
       }

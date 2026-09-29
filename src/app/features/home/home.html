@@ -17,7 +17,12 @@
             <a class="button button--primary" [routerLink]="[]" fragment="offer">
               {{ 'home.hero.viewOffer' | transloco }}
             </a>
-            <a class="button button--secondary" [routerLink]="[]" fragment="custom-order">
+          
+            <a class="button button--secondary" [routerLink]="[
+                '/',
+                transloco.getActiveLang(),
+                'project-inquiry'
+              ]">
               {{ 'home.hero.requestProject' | transloco }}
             </a>
           </div>
@@ -29,78 +34,40 @@
   </div>
 </section>
 
-<section class="offer" id="offer">
+<section class="offer" id="offer" aria-labelledby="offer-title">
   <div class="container">
-    <h2 class="heading-2">
+    <h2 id="offer-title" class="heading-2">
       {{ 'home.offer.title' | transloco }}
     </h2>
+
     <ul class="offer__grid">
-      @for (item of offerItems; track item.labelKey) {
+      @for (item of offerItems; track item.id) {
       <li>
-        <a class="offer-card" [routerLink]="['/', transloco.getActiveLang(), item.path]" [queryParams]="item.queryParams">
+        <article class="offer-card">
           <h3 class="offer-card__title">
-            {{ item.labelKey | transloco }}
+            {{ item.titleKey | transloco }}
           </h3>
 
-          <span class="offer-card__action">
-            {{ 'home.offer.view' | transloco }}
+          <p class="offer-card__description">
+            {{ item.descriptionKey | transloco }}
+          </p>
+
+          <a class="offer-card__action" [routerLink]="[
+                '/',
+                transloco.getActiveLang(),
+                'project-inquiry'
+              ]" [attr.aria-label]="
+                ('home.offer.inquire' | transloco) +
+                ': ' +
+                (item.titleKey | transloco)
+              ">
+            {{ 'home.offer.inquire' | transloco }}
             <span aria-hidden="true">→</span>
-          </span>
-        </a>
+          </a>
+        </article>
       </li>
       }
     </ul>
-  </div>
-</section>
-
-<section class="featured">
-  <div class="container">
-    <div class="featured__header">
-      <p class="featured__eyebrow">
-        {{ 'home.featured.eyebrow' | transloco }}
-      </p>
-
-      <div class="featured__title-row">
-        <h2 class="heading-2">
-          {{ 'home.featured.title' | transloco }}
-        </h2>
-
-        <a class="featured__view-all" [routerLink]="['/', transloco.getActiveLang(), 'products']">
-          {{ 'home.featured.viewAll' | transloco }}
-          <span aria-hidden="true">→</span>
-        </a>
-      </div>
-    </div>
-    <div class="featured__products">
-  <a
-    class="featured__product-link"
-    [routerLink]="['/', transloco.getActiveLang(), 'products', 'forest-dragon']"
-    [attr.aria-label]="'demoProducts.forestDragon.name' | transloco"
-  >
-    <app-product-card
-      [productName]="'demoProducts.forestDragon.name' | transloco"
-      [typeLabel]="'demoProducts.forestDragon.type' | transloco"
-      description="DST • PES • JEF"
-      [priceInGrosz]="2900"
-      [locale]="transloco.getActiveLang()"
-    ></app-product-card>
-  </a>
-
-  <a
-    class="featured__product-link"
-    [routerLink]="['/', transloco.getActiveLang(), 'products', 'embroidered-shirt']"
-    [attr.aria-label]="'demoProducts.embroideredShirt.name' | transloco"
-  >
-    <app-product-card
-      [productName]="'demoProducts.embroideredShirt.name' | transloco"
-      [typeLabel]="'demoProducts.embroideredShirt.type' | transloco"
-      [description]="'demoProducts.embroideredShirt.description' | transloco"
-      [pricePrefix]="'demoProducts.embroideredShirt.pricePrefix' | transloco"
-      [priceInGrosz]="8900"
-      [locale]="transloco.getActiveLang()"
-    ></app-product-card>
-  </a>
-</div>
   </div>
 </section>
 
@@ -133,6 +100,57 @@
       </li>
       }
     </ol>
+  </div>
+</section>
+
+<section class="featured" aria-labelledby="featured-title">
+  <div class="container">
+    <div class="featured__header">
+      <p class="featured__eyebrow">
+        {{ 'home.featured.eyebrow' | transloco }}
+      </p>
+
+      <div class="featured__title-row">
+        <h2 id="featured-title" class="heading-2">
+          {{ 'home.featured.title' | transloco }}
+        </h2>
+
+        <a class="featured__view-all" [routerLink]="['/', language(), 'products']">
+          {{ 'home.featured.viewAll' | transloco }}
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+
+    @if (catalog.state().status === 'loading') {
+    <output>{{ 'products.loading' | transloco }}</output>
+    } @else if (catalog.state().status === 'error') {
+    <p role="alert">{{ 'products.loadError' | transloco }}</p>
+
+    <button class="button button--secondary" type="button" (click)="catalog.reload()">
+      {{ 'products.retry' | transloco }}
+    </button>
+    } @else {
+    <div class="featured__products">
+      @for (product of featuredProducts(); track product.id) {
+      <a class="featured__product-link" [routerLink]="['/', language(), 'products', product.slug]"
+        [attr.aria-label]="product.name[language()]">
+        <app-product-card [productName]="product.name[language()]" [description]="product.description[language()]"
+          [typeLabel]="
+                (product.category === 'embroidery-patterns'
+                  ? 'products.digitalType'
+                  : 'products.physicalType') | transloco
+              " [priceInGrosz]="product.priceInGrosz" [pricePrefix]="
+                product.priceType === 'from'
+                  ? ('products.priceFrom' | transloco)
+                  : ''
+              " [locale]="language()"></app-product-card>
+      </a>
+      } @empty {
+      <p>{{ 'home.featured.empty' | transloco }}</p>
+      }
+    </div>
+    }
   </div>
 </section>
 

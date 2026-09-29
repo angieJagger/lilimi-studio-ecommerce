@@ -2,6 +2,7 @@ import { provideRouter } from '@angular/router';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Home } from './home';
+import { provideProductCatalogTesting } from '../../testing/product-catalog-testing';
 
 describe('Home', () => {
   let component: Home;
@@ -10,7 +11,7 @@ describe('Home', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Home, getTranslocoTestingModule()],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideProductCatalogTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Home);

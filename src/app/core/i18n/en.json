@@ -9,7 +9,11 @@
     "account": "Account",
     "menu": "Menu",
     "closeMenu": "Close menu",
-    "mainNavigation": "Main navigation"
+    "mainNavigation": "Main navigation",
+    "services": "Services",
+    "shop": "Shop",
+    "about": "About Lilimi",
+    "contact": "Contact"
   },
 
   "language": {
@@ -169,48 +173,56 @@
 
   "home": {
     "hero": {
-      "eyebrow": "Embroidery • Digital files • Websites",
-      "title": "Creative projects for you and your brand",
-      "description": "Embroidery patterns, personalised products and simple websites — ready-made or created to order",
-      "mediaPlaceholder": "Project image placeholder",
-      "viewOffer": "Explore the offer",
-      "requestProject": "Request a project"
-
+      "eyebrow": "Graphic design • UX/UI • Development",
+      "title": "Graphic design, websites and apps for your brand",
+      "description": "I combine graphic design with development to create visual identities, graphic materials, websites and web applications tailored to your needs.",
+      "mediaPlaceholder": "Space for a featured Lilimi project",
+      "viewOffer": "Explore services",
+      "requestProject": "Let's discuss your project"
     },
 
     "offer": {
-      "title": "Find something for you",
-      "view": "Explore"
+      "title": "How can I help?",
+      "inquire": "Discuss your project",
+      "graphic": {
+        "title": "Graphic design and UX/UI",
+        "description": "Website and interface design, visual identities, and materials for print and digital use. I also digitize artwork for machine embroidery."
+      },
+      "web": {
+        "title": "Websites and web applications",
+        "description": "Responsive websites and applications tailored to your needs. I help turn your idea and interface design into a working solution."
+      }
     },
 
     "customOrder": {
-      "eyebrow": "HAVE AN IDEA?",
-      "title": "Let's create something together",
-      "description": "Tell me what you need and I'll prepare a proposal tailored to your project.",
-      "cta": "Start a project"
+      "eyebrow": "LET'S DISCUSS YOUR PROJECT",
+      "title": "What does your brand need?",
+      "description": "Graphic design, a website or an application? Tell me about your idea and where you are now. Together, we can work out how I can help.",
+      "cta": "Discuss working together"
     },
 
     "featured": {
-      "eyebrow": "Featured products",
-      "title": "Curated for you",
-      "viewAll": "View all"
+      "eyebrow": "LILIMI SHOP",
+      "title": "Embroidery patterns and embroidered products",
+      "viewAll": "Visit the shop",
+      "empty": "There are no featured products available right now. Browse the full shop catalogue."
     },
 
     "process": {
-      "eyebrow": "STEP BY STEP",
-      "title": "How does it work?",
+      "eyebrow": "FROM IDEA TO DELIVERY",
+      "title": "How does working together look?",
       "steps": {
         "choose": {
-          "title": "Choose an offer",
-          "description": "Find a ready-made product or a service that fits your idea."
+          "title": "Tell me what you need",
+          "description": "Describe what you want to create, who it is for and what it should achieve. You do not need a complete brief — I can help define the scope."
         },
         "describe": {
-          "title": "Tell me about your idea",
-          "description": "Describe your needs, share your inspiration and let's agree on the details."
+          "title": "We agree on scope and price",
+          "description": "We agree on the materials, timeline, deliverables and revision rounds. Work starts once you approve these details."
         },
         "receive": {
-          "title": "Approve and receive",
-          "description": "Approve the design and receive the finished result."
+          "title": "I create and deliver your project",
+          "description": "I develop the project and discuss progress with you. After the agreed revisions, I deliver the finished materials or launch your website or application."
         }
       }
     }

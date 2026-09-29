@@ -63,7 +63,7 @@
 
 .offer__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--spacing-12);
   margin: var(--spacing-24) 0 0;
   padding: 0;
@@ -102,6 +102,9 @@
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.428571;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .offer-card:hover .offer-card__action {
@@ -109,9 +112,14 @@
   text-underline-offset: 4px;
 }
 
-.offer-card:focus-visible {
+.offer-card__action:focus-visible {
   outline: 2px solid var(--border-brand);
   outline-offset: 4px;
+}
+
+.offer-card__description {
+  margin: 0;
+  line-height: 1.6;
 }
 
 .custom-order {
@@ -211,7 +219,7 @@
   }
 
   .offer__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--spacing-16);
     margin-top: var(--spacing-40);
   }
