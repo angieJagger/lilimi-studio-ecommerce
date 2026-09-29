@@ -18,7 +18,7 @@
     <label class="configurator__field">
       <span>{{ 'configurator.fit' | transloco }}</span>
 
-      <select #fitSelect [value]="selectedFit()" (change)="changeFit(fitSelect.value)">
+      <select [ngModel]="selectedFit()" (ngModelChange)="changeFit($event)" [ngModelOptions]="{ standalone: true }">
         @for (fit of fits(); track fit) {
         <option [value]="fit">
           {{ ('configurator.fits.' + fit) | transloco }}
@@ -30,7 +30,7 @@
     <label class="configurator__field">
       <span>{{ 'configurator.size' | transloco }}</span>
 
-      <select #sizeSelect required [value]="selectedSize()" (change)="changeSize(sizeSelect.value)">
+      <select required [ngModel]="selectedSize()" (ngModelChange)="changeSize($event)" [ngModelOptions]="{ standalone: true }">
         <option value="" disabled>
           {{ 'configurator.selectSize' | transloco }}
         </option>
@@ -44,7 +44,7 @@
     <label class="configurator__field">
       <span>{{ 'configurator.color' | transloco }}</span>
 
-      <select #colorSelect [value]="selectedColor()" (change)="changeColor(colorSelect.value)">
+      <select [ngModel]="selectedColor()" (ngModelChange)="changeColor($event)" [ngModelOptions]="{ standalone: true }">
         @for (color of colors(); track color) {
         <option [value]="color">
           {{ ('configurator.colors.' + color) | transloco }}
@@ -56,7 +56,7 @@
     <label class="configurator__field">
       <span>{{ 'configurator.embroidery' | transloco }}</span>
 
-      <select #embroiderySelect [value]="selectedEmbroidery()" (change)="changeEmbroidery(embroiderySelect.value)">
+      <select [ngModel]="selectedEmbroidery()" (ngModelChange)="changeEmbroidery($event)" [ngModelOptions]="{ standalone: true }">
         @for (option of embroideryOptions(); track option.id) {
         <option [value]="option.id">
           {{ option.widthMm / 10 }} × {{ option.heightMm / 10 }} cm —
