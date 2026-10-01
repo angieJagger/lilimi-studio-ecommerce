@@ -6,9 +6,9 @@ I am building Lilimi for my own planned studio. The project brings together two 
 
 Angular 22 · Java 21 · Spring Boot 4 · PostgreSQL 17
 
-[What works](#what-works-today) · [Engineering decisions](#engineering-decisions) · [Code tour](#code-tour) · [Run locally](#run-locally)
+[Live demo](https://lilimistudio.com) · [What works](#what-works-today) · [Engineering decisions](#engineering-decisions) · [Code tour](#code-tour) · [Run locally](#run-locally)
 
-> **In development.** The catalogue, product details, clothing variants and cart use the backend API. Checkout currently validates customer details and displays an order review; it does not submit orders or take payments. A public demo is planned but is not deployed yet.
+> **In development.** The catalogue, product details, clothing variants and cart use the backend API. Checkout currently validates customer details and displays an order review; it does not submit orders or take payments. The public demo is available at [lilimistudio.com](https://lilimistudio.com).
 
 ![Lilimi homepage with graphic design and web development services](docs/screenshots/home-desktop.png)
 
