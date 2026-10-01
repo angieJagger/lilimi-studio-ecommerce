@@ -1,0 +1,77 @@
+name: lilimi-demo
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: lilimi
+      POSTGRES_USER: lilimi
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - demo_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lilimi -d lilimi"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+    mem_limit: 384m
+
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lilimi
+      SPRING_DATASOURCE_USERNAME: lilimi
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=65
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    restart: unless-stopped
+    mem_limit: 768m
+
+  frontend:
+    build: .
+    environment:
+      BACKEND_API_URL: http://backend:8080/api
+      NG_ALLOWED_HOSTS: ${APP_HOSTS:-localhost,127.0.0.1}
+      NODE_OPTIONS: --max-old-space-size=256
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/pl/products').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+    mem_limit: 384m
+
+  gateway:
+    image: caddy:2-alpine
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-8088}:80"
+      - "${HTTP_BIND:-127.0.0.1}:${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 128m
+
+volumes:
+  demo_postgres:
+  caddy_data:
+  caddy_config:

@@ -37,7 +37,7 @@ The main demonstration flow is **catalogue → product → configuration → car
 
 ![Sweatshirt configurator showing an available fit, size, colour and embroidery option](docs/screenshots/configurator-desktop.png)
 
-**Configuration:** available combinations come from the API. A size must be selected before the item can be added; changing earlier options resets that selection.
+**Configuration:** available combinations come from the API. A size must be selected before the item can be added; valid selections are preserved when other options change.
 
 ![Cart with a digital pattern and two embroidered sweatshirts](docs/screenshots/cart-desktop.png)
 
@@ -201,3 +201,10 @@ Examples of behaviour covered by tests include changing product routes, retrying
 - Integrate payments, transactional emails and controlled delivery of purchased digital files.
 
 The current code also retains some embroidery-specific assumptions, including local option metadata used in cart descriptions. These will be revisited as the catalogue and ordering workflow expand.
+
+
+## Run the whole application with Docker
+
+The root Compose stack runs Angular SSR, Spring Boot, PostgreSQL and a Caddy gateway.
+See [Docker setup and demo deployment](deploy/README.md) for configuration, startup and AWS preparation.
+The database-only development stack remains available in backend/compose.yaml.

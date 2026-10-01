@@ -1,0 +1,12 @@
+node_modules
+dist
+.angular
+.git
+.vscode
+backend
+docs
+tmp
+coverage
+.env
+.env.*
+*.log

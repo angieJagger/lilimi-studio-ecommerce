@@ -21,11 +21,17 @@
   <a class="site-header__cart" [routerLink]="['/', transloco.getActiveLang(), 'cart']" [attr.aria-label]="
       'nav.cartWithCount' | transloco: { count: cart.itemCount() }
     ">
-    {{ 'nav.cart' | transloco }}
-    <span aria-hidden="true">({{ cart.itemCount() }})</span>
+    <svg class="site-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6H18a2 2 0 0 0 2-1.6L21 7H6" />
+      <circle cx="10" cy="20" r="1" />
+      <circle cx="18" cy="20" r="1" />
+    </svg>
+    <span class="site-header__cart-count" aria-hidden="true">{{ cart.itemCount() > 99 ? '99+' : cart.itemCount() }}</span>
   </a>
-  <button class="site-header__menu-button" type="button" aria-haspopup="dialog" (click)="mobileMenu.open()">
-    {{ 'nav.menu' | transloco }}
+  <button class="site-header__menu-button" type="button" [attr.aria-label]="'nav.menu' | transloco" aria-haspopup="dialog" (click)="mobileMenu.open()">
+    <svg class="site-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
   </button>
   </div>
   </div>
