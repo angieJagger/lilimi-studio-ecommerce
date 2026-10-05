@@ -94,4 +94,32 @@ public interface ProductRepository extends JpaRepository<Product, String> {
   List<ProductFileFormatView> findFileFormats(
     @Param("productIds") Collection<String> productIds
   );
+
+  Optional<Product> findByIdAndActiveTrue(String id);
+
+  @Query(value = """
+    SELECT v.price_in_grosz
+    FROM garment_variants v
+    JOIN products p ON p.id = v.product_id
+    JOIN products pattern ON pattern.id = v.pattern_id
+    WHERE p.id = :productId
+      AND p.active = TRUE
+      AND p.product_type = 'sweatshirt'
+      AND pattern.id = :patternId
+      AND pattern.active = TRUE
+      AND pattern.product_type = 'digital'
+      AND v.active = TRUE
+      AND v.fit = :fit
+      AND v.size = :size
+      AND v.color = :color
+      AND v.embroidery_option_id = :embroideryOptionId
+    """, nativeQuery = true)
+  Optional<Integer> findActiveSweatshirtPrice(
+    @Param("productId") String productId,
+    @Param("patternId") String patternId,
+    @Param("fit") String fit,
+    @Param("size") String size,
+    @Param("color") String color,
+    @Param("embroideryOptionId") String embroideryOptionId
+  );
 }

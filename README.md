@@ -202,7 +202,6 @@ Examples of behaviour covered by tests include changing product routes, retrying
 
 The current code also retains some embroidery-specific assumptions, including local option metadata used in cart descriptions. These will be revisited as the catalogue and ordering workflow expand.
 
-
 ## Run the whole application with Docker
 
 The root Compose stack runs Angular SSR, Spring Boot, PostgreSQL and a Caddy gateway.

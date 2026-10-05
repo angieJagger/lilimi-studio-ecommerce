@@ -83,6 +83,16 @@
     display: grid;
     gap: var(--spacing-16);
   }
+
+  .button {
+    width: 100%;
+  }
+
+  > a {
+    display: block;
+    width: fit-content;
+    margin-top: 1rem;
+  }
 }
 
 .checkout__total {
