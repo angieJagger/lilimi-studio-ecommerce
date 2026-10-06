@@ -49,3 +49,13 @@ export interface CreateOrderRequest {
   readonly delivery: OrderDelivery;
   readonly items: readonly OrderItem[];
 }
+
+export interface CreateOrderResponse {
+  readonly id: string;
+  readonly createdAt: string;
+  readonly status: 'new';
+  readonly currency: 'PLN';
+  readonly subtotalInGrosz: number;
+  readonly deliveryPriceInGrosz: number;
+  readonly totalInGrosz: number;
+}

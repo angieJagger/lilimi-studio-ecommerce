@@ -80,6 +80,21 @@
       "email": "Adres e-mail",
       "phone": "Telefon (opcjonalnie)"
     },
+    "order": {
+      "submit": "Złóż zamówienie testowe",
+      "submitting": "Zapisywanie zamówienia…",
+      "demoNotice": "Wersja demonstracyjna — zamówienie testowe, bez płatności i realizacji.",
+      "successTitle": "Zamówienie testowe zapisane",
+      "successDescription": "Zamówienie zostało zapisane w wersji demonstracyjnej. Nie wymaga płatności i nie będzie realizowane.",
+      "reference": "Numer zamówienia"
+    },
+    "orderErrors": {
+      "generic": "Nie udało się potwierdzić zamówienia.",
+      "connection": "Nie udało się odebrać potwierdzenia. Zamówienie mogło zostać zapisane.",
+      "unavailable": "Produkt lub wybrany wariant jest już niedostępny. Wróć do koszyka i sprawdź jego zawartość.",
+      "delivery": "Dostawa nie pasuje do zamówienia. Wróć do edycji danych.",
+      "validation": "Sprawdź dane zamówienia — niektóre pola są nieprawidłowe."
+    },
     "errors": {
       "nameRequired": "Podaj imię i nazwisko.",
       "emailRequired": "Podaj adres e-mail.",

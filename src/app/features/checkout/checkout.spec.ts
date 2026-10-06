@@ -1,18 +1,33 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 
-import { Checkout } from './checkout';
+import { getTranslocoTestingModule } from '../../testing/transloco-testing';
+import { provideProductCatalogTesting } from '../../testing/product-catalog-testing';
+import { provideSweatshirtVariantsTesting } from '../../testing/sweatshirt-variants-testing';
 import { CartService } from '../cart/cart.service';
 import { EmbroideryPattern } from '../products/product.model';
-import { getTranslocoTestingModule } from '../../testing/transloco-testing';
-import { provideSweatshirtVariantsTesting } from '../../testing/sweatshirt-variants-testing';
-import { provideProductCatalogTesting } from '../../testing/product-catalog-testing';
+import { Checkout } from './checkout';
+import { OrderApiService } from './order-api.service';
+import { OrderSubmissionKeyService } from './order-submission-key.service';
+import type { CreateOrderResponse } from './order.model';
 
 describe('Checkout', () => {
   let fixture: ComponentFixture<Checkout>;
   let cart: CartService;
   let element: HTMLElement;
+  let orderResult: Subject<CreateOrderResponse>;
+
+  const orderApiMock = {
+    createOrder: vi.fn(),
+  };
+
+  const submissionKeysMock = {
+    getKey: vi.fn(),
+    markCompleted: vi.fn(),
+  };
 
   const pattern: EmbroideryPattern = {
     id: 'test-pattern',
@@ -37,12 +52,24 @@ describe('Checkout', () => {
       setItem: vi.fn(),
     });
 
+    orderResult = new Subject<CreateOrderResponse>();
+    orderApiMock.createOrder.mockReset();
+    orderApiMock.createOrder.mockReturnValue(orderResult.asObservable());
+    submissionKeysMock.getKey.mockReset();
+    submissionKeysMock.getKey.mockResolvedValue('7c82dd0f-9289-4a9e-bf58-05b415d6da48');
+    submissionKeysMock.markCompleted.mockReset();
+
     await TestBed.configureTestingModule({
       imports: [Checkout, getTranslocoTestingModule()],
       providers: [
         provideRouter([]),
         provideSweatshirtVariantsTesting(),
         provideProductCatalogTesting(),
+        { provide: OrderApiService, useValue: orderApiMock },
+        {
+          provide: OrderSubmissionKeyService,
+          useValue: submissionKeysMock,
+        },
       ],
     }).compileComponents();
 
@@ -89,6 +116,21 @@ describe('Checkout', () => {
     element
       .querySelector<HTMLButtonElement>('button[type="submit"][form="checkout-form"]')!
       .click();
+
+    await fixture.whenStable();
+  }
+
+  async function reviewDigitalOrder(): Promise<void> {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+
+    await fillField('fullName', 'Anna Kowalska');
+    await fillField('email', 'anna@example.com');
+    await continueToReview();
+  }
+
+  async function submitReviewedOrder(): Promise<void> {
+    element.querySelector<HTMLButtonElement>('button[aria-busy]')!.click();
 
     await fixture.whenStable();
   }
@@ -326,5 +368,194 @@ describe('Checkout', () => {
         },
       ],
     });
+  });
+
+  it('should prevent duplicate submission while sending', async () => {
+    await reviewDigitalOrder();
+
+    const button = element.querySelector<HTMLButtonElement>('button[aria-busy]')!;
+
+    button.click();
+    button.click();
+
+    await fixture.whenStable();
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(1);
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-busy')).toBe('true');
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledWith(
+      {
+        language: 'pl',
+        contact: {
+          fullName: 'Anna Kowalska',
+          email: 'anna@example.com',
+        },
+        delivery: {
+          kind: 'digital',
+        },
+        items: [
+          {
+            kind: 'digital',
+            productId: pattern.id,
+            quantity: 1,
+          },
+        ],
+      },
+      expect.any(String),
+    );
+  });
+
+  it('should show server confirmation and clear the cart', async () => {
+    await reviewDigitalOrder();
+
+    await submitReviewedOrder();
+
+    orderResult.next({
+      id: '7c82dd0f-9289-4a9e-bf58-05b415d6da48',
+      createdAt: '2026-10-05T12:00:00Z',
+      status: 'new',
+      currency: 'PLN',
+      subtotalInGrosz: 3100,
+      deliveryPriceInGrosz: 0,
+      totalInGrosz: 3100,
+    });
+    orderResult.complete();
+
+    await fixture.whenStable();
+
+    expect(cart.itemCount()).toBe(0);
+    expect(element.querySelector('#checkout-success-title')).not.toBeNull();
+    expect(element.textContent).toContain('7c82dd0f-9289-4a9e-bf58-05b415d6da48');
+    expect(element.textContent).not.toContain('Twój koszyk jest pusty');
+
+    expect(element.querySelector('.checkout__total--final dd')?.textContent).toContain('31,00');
+
+    expect(element.querySelector('button[aria-busy]')).toBeNull();
+
+    expect(submissionKeysMock.markCompleted).toHaveBeenCalledWith(
+      '7c82dd0f-9289-4a9e-bf58-05b415d6da48',
+    );
+  });
+
+  it('should preserve the cart and show an unavailable product error', async () => {
+    await reviewDigitalOrder();
+
+    await submitReviewedOrder();
+
+    orderResult.error(
+      new HttpErrorResponse({
+        status: 409,
+        statusText: 'Conflict',
+        error: {
+          code: 'ORDER_PRODUCT_UNAVAILABLE',
+          productId: pattern.id,
+        },
+      }),
+    );
+
+    await fixture.whenStable();
+
+    expect(cart.itemCount()).toBe(1);
+    expect(element.querySelector('#checkout-success-title')).toBeNull();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('niedostępny');
+
+    expect(element.querySelector<HTMLButtonElement>('button[aria-busy]')?.disabled).toBe(false);
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(1);
+  });
+
+  it('should reuse the same key after a connection error', async () => {
+    await reviewDigitalOrder();
+
+    const retryResult = new Subject<CreateOrderResponse>();
+
+    orderApiMock.createOrder
+      .mockReturnValueOnce(orderResult.asObservable())
+      .mockReturnValueOnce(retryResult.asObservable());
+
+    await submitReviewedOrder();
+
+    const firstKey = orderApiMock.createOrder.mock.calls[0][1];
+
+    orderResult.error(
+      new HttpErrorResponse({
+        status: 0,
+        statusText: 'Unknown Error',
+      }),
+    );
+
+    await fixture.whenStable();
+
+    expect(cart.itemCount()).toBe(1);
+
+    await submitReviewedOrder();
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(2);
+    expect(orderApiMock.createOrder.mock.calls[1][1]).toBe(firstKey);
+    expect(orderApiMock.createOrder.mock.calls[1][0]).toEqual(
+      orderApiMock.createOrder.mock.calls[0][0],
+    );
+
+    retryResult.next({
+      id: '7c82dd0f-9289-4a9e-bf58-05b415d6da48',
+      createdAt: '2026-10-06T12:00:00Z',
+      status: 'new',
+      currency: 'PLN',
+      subtotalInGrosz: 2900,
+      deliveryPriceInGrosz: 0,
+      totalInGrosz: 2900,
+    });
+    retryResult.complete();
+
+    await fixture.whenStable();
+
+    expect(cart.itemCount()).toBe(0);
+    expect(element.querySelector('#checkout-success-title')).not.toBeNull();
+  });
+
+  it('should create a new key when rejected order details change', async () => {
+    await reviewDigitalOrder();
+
+    submissionKeysMock.getKey
+      .mockResolvedValueOnce('7c82dd0f-9289-4a9e-bf58-05b415d6da48')
+      .mockResolvedValueOnce('43c5fc12-5ed2-49d0-bbaa-dc237a908c93');
+
+    const retryResult = new Subject<CreateOrderResponse>();
+
+    orderApiMock.createOrder
+      .mockReturnValueOnce(orderResult.asObservable())
+      .mockReturnValueOnce(retryResult.asObservable());
+
+    await submitReviewedOrder();
+
+    const firstKey = orderApiMock.createOrder.mock.calls[0][1];
+
+    orderResult.error(
+      new HttpErrorResponse({
+        status: 400,
+        error: {
+          code: 'ORDER_VALIDATION_FAILED',
+        },
+      }),
+    );
+
+    await fixture.whenStable();
+
+    element.querySelector<HTMLButtonElement>('.checkout__review button')!.click();
+
+    await fixture.whenStable();
+
+    await fillField('email', 'new@example.com');
+    await continueToReview();
+
+    await submitReviewedOrder();
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(2);
+    expect(orderApiMock.createOrder.mock.calls[1][1]).not.toBe(firstKey);
+    expect(orderApiMock.createOrder.mock.calls[1][0].contact.email).toBe('new@example.com');
+
+    retryResult.complete();
+    await fixture.whenStable();
   });
 });

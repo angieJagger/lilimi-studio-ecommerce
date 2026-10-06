@@ -1,11 +1,20 @@
-import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, linkedSignal, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { email, form, FormField, required, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CartService } from '../cart/cart.service';
 import { deliveryMethods, DeliveryMethodId } from './delivery.model';
-import type { CreateOrderRequest, OrderDelivery, OrderItem } from './order.model';
+import type {
+  CreateOrderRequest,
+  CreateOrderResponse,
+  OrderDelivery,
+  OrderItem,
+} from './order.model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { OrderApiService } from './order-api.service';
+import { OrderSubmissionKeyService } from './order-submission-key.service';
 
 @Component({
   selector: 'app-checkout',
@@ -15,6 +24,14 @@ import type { CreateOrderRequest, OrderDelivery, OrderItem } from './order.model
 })
 export class Checkout {
   protected readonly cart = inject(CartService);
+
+  private readonly orderApi = inject(OrderApiService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  protected readonly isSubmitting = signal(false);
+  private readonly submissionKeys = inject(OrderSubmissionKeyService);
+  protected readonly createdOrder = signal<CreateOrderResponse | null>(null);
+  protected readonly orderErrorKey = signal<string | null>(null);
 
   protected readonly requiresShipping = computed(() => this.cart.sweatshirts().length > 0);
 
@@ -290,7 +307,82 @@ export class Checkout {
     this.checkoutStep.set('review');
   }
 
+  protected async submitOrder(): Promise<void> {
+    if (this.checkoutStep() !== 'review' || this.isSubmitting() || this.createdOrder() !== null) {
+      return;
+    }
+
+    const request = this.orderRequest();
+
+    if (request === null) {
+      return;
+    }
+
+    this.orderErrorKey.set(null);
+    this.isSubmitting.set(true);
+
+    try {
+      const idempotencyKey = await this.submissionKeys.getKey(request);
+
+      if (this.destroyRef.destroyed) {
+        return;
+      }
+
+      this.orderApi
+        .createOrder(request, idempotencyKey)
+        .pipe(
+          takeUntilDestroyed(this.destroyRef),
+          finalize(() => this.isSubmitting.set(false)),
+        )
+        .subscribe({
+          next: (order) => {
+            this.createdOrder.set(order);
+            this.submissionKeys.markCompleted(idempotencyKey);
+            this.cart.clear();
+          },
+          error: (error: unknown) => {
+            this.orderErrorKey.set(this.getOrderErrorKey(error));
+          },
+        });
+    } catch (error: unknown) {
+      if (!this.destroyRef.destroyed) {
+        this.isSubmitting.set(false);
+        this.orderErrorKey.set(this.getOrderErrorKey(error));
+      }
+    }
+  }
+
+  private getOrderErrorKey(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'checkout.orderErrors.generic';
+    }
+
+    if (error.status === 0) {
+      return 'checkout.orderErrors.connection';
+    }
+
+    switch (error.error?.code) {
+      case 'ORDER_PRODUCT_UNAVAILABLE':
+        return 'checkout.orderErrors.unavailable';
+
+      case 'ORDER_DELIVERY_INVALID':
+        return 'checkout.orderErrors.delivery';
+
+      case 'ORDER_VALIDATION_FAILED':
+      case 'ORDER_REQUEST_INVALID':
+        return 'checkout.orderErrors.validation';
+
+      default:
+        return 'checkout.orderErrors.generic';
+    }
+  }
+
   protected returnToDetails(): void {
+    if (this.isSubmitting() || this.createdOrder() !== null) {
+      return;
+    }
+
+    this.orderErrorKey.set(null);
     this.checkoutStep.set('details');
   }
 

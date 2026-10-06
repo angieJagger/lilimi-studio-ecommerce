@@ -80,6 +80,21 @@
       "email": "Email address",
       "phone": "Phone number (optional)"
     },
+    "order": {
+      "submit": "Place test order",
+      "submitting": "Saving order…",
+      "demoNotice": "Demo version — test order only, with no payment or fulfilment.",
+      "successTitle": "Test order saved",
+      "successDescription": "Your order has been saved in the demo. No payment is required and the order will not be fulfilled.",
+      "reference": "Order reference"
+    },
+    "orderErrors": {
+      "generic": "Could not confirm your order.",
+      "connection": "Could not receive confirmation. Your order may have been saved.",
+      "unavailable": "A product or selected variant is no longer available. Return to your cart and review its contents.",
+      "delivery": "The delivery method does not match your order. Return to editing your details.",
+      "validation": "Review your order details — some fields are invalid."
+    },
     "errors": {
       "nameRequired": "Enter your full name.",
       "emailRequired": "Enter your email address.",

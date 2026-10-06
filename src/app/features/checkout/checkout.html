@@ -4,7 +4,41 @@
       {{ 'checkout.title' | transloco }}
     </h1>
 
-    @if (!cart.isReady()) {
+    @if (createdOrder(); as order) {
+    <section aria-labelledby="checkout-success-title" role="status">
+      <h2 id="checkout-success-title">
+        {{ 'checkout.order.successTitle' | transloco }}
+      </h2>
+    
+      <p>{{ 'checkout.order.successDescription' | transloco }}</p>
+    
+      <p>
+        <strong>{{ 'checkout.order.reference' | transloco }}:</strong>
+        {{ order.id }}
+      </p>
+    
+      <dl>
+        <div class="checkout__total">
+          <dt>{{ 'cart.productsSubtotal' | transloco }}</dt>
+          <dd>{{ formatPrice(order.subtotalInGrosz) }}</dd>
+        </div>
+    
+        <div class="checkout__total">
+          <dt>{{ 'cart.delivery' | transloco }}</dt>
+          <dd>{{ formatPrice(order.deliveryPriceInGrosz) }}</dd>
+        </div>
+    
+        <div class="checkout__total checkout__total--final">
+          <dt>{{ 'checkout.total' | transloco }}</dt>
+          <dd>{{ formatPrice(order.totalInGrosz) }}</dd>
+        </div>
+      </dl>
+    
+      <a class="button button--primary" [routerLink]="['/', language(), 'products']">
+        {{ 'cart.browseProducts' | transloco }}
+      </a>
+    </section>
+    } @else if (!cart.isReady()) {
     <p>{{ 'checkout.loading' | transloco }}</p>
     } @else if (cart.itemCount() === 0) {
     <p>{{ 'cart.emptyTitle' | transloco }}</p>
@@ -170,7 +204,7 @@
         <p>{{ 'checkout.address.country' | transloco }}</p>
         }
       
-        <button class="button button--secondary" type="button" (click)="returnToDetails()">
+        <button class="button button--secondary" type="button"  [disabled]="isSubmitting()" (click)="returnToDetails()">
           {{ 'checkout.review.edit' | transloco }}
         </button>
       </section>
@@ -289,6 +323,23 @@
         @if (checkoutStep() === 'details') {
         <button class="button button--primary" type="submit" form="checkout-form">
           {{ 'checkout.review.continue' | transloco }}
+        </button>
+        }
+
+        @if (checkoutStep() === 'review') {
+        <p>{{ 'checkout.order.demoNotice' | transloco }}</p>
+        
+        @if (orderErrorKey(); as errorKey) {
+        <p role="alert">{{ errorKey | transloco }}</p>
+        }
+        
+        <button class="button button--primary" type="button" [disabled]="isSubmitting() || !canContinue()"
+          [attr.aria-busy]="isSubmitting()" (click)="submitOrder()">
+          {{
+          (isSubmitting()
+          ? 'checkout.order.submitting'
+          : 'checkout.order.submit') | transloco
+          }}
         </button>
         }
 
