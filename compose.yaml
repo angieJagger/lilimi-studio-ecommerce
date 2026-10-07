@@ -24,6 +24,8 @@ services:
       SPRING_DATASOURCE_USERNAME: lilimi
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=65
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
     depends_on:
       postgres:
         condition: service_healthy
