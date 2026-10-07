@@ -1,4 +1,25 @@
 {
+  "auth": {
+    "title": "Logowanie administratora",
+    "description": "Zaloguj się, aby zarządzać sklepem.",
+    "email": "Adres e-mail",
+    "password": "Hasło",
+    "login": "Zaloguj się",
+    "logout": "Wyloguj się",
+    "loggingOut": "Wylogowywanie…",
+    "loggingIn": "Logowanie…",
+    "loginSuccess": "Zalogowano do konta administratora.",
+    "errors": {
+      "emailRequired": "Podaj adres e-mail.",
+      "emailInvalid": "Podaj poprawny adres e-mail.",
+      "passwordRequired": "Podaj hasło.",
+      "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło.",
+      "loginUnavailable": "Nie udało się zalogować. Spróbuj ponownie.",
+      "adminRequired": "To konto nie ma uprawnień administratora.",
+      "sessionUnavailable": "Nie udało się sprawdzić sesji. Spróbuj odświeżyć stronę.",
+      "logoutUnavailable": "Nie udało się wylogować. Spróbuj ponownie."
+    }
+  },
   "nav": {
     "patterns": "Wzory haftów",
     "embroideredProducts": "Produkty haftowane",

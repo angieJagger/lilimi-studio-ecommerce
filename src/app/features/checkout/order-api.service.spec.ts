@@ -62,6 +62,15 @@ describe('OrderApiService', () => {
       received = value;
     });
 
+    const csrfRequest = http.expectOne('/api/auth/csrf');
+
+    expect(csrfRequest.request.method).toBe('GET');
+    http.expectNone('/api/orders');
+
+    csrfRequest.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
     const pending = http.expectOne('/api/orders');
 
     expect(pending.request.method).toBe('POST');
@@ -90,6 +99,15 @@ describe('OrderApiService', () => {
       },
     });
 
+    const csrfRequest = http.expectOne('/api/auth/csrf');
+
+    expect(csrfRequest.request.method).toBe('GET');
+    http.expectNone('/api/orders');
+
+    csrfRequest.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
     const pending = http.expectOne('/api/orders');
 
     pending.flush(
@@ -106,6 +124,32 @@ describe('OrderApiService', () => {
 
     expect(receivedStatus).toBe(409);
     expect(receivedCode).toBe('ORDER_PRODUCT_UNAVAILABLE');
+  });
+
+  it('should not submit an order when CSRF initialization fails', () => {
+    let receivedStatus: number | undefined;
+
+    service.createOrder(request, idempotencyKey).subscribe({
+      next: () => {
+        throw new Error('Expected CSRF initialization to fail');
+      },
+      error: (error) => {
+        receivedStatus = error.status;
+      },
+    });
+
+    const csrfRequest = http.expectOne('/api/auth/csrf');
+
+    csrfRequest.flush(
+      {},
+      {
+        status: 503,
+        statusText: 'Service Unavailable',
+      },
+    );
+
+    expect(receivedStatus).toBe(503);
+    http.expectNone('/api/orders');
   });
 
   

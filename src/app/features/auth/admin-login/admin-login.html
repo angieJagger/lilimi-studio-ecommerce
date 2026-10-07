@@ -1,0 +1,73 @@
+<section class="login-card" aria-labelledby="login-title">
+  <h1 id="login-title">{{ 'auth.title' | transloco }}</h1>
+
+  @if (session.isAdmin()) {
+  <output class="login-message">
+    {{ 'auth.loginSuccess' | transloco }}
+  </output>
+
+  <button class="button button--secondary logout-button" type="button" [disabled]="isSubmitting()"
+    [attr.aria-busy]="isSubmitting()" (click)="logout()">
+    {{ (isSubmitting() ? 'auth.loggingOut' : 'auth.logout') | transloco }}
+  </button>
+
+  @if (errorKey(); as message) {
+  <p class="login-error" role="alert">
+    {{ message | transloco }}
+  </p>
+  }
+  } @else {
+  <p class="login-description">{{ 'auth.description' | transloco }}</p>
+
+  <form (submit)="submit($event)" novalidate>
+    <fieldset [disabled]="isSubmitting()">
+      <div class="login-field">
+        <label for="login-email">{{ 'auth.email' | transloco }}</label>
+
+        <input id="login-email" type="email" autocomplete="username" autocapitalize="none" spellcheck="false"
+          [formField]="loginForm.email" [attr.aria-invalid]="loginForm.email().touched() && loginForm.email().invalid()"
+          [attr.aria-describedby]="
+              loginForm.email().touched() && loginForm.email().invalid()
+                ? 'login-email-error'
+                : null
+            " />
+
+        @if (loginForm.email().touched() && loginForm.email().invalid()) {
+        <p id="login-email-error" class="login-error">
+          {{ loginForm.email().errors()[0]?.message | transloco }}
+        </p>
+        }
+      </div>
+
+      <div class="login-field">
+        <label for="login-password">{{ 'auth.password' | transloco }}</label>
+
+        <input id="login-password" type="password" autocomplete="current-password" 
+          [formField]="loginForm.password"
+          [attr.aria-invalid]="loginForm.password().touched() && loginForm.password().invalid()"
+          [attr.aria-describedby]="
+              loginForm.password().touched() && loginForm.password().invalid()
+                ? 'login-password-error'
+                : null
+            " />
+
+        @if (loginForm.password().touched() && loginForm.password().invalid()) {
+        <p id="login-password-error" class="login-error">
+          {{ 'auth.errors.passwordRequired' | transloco }}
+        </p>
+        }
+      </div>
+
+      <button class="button button--primary" type="submit" [attr.aria-busy]="isSubmitting()">
+        {{ (isSubmitting() ? 'auth.loggingIn' : 'auth.login') | transloco }}
+      </button>
+    </fieldset>
+
+    @if (errorKey(); as message) {
+    <p class="login-error" role="alert">
+      {{ message | transloco }}
+    </p>
+    }
+  </form>
+  }
+</section>

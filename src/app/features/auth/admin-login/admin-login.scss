@@ -1,0 +1,90 @@
+:host {
+  display: block;
+  padding: var(--spacing-48) var(--spacing-16);
+}
+
+.login-card {
+  max-width: 440px;
+  margin-inline: auto;
+  padding: clamp(24px, 5vw, 40px);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-12);
+  background: var(--surface-default);
+}
+
+h1 {
+  margin: 0 0 var(--spacing-16);
+}
+
+.login-description {
+  margin: 0 0 var(--spacing-24);
+  color: var(--text-secondary);
+}
+
+fieldset {
+  display: grid;
+  gap: var(--spacing-24);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.login-field {
+  display: grid;
+  gap: var(--spacing-8);
+}
+
+label {
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--spacing-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-8);
+  background: var(--surface-default);
+  color: var(--text-primary);
+}
+
+input:focus-visible {
+  outline: 2px solid var(--border-brand);
+  outline-offset: 2px;
+}
+
+input[aria-invalid='true'] {
+  border-color: #a12b28;
+}
+
+.login-error {
+  margin: var(--spacing-8) 0 0;
+  color: #a12b28;
+  font-size: 0.875rem;
+}
+
+.login-message {
+  display: block;
+  padding: var(--spacing-16);
+  border-radius: var(--radius-8);
+  background: var(--surface-brand-soft);
+}
+
+fieldset:disabled {
+  opacity: 0.65;
+}
+
+fieldset:disabled button {
+  cursor: wait;
+}
+
+.logout-button {
+  width: 100%;
+  margin-top: var(--spacing-24);
+}
+
+.logout-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}

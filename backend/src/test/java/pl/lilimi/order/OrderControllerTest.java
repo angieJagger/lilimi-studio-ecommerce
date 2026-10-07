@@ -13,6 +13,7 @@ import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 import tools.jackson.databind.json.JsonMapper;
 
+
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,6 +21,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 
 @SpringBootTest
@@ -40,6 +42,7 @@ class OrderControllerTest {
   @Test
   void shouldCreateDigitalOrder() throws Exception {
     var result = mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content(request(
@@ -79,6 +82,7 @@ class OrderControllerTest {
     long ordersBefore = orderRepository.count();
 
     mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content(request(
@@ -99,6 +103,7 @@ class OrderControllerTest {
   @Test
   void shouldReturnValidationErrorForInvalidEmail() throws Exception {
     mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content(request(
@@ -118,6 +123,7 @@ class OrderControllerTest {
   @Test
   void shouldRejectCourierForDigitalOnlyOrder() throws Exception {
     mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content(request(
@@ -144,6 +150,7 @@ class OrderControllerTest {
   @Test
   void shouldRejectUnknownDeliveryKind() throws Exception {
     mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content(request(
@@ -166,6 +173,7 @@ class OrderControllerTest {
     long itemsBefore = orderItemRepository.count();
 
     mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", key)
         .contentType(MediaType.APPLICATION_JSON)
         .content(request(
@@ -178,6 +186,7 @@ class OrderControllerTest {
       .andExpect(status().isCreated());
 
     mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", key)
         .contentType(MediaType.APPLICATION_JSON)
         .content(request(
@@ -261,6 +270,7 @@ class OrderControllerTest {
         """;
 
     var result = mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content(body))
@@ -315,6 +325,7 @@ class OrderControllerTest {
     long itemsBefore = orderItemRepository.count();
 
     var first = mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", key)
         .contentType(MediaType.APPLICATION_JSON)
         .content(body))
@@ -322,6 +333,7 @@ class OrderControllerTest {
       .andReturn();
 
     var second = mockMvc.perform(post("/api/orders")
+        .with(csrf())
         .header("Idempotency-Key", key)
         .contentType(MediaType.APPLICATION_JSON)
         .content(body))

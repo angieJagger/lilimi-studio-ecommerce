@@ -1,4 +1,25 @@
 {
+  "auth": {
+    "title": "Administrator login",
+    "description": "Sign in to manage the store.",
+    "email": "Email address",
+    "password": "Password",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "loggingOut": "Signing out…",
+    "loggingIn": "Signing in…",
+    "loginSuccess": "Signed in to the administrator account.",
+    "errors": {
+      "emailRequired": "Enter your email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordRequired": "Enter your password.",
+      "invalidCredentials": "Incorrect email address or password.",
+      "loginUnavailable": "Unable to sign in. Please try again.",
+      "adminRequired": "This account does not have administrator access.",
+      "sessionUnavailable": "Unable to check your session. Please refresh the page.",
+      "logoutUnavailable": "Unable to sign out. Please try again."
+    }
+  },
   "nav": {
     "patterns": "Embroidery patterns",
     "embroideredProducts": "Embroidered products",

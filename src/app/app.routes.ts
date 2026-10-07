@@ -50,6 +50,11 @@ const shopRoutes: Routes = [
     path: 'cart',
     loadComponent: () => import('./features/cart/cart').then((m) => m.Cart),
   },
+  {
+    path: 'admin/login',
+    loadComponent: () =>
+      import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),
+  },
 
   {
     path: 'checkout',
