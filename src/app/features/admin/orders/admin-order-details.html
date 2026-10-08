@@ -1,0 +1,162 @@
+<section class="order-page" aria-labelledby="order-title">
+  <a class="back-link" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']">
+    {{ 'adminOrderDetails.back' | transloco }}
+  </a>
+
+  <h1 id="order-title">{{ 'adminOrderDetails.title' | transloco }}</h1>
+
+  @if (isLoading()) {
+  <output>{{ 'adminOrderDetails.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+  <p role="alert">{{ message | transloco }}</p>
+
+  @if (
+  message === 'adminOrders.errors.sessionExpired' ||
+  message === 'adminOrders.errors.accessDenied'
+  ) {
+  <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+    {{ 'adminOrders.login' | transloco }}
+  </a>
+  } @else if (message === 'adminOrderDetails.errors.loadFailed') {
+  <button class="button button--secondary" type="button" (click)="retry()">
+    {{ 'adminOrders.retry' | transloco }}
+  </button>
+  }
+  } @else if (order(); as details) {
+  <div class="order-card">
+    <dl class="order-fields">
+      <div>
+        <dt>{{ 'adminOrderDetails.reference' | transloco }}</dt>
+        <dd class="order-reference">{{ details.id }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'adminOrders.date' | transloco }}</dt>
+        <dd>
+          <time [attr.datetime]="details.createdAt">
+            {{ formatDate(details.createdAt) }}
+          </time>
+        </dd>
+      </div>
+      <div>
+        <dt>{{ 'adminOrders.status' | transloco }}</dt>
+        <dd>{{ ('adminOrders.statuses.' + details.status) | transloco }}</dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="order-columns">
+    <section class="order-card" aria-labelledby="customer-title">
+      <h2 id="customer-title">{{ 'adminOrders.customer' | transloco }}</h2>
+
+      <p>{{ details.contact.fullName }}</p>
+      <p>{{ details.contact.email }}</p>
+
+      @if (details.contact.phone) {
+      <p>{{ details.contact.phone }}</p>
+      }
+    </section>
+
+    <section class="order-card" aria-labelledby="delivery-title">
+      <h2 id="delivery-title">{{ 'adminOrderDetails.delivery' | transloco }}</h2>
+
+      @if (details.delivery.kind === 'digital') {
+      <p>{{ 'adminOrderDetails.digitalDelivery' | transloco }}</p>
+      } @else {
+      <p>
+        {{
+        ('adminOrderDetails.deliveryMethods.' + details.delivery.methodId)
+        | transloco
+        }}
+      </p>
+
+      <address>
+        {{ details.delivery.addressLine1 }}<br />
+
+        @if (details.delivery.addressLine2) {
+        {{ details.delivery.addressLine2 }}<br />
+        }
+
+        {{ details.delivery.postalCode }} {{ details.delivery.city }}<br />
+        {{ details.delivery.countryCode }}
+      </address>
+      }
+    </section>
+  </div>
+
+  <section class="order-card" aria-labelledby="items-title">
+    <h2 id="items-title">{{ 'adminOrderDetails.products' | transloco }}</h2>
+
+    <ul class="order-items">
+      @for (item of details.items; track $index) {
+      <li class="order-item">
+        <h3>{{ item.productName }}</h3>
+
+        @if (item.patternName) {
+        <p>{{ item.patternName }}</p>
+        }
+
+        <dl class="order-fields">
+          @if (item.kind === 'sweatshirt') {
+          <div>
+            <dt>{{ 'adminOrderDetails.fit' | transloco }}</dt>
+            <dd>
+              {{ ('adminOrderDetails.fits.' + item.fit) | transloco }}
+            </dd>
+          </div>
+          <div>
+            <dt>{{ 'adminOrderDetails.size' | transloco }}</dt>
+            <dd>{{ item.size }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'adminOrderDetails.color' | transloco }}</dt>
+            <dd>{{ formatColor(item.color) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'adminOrderDetails.embroidery' | transloco }}</dt>
+            <dd>
+              {{
+              ('adminOrderDetails.embroideryOptions.' + item.embroideryOptionId)
+              | transloco
+              }}
+            </dd>
+          </div>
+          }
+
+          <div>
+            <dt>{{ 'adminOrderDetails.quantity' | transloco }}</dt>
+            <dd>{{ item.quantity }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'adminOrderDetails.unitPrice' | transloco }}</dt>
+            <dd>{{ formatPrice(item.unitPriceInGrosz) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'adminOrderDetails.lineTotal' | transloco }}</dt>
+            <dd>{{ formatPrice(item.lineTotalInGrosz) }}</dd>
+          </div>
+        </dl>
+      </li>
+      }
+    </ul>
+  </section>
+
+  <section class="order-card" aria-labelledby="summary-title">
+    <h2 id="summary-title">{{ 'adminOrderDetails.summary' | transloco }}</h2>
+
+    <dl class="order-fields">
+      <div>
+        <dt>{{ 'adminOrderDetails.subtotal' | transloco }}</dt>
+        <dd>{{ formatPrice(details.subtotalInGrosz) }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'adminOrderDetails.delivery' | transloco }}</dt>
+        <dd>{{ formatPrice(details.deliveryPriceInGrosz) }}</dd>
+      </div>
+      <div class="order-total">
+        <dt>{{ 'adminOrderDetails.total' | transloco }}</dt>
+        <dd>{{ formatPrice(details.totalInGrosz) }}</dd>
+      </div>
+    </dl>
+  </section>
+  }
+</section>

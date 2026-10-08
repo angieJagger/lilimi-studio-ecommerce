@@ -2,13 +2,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { email, form, FormField, required } from '@angular/forms/signals';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { AuthSessionService } from '../../../core/auth/auth-session.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-admin-login',
-  imports: [FormField, TranslocoPipe],
+  imports: [FormField, TranslocoPipe, RouterLink],
   templateUrl: './admin-login.html',
   styleUrl: './admin-login.scss',
 })
@@ -16,6 +17,8 @@ export class AdminLogin {
   protected readonly session = inject(AuthSessionService);
 
   private readonly destroyRef = inject(DestroyRef);
+
+  protected readonly transloco = inject(TranslocoService);
 
   protected readonly isSubmitting = signal(false);
   protected readonly errorKey = signal<string | null>(null);
@@ -40,15 +43,15 @@ export class AdminLogin {
   });
 
   constructor() {
-  this.session
-    .refresh()
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      error: () => {
-        this.errorKey.set('auth.errors.sessionUnavailable');
-      },
-    });
-}
+    this.session
+      .refresh()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.errorKey.set('auth.errors.sessionUnavailable');
+        },
+      });
+  }
 
   protected submit(event: Event): void {
     event.preventDefault();
@@ -97,10 +100,10 @@ export class AdminLogin {
     if (this.isSubmitting()) {
       return;
     }
-  
+
     this.isSubmitting.set(true);
     this.errorKey.set(null);
-  
+
     this.session
       .logout()
       .pipe(

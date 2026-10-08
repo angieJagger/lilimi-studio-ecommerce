@@ -1,0 +1,88 @@
+:host {
+  display: block;
+  padding: var(--spacing-40) var(--spacing-16);
+}
+
+.order-page {
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+.back-link {
+  color: var(--brand-primary);
+}
+
+h1 {
+  margin-block: var(--spacing-24);
+}
+
+h2,
+h3 {
+  margin-top: 0;
+}
+
+.order-card {
+  margin-bottom: var(--spacing-24);
+  padding: var(--spacing-24);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-12);
+  background: var(--surface-default);
+  overflow-wrap: anywhere;
+}
+
+.order-columns {
+  display: grid;
+  gap: var(--spacing-24);
+}
+
+.order-fields {
+  display: grid;
+  gap: var(--spacing-16);
+  margin: 0;
+}
+
+.order-fields > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--spacing-16);
+}
+
+dt {
+  color: var(--text-secondary);
+}
+
+dd {
+  margin: 0;
+}
+
+address {
+  font-style: normal;
+}
+
+.order-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-item + .order-item {
+  margin-top: var(--spacing-24);
+  padding-top: var(--spacing-24);
+  border-top: 1px solid var(--border-default);
+}
+
+.order-total {
+  padding-top: var(--spacing-16);
+  border-top: 1px solid var(--border-default);
+  font-weight: 700;
+}
+
+.order-total dt {
+  color: var(--text-primary);
+}
+
+@media (min-width: 700px) {
+  .order-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,4 +1,82 @@
 {
+  "adminOrderDetails": {
+    "title": "Order details",
+    "back": "Back to orders",
+    "loading": "Loading order…",
+    "reference": "Order reference",
+    "delivery": "Delivery",
+    "digitalDelivery": "Digital products — no shipping required.",
+    "products": "Products",
+    "fit": "Fit",
+    "size": "Size",
+    "color": "Color",
+    "embroidery": "Embroidery option",
+    "quantity": "Quantity",
+    "unitPrice": "Unit price",
+    "lineTotal": "Line total",
+    "summary": "Summary",
+    "subtotal": "Products",
+    "total": "Total",
+    "fits": {
+      "women": "Women's",
+      "men": "Men's",
+      "children": "Children's"
+    },
+    "embroideryOptions": {
+      "small-front": "Small front embroidery",
+      "large-back": "Large back embroidery"
+    },
+    "deliveryMethods": {
+      "dhl-courier": "DHL courier",
+      "dpd-courier": "DPD courier",
+      "inpost-courier": "InPost courier"
+    },
+    "colors": {
+      "black": "Black",
+      "white": "White",
+      "gray": "Gray",
+      "grey": "Grey",
+      "beige": "Beige",
+      "navy": "Navy",
+      "blue": "Blue",
+      "green": "Green",
+      "pink": "Pink",
+      "red": "Red",
+      "brown": "Brown"
+    },
+    "errors": {
+      "notFound": "Order not found.",
+      "loadFailed": "Unable to load order details. Please try again."
+    }
+  },
+  "adminOrders": {
+    "title": "Orders",
+    "loading": "Loading orders…",
+    "empty": "No orders to display.",
+    "total": "Total orders: {{ count }}",
+    "tableLabel": "Order list",
+    "date": "Date and reference",
+    "customer": "Customer",
+    "status": "Status",
+    "amount": "Amount",
+    "retry": "Try again",
+    "pagination": "Order list pages",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{ current }} of {{ total }}",
+    "statuses": {
+      "new": "New",
+      "processing": "Processing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "errors": {
+      "sessionExpired": "Your session has expired. Please sign in again.",
+      "accessDenied": "You do not have permission to view orders.",
+      "loadFailed": "Unable to load orders. Please try again."
+    },
+    "login": "Go to sign in"
+  },
   "auth": {
     "title": "Administrator login",
     "description": "Sign in to manage the store.",
@@ -18,7 +96,8 @@
       "adminRequired": "This account does not have administrator access.",
       "sessionUnavailable": "Unable to check your session. Please refresh the page.",
       "logoutUnavailable": "Unable to sign out. Please try again."
-    }
+    },
+    "openOrders": "View orders"
   },
   "nav": {
     "patterns": "Embroidery patterns",

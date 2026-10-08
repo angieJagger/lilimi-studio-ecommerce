@@ -6,6 +6,7 @@ import { AuthApiService } from '../../../core/auth/auth-api.service';
 import type { CurrentUser } from '../../../core/auth/auth.model';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { AdminLogin } from './admin-login';
+import { provideRouter } from '@angular/router';
 
 describe('AdminLogin', () => {
   let fixture: ComponentFixture<AdminLogin>;
@@ -37,7 +38,7 @@ describe('AdminLogin', () => {
 
     await TestBed.configureTestingModule({
       imports: [AdminLogin, getTranslocoTestingModule()],
-      providers: [{ provide: AuthApiService, useValue: api }],
+      providers: [{ provide: AuthApiService, useValue: api }, provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminLogin);
@@ -89,10 +90,12 @@ describe('AdminLogin', () => {
   }
 
   async function clickLogout(): Promise<void> {
-    element.querySelector<HTMLButtonElement>('.logout-button')!.click();
-
-    await fixture.whenStable();
-  }
+      element
+        .querySelector<HTMLButtonElement>('button.logout-button')!
+        .click();
+    
+      await fixture.whenStable();
+    }
 
   it('should show required field errors without sending a request', async () => {
     await submitForm();
@@ -221,7 +224,7 @@ describe('AdminLogin', () => {
     await clickLogout();
 
     expect(api.logout).toHaveBeenCalledOnce();
-    expect(element.querySelector<HTMLButtonElement>('.logout-button')!.disabled).toBe(true);
+    expect(element.querySelector<HTMLButtonElement>('button.logout-button')!.disabled).toBe(true);
 
     logoutResult.next(undefined);
     logoutResult.complete();
@@ -271,7 +274,7 @@ describe('AdminLogin', () => {
       'Nie udało się wylogować. Spróbuj ponownie.',
     );
 
-    expect(element.querySelector<HTMLButtonElement>('.logout-button')!.disabled).toBe(false);
+    expect(element.querySelector<HTMLButtonElement>('button.logout-button')!.disabled).toBe(false);
 
     api.logout.mockReturnValue(of(undefined));
 

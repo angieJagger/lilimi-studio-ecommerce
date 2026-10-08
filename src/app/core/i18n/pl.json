@@ -1,4 +1,82 @@
 {
+  "adminOrderDetails": {
+    "title": "Szczegóły zamówienia",
+    "back": "Wróć do zamówień",
+    "loading": "Ładowanie zamówienia…",
+    "reference": "Numer zamówienia",
+    "delivery": "Dostawa",
+    "digitalDelivery": "Produkty cyfrowe — bez wysyłki.",
+    "products": "Produkty",
+    "fit": "Fason",
+    "size": "Rozmiar",
+    "color": "Kolor",
+    "embroidery": "Opcja haftu",
+    "quantity": "Liczba sztuk",
+    "unitPrice": "Cena za sztukę",
+    "lineTotal": "Razem za produkt",
+    "summary": "Podsumowanie",
+    "subtotal": "Produkty",
+    "total": "Łącznie",
+    "fits": {
+      "women": "Damski",
+      "men": "Męski",
+      "children": "Dziecięcy"
+    },
+    "embroideryOptions": {
+      "small-front": "Mały haft z przodu",
+      "large-back": "Duży haft z tyłu"
+    },
+    "deliveryMethods": {
+      "dhl-courier": "Kurier DHL",
+      "dpd-courier": "Kurier DPD",
+      "inpost-courier": "Kurier InPost"
+    },
+    "colors": {
+      "black": "Czarny",
+      "white": "Biały",
+      "gray": "Szary",
+      "grey": "Szary",
+      "beige": "Beżowy",
+      "navy": "Granatowy",
+      "blue": "Niebieski",
+      "green": "Zielony",
+      "pink": "Różowy",
+      "red": "Czerwony",
+      "brown": "Brązowy"
+    },
+    "errors": {
+      "notFound": "Nie znaleziono zamówienia.",
+      "loadFailed": "Nie udało się pobrać szczegółów zamówienia. Spróbuj ponownie."
+    }
+  },
+  "adminOrders": {
+    "title": "Zamówienia",
+    "loading": "Ładowanie zamówień…",
+    "empty": "Brak zamówień do wyświetlenia.",
+    "total": "Liczba zamówień: {{ count }}",
+    "tableLabel": "Lista zamówień",
+    "date": "Data i numer",
+    "customer": "Klient",
+    "status": "Status",
+    "amount": "Kwota",
+    "retry": "Spróbuj ponownie",
+    "pagination": "Strony listy zamówień",
+    "previous": "Poprzednia",
+    "next": "Następna",
+    "page": "Strona {{ current }} z {{ total }}",
+    "statuses": {
+      "new": "Nowe",
+      "processing": "W realizacji",
+      "completed": "Zakończone",
+      "cancelled": "Anulowane"
+    },
+    "errors": {
+      "sessionExpired": "Sesja wygasła. Zaloguj się ponownie.",
+      "accessDenied": "Brak uprawnień do przeglądania zamówień.",
+      "loadFailed": "Nie udało się pobrać zamówień. Spróbuj ponownie."
+    },
+    "login": "Przejdź do logowania"
+  },
   "auth": {
     "title": "Logowanie administratora",
     "description": "Zaloguj się, aby zarządzać sklepem.",
@@ -18,7 +96,8 @@
       "adminRequired": "To konto nie ma uprawnień administratora.",
       "sessionUnavailable": "Nie udało się sprawdzić sesji. Spróbuj odświeżyć stronę.",
       "logoutUnavailable": "Nie udało się wylogować. Spróbuj ponownie."
-    }
+    },
+    "openOrders": "Przejdź do zamówień"
   },
   "nav": {
     "patterns": "Wzory haftów",

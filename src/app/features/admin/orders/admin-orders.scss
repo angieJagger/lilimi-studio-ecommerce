@@ -1,0 +1,91 @@
+:host {
+  display: block;
+  padding: var(--spacing-40) var(--spacing-16);
+}
+
+.orders-page {
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.orders-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-8);
+  background: var(--surface-default);
+}
+
+.orders-table-wrapper:focus-visible {
+  outline: 2px solid var(--border-brand);
+  outline-offset: 3px;
+}
+
+table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: var(--spacing-16);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--surface-brand-soft);
+}
+
+tbody tr + tr {
+  border-top: 1px solid var(--border-default);
+}
+
+small {
+  display: block;
+  margin-top: var(--spacing-4);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.order-id {
+  display: block;
+  max-width: 220px;
+  margin-top: var(--spacing-4);
+  color: var(--brand-primary);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.order-id:focus-visible {
+  outline: 2px solid var(--border-brand);
+  outline-offset: 3px;
+}
+
+.order-amount {
+  white-space: nowrap;
+}
+
+.orders-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  margin-top: var(--spacing-24);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

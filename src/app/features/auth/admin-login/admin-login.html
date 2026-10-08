@@ -6,6 +6,10 @@
     {{ 'auth.loginSuccess' | transloco }}
   </output>
 
+  <a class="button button--primary logout-button" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']">
+    {{ 'auth.openOrders' | transloco }}
+  </a>
+
   <button class="button button--secondary logout-button" type="button" [disabled]="isSubmitting()"
     [attr.aria-busy]="isSubmitting()" (click)="logout()">
     {{ (isSubmitting() ? 'auth.loggingOut' : 'auth.logout') | transloco }}

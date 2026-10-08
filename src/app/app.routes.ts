@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { languageResolver } from './core/i18n/language.resolver';
 import { ShopLayout } from './layout/shop-layout/shop-layout';
+import { adminGuard } from './core/auth/admin.guard';
 
 const shopRoutes: Routes = [
   {
@@ -54,6 +55,22 @@ const shopRoutes: Routes = [
     path: 'admin/login',
     loadComponent: () =>
       import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),
+  },
+  {
+    path: 'admin/orders',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/orders/admin-orders').then(
+        (m) => m.AdminOrders,
+      ),
+  },
+  {
+    path: 'admin/orders/:id',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/orders/admin-order-details').then(
+        (m) => m.AdminOrderDetails,
+      ),
   },
 
   {

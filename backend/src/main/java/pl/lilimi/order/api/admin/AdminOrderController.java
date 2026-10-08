@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.lilimi.order.application.admin.AdminOrderQueryService;
+import org.springframework.web.bind.annotation.PathVariable;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/orders")
@@ -26,5 +28,11 @@ public class AdminOrderController {
     return AdminOrderPageResponse.from(
       queryService.findOrders(page, size)
     );
+  }
+  @GetMapping("/{id}")
+  public AdminOrderDetailsResponse findOrder(
+    @PathVariable UUID id
+  ) {
+    return queryService.findOrder(id);
   }
 }
