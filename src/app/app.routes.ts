@@ -83,7 +83,7 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'pl',
+    redirectTo: 'en',
   },
   {
     path: 'pl',

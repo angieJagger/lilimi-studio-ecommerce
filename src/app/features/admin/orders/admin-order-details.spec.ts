@@ -16,10 +16,12 @@ describe('AdminOrderDetails', () => {
 
   const api = {
     getOrder: vi.fn(),
+    changeStatus: vi.fn(),
   };
 
   const order: OrderDetails = {
     id: 'e6c91c08-bf6b-4b4a-93a4-97b90a62b055',
+    version: 0,
     createdAt: '2026-10-08T08:00:00Z',
     status: 'new',
     language: 'pl',
@@ -64,6 +66,7 @@ describe('AdminOrderDetails', () => {
     params = new BehaviorSubject(convertToParamMap({ id: order.id }));
 
     api.getOrder.mockReset();
+    api.changeStatus.mockReset();
     api.getOrder.mockReturnValue(result.asObservable());
 
     await TestBed.configureTestingModule({
@@ -87,6 +90,12 @@ describe('AdminOrderDetails', () => {
   async function respond(details: OrderDetails): Promise<void> {
     result.next(details);
     result.complete();
+
+    await fixture.whenStable();
+  }
+
+  async function clickButton(selector: string): Promise<void> {
+    element.querySelector<HTMLButtonElement>(selector)!.click();
 
     await fixture.whenStable();
   }
@@ -290,5 +299,163 @@ describe('AdminOrderDetails', () => {
     );
 
     expect(element.textContent).not.toContain('Produkty cyfrowe — bez wysyłki.');
+  });
+
+  it('should require confirmation and allow cancelling a status change', async () => {
+    await respond(order);
+
+    await clickButton('[data-status="processing"]');
+
+    expect(api.changeStatus).not.toHaveBeenCalled();
+    expect(element.textContent).toContain('Zmienić status zamówienia na „W realizacji”?');
+
+    await clickButton('[data-testid="cancel-status"]');
+
+    expect(api.changeStatus).not.toHaveBeenCalled();
+    expect(element.querySelector('[data-testid="confirm-status"]')).toBeNull();
+    expect(element.querySelector('[data-status="processing"]')).not.toBeNull();
+  });
+
+  it('should save the selected status once and use the returned version', async () => {
+    const saveResult = new Subject<OrderDetails>();
+
+    api.changeStatus.mockReturnValue(saveResult.asObservable());
+
+    await respond(order);
+    await clickButton('[data-status="processing"]');
+    await clickButton('[data-testid="confirm-status"]');
+    await clickButton('[data-testid="confirm-status"]');
+
+    expect(api.changeStatus).toHaveBeenCalledExactlyOnceWith(order.id, {
+      status: 'processing',
+      expectedVersion: 0,
+    });
+
+    expect(
+      element.querySelector<HTMLButtonElement>('[data-testid="confirm-status"]')!.disabled,
+    ).toBe(true);
+
+    expect(
+      element.querySelector<HTMLButtonElement>('[data-testid="cancel-status"]')!.disabled,
+    ).toBe(true);
+
+    saveResult.next({
+      ...order,
+      status: 'processing',
+      version: 1,
+    });
+    saveResult.complete();
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[data-status="processing"]')).toBeNull();
+    expect(element.querySelector('[data-status="completed"]')).not.toBeNull();
+
+    const nextSave = new Subject<OrderDetails>();
+    api.changeStatus.mockReturnValue(nextSave.asObservable());
+
+    await clickButton('[data-status="completed"]');
+    await clickButton('[data-testid="confirm-status"]');
+
+    expect(api.changeStatus).toHaveBeenLastCalledWith(order.id, {
+      status: 'completed',
+      expectedVersion: 1,
+    });
+
+    nextSave.next({
+      ...order,
+      status: 'completed',
+      version: 2,
+    });
+    nextSave.complete();
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[data-status]')).toBeNull();
+    expect(element.textContent).toContain('Zamówienie ma status końcowy.');
+  });
+
+  it('should require reloading after a version conflict', async () => {
+    const saveResult = new Subject<OrderDetails>();
+
+    api.changeStatus.mockReturnValue(saveResult.asObservable());
+
+    await respond(order);
+    await clickButton('[data-status="processing"]');
+    await clickButton('[data-testid="confirm-status"]');
+
+    saveResult.error(
+      new HttpErrorResponse({
+        status: 409,
+        statusText: 'Conflict',
+        error: { code: 'ORDER_VERSION_CONFLICT' },
+      }),
+    );
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Zamówienie zostało zmienione.',
+    );
+    expect(element.querySelector('[data-status]')).toBeNull();
+    expect(api.changeStatus).toHaveBeenCalledOnce();
+
+    result = new Subject<OrderDetails>();
+    api.getOrder.mockReturnValue(result.asObservable());
+
+    await clickButton('button');
+
+    expect(api.getOrder).toHaveBeenCalledTimes(2);
+
+    await respond({
+      ...order,
+      status: 'processing',
+      version: 1,
+    });
+
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+    expect(element.querySelector('[data-status="completed"]')).not.toBeNull();
+  });
+
+  it('should require reloading after an uncertain status update', async () => {
+    const saveResult = new Subject<OrderDetails>();
+
+    api.changeStatus.mockReturnValue(saveResult.asObservable());
+
+    await respond(order);
+    await clickButton('[data-status="processing"]');
+    await clickButton('[data-testid="confirm-status"]');
+
+    saveResult.error(
+      new HttpErrorResponse({
+        status: 0,
+        statusText: 'Unknown Error',
+      }),
+    );
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Nie udało się potwierdzić zapisu.',
+    );
+    expect(element.querySelector('[data-status]')).toBeNull();
+    expect(element.querySelector('[data-testid="confirm-status"]')).toBeNull();
+    expect(api.changeStatus).toHaveBeenCalledOnce();
+
+    result = new Subject<OrderDetails>();
+    api.getOrder.mockReturnValue(result.asObservable());
+
+    await clickButton('button');
+
+    await respond({
+      ...order,
+      status: 'processing',
+      version: 1,
+    });
+
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+    expect(element.querySelector('[data-status="processing"]')).toBeNull();
+    expect(element.querySelector('[data-status="completed"]')).not.toBeNull();
+    expect(api.changeStatus).toHaveBeenCalledOnce();
   });
 });

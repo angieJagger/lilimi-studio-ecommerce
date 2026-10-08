@@ -46,8 +46,18 @@
     },
     "errors": {
       "notFound": "Order not found.",
-      "loadFailed": "Unable to load order details. Please try again."
-    }
+      "loadFailed": "Unable to load order details. Please try again.",
+      "transitionInvalid": "This status change is not allowed. Reload the order details.",
+      "versionConflict": "The order has changed. Reload its details before making another change.",
+      "statusSaveFailed": "Unable to confirm the update. Reload the details to check the current status."
+    },
+    "changeStatus": "Change status",
+    "confirmStatus": "Change the order status to “{{ status }}”?",
+    "confirm": "Confirm change",
+    "keepStatus": "Keep current status",
+    "saving": "Saving…",
+    "reload": "Reload order details",
+    "finalStatus": "This order has a final status. Further changes are unavailable."
   },
   "adminOrders": {
     "title": "Orders",

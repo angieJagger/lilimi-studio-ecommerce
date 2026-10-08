@@ -10,14 +10,24 @@ import pl.lilimi.order.application.admin.AdminOrderQueryService;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import pl.lilimi.order.application.admin.AdminOrderStatusService;
+
 @RestController
 @RequestMapping("/api/admin/orders")
 public class AdminOrderController {
 
   private final AdminOrderQueryService queryService;
+  private final AdminOrderStatusService statusService;
 
-  public AdminOrderController(AdminOrderQueryService queryService) {
+  public AdminOrderController(
+    AdminOrderQueryService queryService,
+    AdminOrderStatusService statusService
+  ) {
     this.queryService = queryService;
+    this.statusService = statusService;
   }
 
   @GetMapping
@@ -34,5 +44,13 @@ public class AdminOrderController {
     @PathVariable UUID id
   ) {
     return queryService.findOrder(id);
+  }
+
+  @PatchMapping("/{id}/status")
+  public AdminOrderDetailsResponse changeStatus(
+    @PathVariable UUID id,
+    @Valid @RequestBody ChangeOrderStatusRequest request
+  ) {
+    return statusService.changeStatus(id, request);
   }
 }

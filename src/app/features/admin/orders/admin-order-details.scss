@@ -86,3 +86,14 @@ address {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+.status-actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}

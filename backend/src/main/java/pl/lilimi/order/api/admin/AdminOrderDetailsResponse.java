@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record AdminOrderDetailsResponse(
   UUID id,
+  long version,
   Instant createdAt,
   String status,
   String language,

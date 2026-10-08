@@ -72,6 +72,7 @@ public class AdminOrderQueryService {
 
     return new AdminOrderDetailsResponse(
       order.getId(),
+      order.getVersion(),
       order.getCreatedAt(),
       order.getStatus().getValue(),
       order.getLanguage(),

@@ -46,8 +46,18 @@
     },
     "errors": {
       "notFound": "Nie znaleziono zamówienia.",
-      "loadFailed": "Nie udało się pobrać szczegółów zamówienia. Spróbuj ponownie."
-    }
+      "loadFailed": "Nie udało się pobrać szczegółów zamówienia. Spróbuj ponownie.",
+      "transitionInvalid": "Ta zmiana statusu nie jest dozwolona. Odśwież dane zamówienia.",
+      "versionConflict": "Zamówienie zostało zmienione. Odśwież dane przed kolejną zmianą.",
+      "statusSaveFailed": "Nie udało się potwierdzić zapisu. Odśwież dane, aby sprawdzić aktualny status."
+    },
+    "changeStatus": "Zmień status",
+    "confirmStatus": "Zmienić status zamówienia na „{{ status }}”?",
+    "confirm": "Potwierdź zmianę",
+    "keepStatus": "Pozostaw obecny status",
+    "saving": "Zapisywanie…",
+    "reload": "Odśwież dane zamówienia",
+    "finalStatus": "Zamówienie ma status końcowy. Dalsze zmiany są niedostępne."
   },
   "adminOrders": {
     "title": "Zamówienia",

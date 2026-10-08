@@ -22,8 +22,10 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,6 +64,25 @@ class AdminOrderControllerTest {
     );
 
     return order;
+  }
+
+  private ResultActions changeStatus(
+    UUID id,
+    long expectedVersion,
+    String nextStatus
+  ) throws Exception {
+    return mockMvc.perform(
+      patch("/api/admin/orders/" + id + "/status")
+        .with(user("admin@example.com").roles("ADMIN"))
+        .with(csrf())
+        .contentType("application/json")
+        .content("""
+        {
+          "status": "%s",
+          "expectedVersion": %d
+        }
+        """.formatted(nextStatus, expectedVersion))
+    );
   }
 
   @Test
@@ -199,6 +220,7 @@ class AdminOrderControllerTest {
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id").value(id))
+      .andExpect(jsonPath("$.version").value(0))
       .andExpect(jsonPath("$.createdAt").isString())
       .andExpect(jsonPath("$.status").value("new"))
       .andExpect(jsonPath("$.language").value("pl"))
@@ -329,5 +351,188 @@ class AdminOrderControllerTest {
       .andExpect(jsonPath("$.subtotalInGrosz").value(29800))
       .andExpect(jsonPath("$.deliveryPriceInGrosz").value(1200))
       .andExpect(jsonPath("$.totalInGrosz").value(31000));
+  }
+
+  @Test
+  void shouldSaveStatusAndIncreaseVersion() throws Exception {
+    var order = saveOrder(
+      "status-test@example.com",
+      2900,
+      Instant.now()
+    );
+
+    changeStatus(order.getId(), 0, "processing")
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("processing"))
+      .andExpect(jsonPath("$.version").value(1));
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("processing"))
+      .andExpect(jsonPath("$.version").value(1));
+  }
+
+  @Test
+  void shouldRejectAnOutdatedVersionWithoutChangingStatus() throws Exception {
+    var order = saveOrder(
+      "version-test@example.com",
+      2900,
+      Instant.now()
+    );
+
+    changeStatus(order.getId(), 0, "processing")
+      .andExpect(status().isOk());
+
+    changeStatus(order.getId(), 0, "cancelled")
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("ORDER_VERSION_CONFLICT"));
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("processing"))
+      .andExpect(jsonPath("$.version").value(1));
+  }
+
+  @Test
+  void shouldRejectAnInvalidStatusTransition() throws Exception {
+    var order = saveOrder(
+      "transition-test@example.com",
+      2900,
+      Instant.now()
+    );
+
+    changeStatus(order.getId(), 0, "completed")
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value(
+        "ORDER_STATUS_TRANSITION_INVALID"
+      ));
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("new"))
+      .andExpect(jsonPath("$.version").value(0));
+  }
+
+  @Test
+  void shouldKeepVersionWhenSettingTheSameStatus() throws Exception {
+    var order = saveOrder(
+      "same-status@example.com",
+      2900,
+      Instant.now()
+    );
+
+    changeStatus(order.getId(), 0, "processing")
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.version").value(1));
+
+    changeStatus(order.getId(), 1, "processing")
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("processing"))
+      .andExpect(jsonPath("$.version").value(1));
+  }
+  @Test
+  void shouldRejectAnonymousStatusChange() throws Exception {
+    mockMvc.perform(
+      patch("/api/admin/orders/" + UUID.randomUUID() + "/status")
+        .with(csrf())
+        .contentType("application/json")
+        .content("""
+        {
+          "status": "processing",
+          "expectedVersion": 0
+        }
+        """)
+    ).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void shouldRejectCustomerStatusChange() throws Exception {
+    mockMvc.perform(
+      patch("/api/admin/orders/" + UUID.randomUUID() + "/status")
+        .with(user("customer@example.com").roles("CUSTOMER"))
+        .with(csrf())
+        .contentType("application/json")
+        .content("""
+        {
+          "status": "processing",
+          "expectedVersion": 0
+        }
+        """)
+    ).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void shouldRejectStatusChangeWithoutCsrfToken() throws Exception {
+    mockMvc.perform(
+      patch("/api/admin/orders/" + UUID.randomUUID() + "/status")
+        .with(user("admin@example.com").roles("ADMIN"))
+        .contentType("application/json")
+        .content("""
+        {
+          "status": "processing",
+          "expectedVersion": 0
+        }
+        """)
+    ).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void shouldReturnNotFoundWhenChangingMissingOrder() throws Exception {
+    changeStatus(UUID.randomUUID(), 0, "processing")
+      .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void shouldRejectInvalidStatusChangeData() throws Exception {
+    var order = saveOrder(
+      "validation-test@example.com",
+      2900,
+      Instant.now()
+    );
+
+    String[] invalidRequests = {
+      """
+    {"status": "unknown", "expectedVersion": 0}
+    """,
+      """
+    {"status": "", "expectedVersion": 0}
+    """,
+      """
+    {"expectedVersion": 0}
+    """,
+      """
+    {"status": "processing"}
+    """,
+      """
+    {"status": "processing", "expectedVersion": -1}
+    """
+    };
+
+    for (String request : invalidRequests) {
+      mockMvc.perform(
+        patch("/api/admin/orders/" + order.getId() + "/status")
+          .with(user("admin@example.com").roles("ADMIN"))
+          .with(csrf())
+          .contentType("application/json")
+          .content(request)
+      ).andExpect(status().isBadRequest());
+    }
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("new"))
+      .andExpect(jsonPath("$.version").value(0));
   }
 }

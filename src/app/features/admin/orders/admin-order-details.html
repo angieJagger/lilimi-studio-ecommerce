@@ -44,6 +44,64 @@
     </dl>
   </div>
 
+  <section class="order-card" aria-labelledby="status-change-title">
+    <h2 id="status-change-title">
+      {{ 'adminOrderDetails.changeStatus' | transloco }}
+    </h2>
+  
+    @if (statusErrorKey(); as message) {
+    <p role="alert">{{ message | transloco }}</p>
+  
+    @if (
+    message === 'adminOrders.errors.sessionExpired' ||
+    message === 'adminOrders.errors.accessDenied'
+    ) {
+    <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+      {{ 'adminOrders.login' | transloco }}
+    </a>
+    } @else {
+    <button class="button button--secondary" type="button" [disabled]="isSaving()" (click)="retry()">
+      {{ 'adminOrderDetails.reload' | transloco }}
+    </button>
+    }
+    } @else if (pendingStatus(); as nextStatus) {
+    <p>
+      {{
+      'adminOrderDetails.confirmStatus'
+      | transloco: {
+      status: ('adminOrders.statuses.' + nextStatus) | transloco
+      }
+      }}
+    </p>
+  
+    <div class="status-actions">
+      <button class="button button--primary" type="button" data-testid="confirm-status" [disabled]="isSaving()"
+        [attr.aria-busy]="isSaving()" (click)="confirmStatusChange()">
+        {{
+        (isSaving() ? 'adminOrderDetails.saving' : 'adminOrderDetails.confirm')
+        | transloco
+        }}
+      </button>
+  
+      <button class="button button--secondary" type="button" data-testid="cancel-status" [disabled]="isSaving()"
+        (click)="cancelStatusChange()">
+        {{ 'adminOrderDetails.keepStatus' | transloco }}
+      </button>
+    </div>
+    } @else if (availableStatuses().length > 0) {
+    <div class="status-actions">
+      @for (nextStatus of availableStatuses(); track nextStatus) {
+      <button class="button button--secondary" type="button" [attr.data-status]="nextStatus"
+        (click)="requestStatusChange(nextStatus)">
+        {{ ('adminOrders.statuses.' + nextStatus) | transloco }}
+      </button>
+      }
+    </div>
+    } @else {
+    <p>{{ 'adminOrderDetails.finalStatus' | transloco }}</p>
+    }
+  </section>
+
   <div class="order-columns">
     <section class="order-card" aria-labelledby="customer-title">
       <h2 id="customer-title">{{ 'adminOrders.customer' | transloco }}</h2>

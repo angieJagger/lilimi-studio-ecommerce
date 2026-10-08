@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -22,6 +23,9 @@ public class Order {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
+  @Version
+  @Column(name = "version", nullable = false)
+  private long version;
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -85,6 +89,35 @@ public class Order {
     }
   }
 
+  public void changeStatus(OrderStatus nextStatus) {
+    if (nextStatus == null) {
+      throw new IllegalArgumentException("Order status is required");
+    }
+
+    if (status == nextStatus) {
+      return;
+    }
+
+    boolean allowed = switch (status) {
+      case NEW ->
+        nextStatus == OrderStatus.PROCESSING ||
+          nextStatus == OrderStatus.CANCELLED;
+
+      case PROCESSING ->
+        nextStatus == OrderStatus.COMPLETED ||
+          nextStatus == OrderStatus.CANCELLED;
+
+      case COMPLETED, CANCELLED -> false;
+    };
+
+    if (!allowed) {
+      throw new IllegalStateException(
+        "Order status transition is not allowed"
+      );
+    }
+
+    this.status = nextStatus;
+  }
   public UUID getId() {
     return id;
   }
@@ -123,5 +156,9 @@ public class Order {
 
   public long getTotalInGrosz() {
     return totalInGrosz;
+  }
+
+  public long getVersion() {
+    return version;
   }
 }

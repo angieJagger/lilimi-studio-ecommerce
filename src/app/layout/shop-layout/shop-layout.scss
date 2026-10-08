@@ -1,0 +1,16 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+main {
+  flex: 1;
+  min-width: 0;
+}
+
+app-header,
+app-footer {
+  flex-shrink: 0;
+}

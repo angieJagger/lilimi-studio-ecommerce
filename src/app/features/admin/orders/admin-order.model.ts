@@ -51,6 +51,7 @@ export interface AdminOrderItem {
 
 export interface AdminOrderDetails {
   readonly id: string;
+  readonly version: number;
   readonly createdAt: string;
   readonly status: AdminOrderStatus;
   readonly language: 'pl' | 'en';
@@ -61,4 +62,9 @@ export interface AdminOrderDetails {
   readonly subtotalInGrosz: number;
   readonly deliveryPriceInGrosz: number;
   readonly totalInGrosz: number;
+}
+
+export interface ChangeOrderStatusRequest {
+  readonly status: AdminOrderStatus;
+  readonly expectedVersion: number;
 }
