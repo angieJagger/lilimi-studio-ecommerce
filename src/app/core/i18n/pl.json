@@ -30,12 +30,22 @@
       "languages": {
         "pl": "Polski",
         "en": "Angielski"
-      }
+      },
+      "changeStatus": "Zmiana statusu",
+      "confirmStatus": "Zmienić status na „{{status}}”?",
+      "confirm": "Potwierdź zmianę",
+      "cancel": "Anuluj",
+      "saving": "Zapisywanie…",
+      "reload": "Odśwież szczegóły",
+      "closedNotice": "Zapytanie jest zamknięte. Nie można zmienić jego statusu."
     },
     "errors": {
       "loadFailed": "Nie udało się pobrać zapytań. Spróbuj ponownie.",
       "notFound": "Nie znaleziono zapytania.",
-      "detailsLoadFailed": "Nie udało się pobrać szczegółów zapytania. Spróbuj ponownie."
+      "detailsLoadFailed": "Nie udało się pobrać szczegółów zapytania. Spróbuj ponownie.",
+      "versionConflict": "Zapytanie zostało zmienione. Odśwież szczegóły przed kolejną zmianą.",
+      "statusTransitionInvalid": "Ta zmiana statusu jest niedozwolona. Odśwież szczegóły.",
+      "statusSaveFailed": "Nie udało się potwierdzić zmiany statusu. Odśwież szczegóły, aby sprawdzić aktualny stan."
     }
   },
   "adminOrderDetails": {

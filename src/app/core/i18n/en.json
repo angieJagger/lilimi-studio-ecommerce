@@ -30,12 +30,22 @@
       "languages": {
         "pl": "Polish",
         "en": "English"
-      }
+      },
+      "changeStatus": "Change status",
+      "confirmStatus": "Change the status to “{{status}}”?",
+      "confirm": "Confirm change",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "reload": "Reload details",
+      "closedNotice": "This inquiry is closed. Its status cannot be changed."
     },
     "errors": {
       "loadFailed": "Unable to load inquiries. Please try again.",
       "notFound": "The inquiry could not be found.",
-      "detailsLoadFailed": "Could not load the inquiry details. Please try again."
+      "detailsLoadFailed": "Could not load the inquiry details. Please try again.",
+      "versionConflict": "The inquiry has been modified. Reload its details before making another change.",
+      "statusTransitionInvalid": "This status change is not allowed. Reload the inquiry details.",
+      "statusSaveFailed": "The status change could not be confirmed. Reload the details to check the current status."
     }
   },
   "adminOrderDetails": {

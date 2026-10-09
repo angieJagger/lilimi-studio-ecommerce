@@ -11,6 +11,7 @@ describe('AdminInquiryApiService', () => {
 
   const inquiry: AdminInquiryDetails = {
     id: '1548c928-f278-4cbb-b8d0-d57455c72f91',
+    version: 0,
     createdAt: '2026-10-09T08:00:00Z',
     status: 'new',
     language: 'pl',
@@ -142,4 +143,98 @@ describe('AdminInquiryApiService', () => {
 
     expect(receivedError?.status).toBe(404);
   });
+
+    it('should initialize CSRF before changing the status', () => {
+      const request = {
+        status: 'in_progress' as const,
+        expectedVersion: inquiry.version,
+      };
+
+      const updated: AdminInquiryDetails = {
+        ...inquiry,
+        status: 'in_progress',
+        version: inquiry.version + 1,
+      };
+
+      let result: AdminInquiryDetails | undefined;
+
+      service.changeStatus(inquiry.id, request).subscribe((details) => {
+        result = details;
+      });
+
+      const csrfRequest = http.expectOne('/api/auth/csrf');
+
+      expect(csrfRequest.request.method).toBe('GET');
+
+      http.expectNone(`/api/admin/project-inquiries/${inquiry.id}/status`);
+
+      csrfRequest.flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      const pending = http.expectOne(`/api/admin/project-inquiries/${inquiry.id}/status`);
+
+      expect(pending.request.method).toBe('PATCH');
+      expect(pending.request.body).toEqual(request);
+
+      pending.flush(updated);
+
+      expect(result).toEqual(updated);
+    });
+
+    it('should propagate a version conflict without retrying', () => {
+      let receivedError: HttpErrorResponse | undefined;
+
+      service
+        .changeStatus(inquiry.id, {
+          status: 'in_progress',
+          expectedVersion: inquiry.version,
+        })
+        .subscribe({
+          error: (error: HttpErrorResponse) => {
+            receivedError = error;
+          },
+        });
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      const url = `/api/admin/project-inquiries/${inquiry.id}/status`;
+      const pending = http.expectOne(url);
+
+      pending.flush({ code: 'INQUIRY_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
+
+      expect(receivedError?.status).toBe(409);
+      expect(receivedError?.error.code).toBe('INQUIRY_VERSION_CONFLICT');
+
+      http.expectNone(url);
+      http.expectNone('/api/auth/csrf');
+    });
+
+    it('should not change the status when CSRF initialization fails', () => {
+      let receivedError: HttpErrorResponse | undefined;
+
+      service
+        .changeStatus(inquiry.id, {
+          status: 'in_progress',
+          expectedVersion: inquiry.version,
+        })
+        .subscribe({
+          error: (error: HttpErrorResponse) => {
+            receivedError = error;
+          },
+        });
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+      expect(receivedError?.status).toBe(503);
+
+      http.expectNone(`/api/admin/project-inquiries/${inquiry.id}/status`);
+    });
 });

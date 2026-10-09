@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record AdminInquiryDetailsResponse(
   UUID id,
+  long version,
   Instant createdAt,
   String status,
   String language,
@@ -23,6 +24,7 @@ public record AdminInquiryDetailsResponse(
   ) {
     return new AdminInquiryDetailsResponse(
       inquiry.getId(),
+      inquiry.getVersion(),
       inquiry.getCreatedAt(),
       inquiry.getStatus(),
       inquiry.getLanguage(),

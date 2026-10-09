@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -15,7 +15,7 @@ import {
   tap,
 } from 'rxjs';
 import { AdminInquiryApiService } from './admin-inquiry-api.service';
-import { AdminInquiryDetails as InquiryDetails } from './admin-inquiry.model';
+import type { AdminInquiryDetails as InquiryDetails, InquiryStatus } from './admin-inquiry.model';
 
 @Component({
   selector: 'app-admin-inquiry-details',
@@ -35,6 +35,29 @@ export class AdminInquiryDetails {
   protected readonly isLoading = signal(false);
   protected readonly errorKey = signal<string | null>(null);
 
+  protected readonly isSaving = signal(false);
+  protected readonly pendingStatus = signal<InquiryStatus | null>(null);
+  protected readonly statusErrorKey = signal<string | null>(null);
+
+  protected readonly availableStatuses = computed<readonly InquiryStatus[]>(() => {
+    const inquiry = this.inquiry();
+
+    if (!inquiry) {
+      return [];
+    }
+
+    switch (inquiry.status) {
+      case 'new':
+        return ['in_progress', 'closed'];
+      case 'in_progress':
+        return ['answered', 'closed'];
+      case 'answered':
+        return ['in_progress', 'closed'];
+      case 'closed':
+        return [];
+    }
+  });
+
   constructor() {
     combineLatest([this.route.paramMap, this.reloadRequests.pipe(startWith(undefined))])
       .pipe(
@@ -44,6 +67,8 @@ export class AdminInquiryDetails {
 
             this.inquiry.set(null);
             this.errorKey.set(null);
+            this.pendingStatus.set(null);
+            this.statusErrorKey.set(null);
 
             if (!id) {
               this.errorKey.set('adminInquiries.errors.notFound');
@@ -67,8 +92,76 @@ export class AdminInquiryDetails {
       .subscribe();
   }
 
+  protected requestStatusChange(status: InquiryStatus): void {
+    if (
+      this.isLoading() ||
+      this.isSaving() ||
+      this.statusErrorKey() ||
+      !this.availableStatuses().includes(status)
+    ) {
+      return;
+    }
+
+    this.pendingStatus.set(status);
+  }
+
+  protected cancelStatusChange(): void {
+    if (this.isSaving()) {
+      return;
+    }
+
+    this.pendingStatus.set(null);
+  }
+
+  protected confirmStatusChange(): void {
+    const inquiry = this.inquiry();
+    const status = this.pendingStatus();
+
+    if (
+      !inquiry ||
+      !status ||
+      this.isLoading() ||
+      this.isSaving() ||
+      this.statusErrorKey() ||
+      !this.availableStatuses().includes(status)
+    ) {
+      return;
+    }
+
+    this.isSaving.set(true);
+
+    this.api
+      .changeStatus(inquiry.id, {
+        status,
+        expectedVersion: inquiry.version,
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isSaving.set(false)),
+      )
+      .subscribe({
+        next: (updated) => {
+          if (this.inquiry()?.id !== inquiry.id) {
+            return;
+          }
+
+          this.inquiry.set(updated);
+          this.pendingStatus.set(null);
+          this.statusErrorKey.set(null);
+        },
+        error: (error: unknown) => {
+          if (this.inquiry()?.id !== inquiry.id) {
+            return;
+          }
+
+          this.pendingStatus.set(null);
+          this.statusErrorKey.set(this.getStatusErrorKey(error));
+        },
+      });
+  }
+
   protected retry(): void {
-    if (this.isLoading()) {
+    if (this.isLoading() || this.isSaving()) {
       return;
     }
 
@@ -83,6 +176,33 @@ export class AdminInquiryDetails {
       timeStyle: 'short',
     }).format(new Date(value));
   }
+  
+  private getStatusErrorKey(error: unknown): string {
+  if (error instanceof HttpErrorResponse) {
+    if (error.status === 401) {
+      return 'adminOrders.errors.sessionExpired';
+    }
+
+    if (error.status === 403) {
+      return 'adminOrders.errors.accessDenied';
+    }
+
+    if (error.status === 404) {
+      return 'adminInquiries.errors.notFound';
+    }
+
+    if (error.status === 409) {
+      switch (error.error?.code) {
+        case 'INQUIRY_VERSION_CONFLICT':
+          return 'adminInquiries.errors.versionConflict';
+        case 'INQUIRY_STATUS_TRANSITION_INVALID':
+          return 'adminInquiries.errors.statusTransitionInvalid';
+      }
+    }
+  }
+
+  return 'adminInquiries.errors.statusSaveFailed';
+}
 
   private getErrorKey(error: unknown): string {
     if (error instanceof HttpErrorResponse) {

@@ -83,3 +83,20 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+.inquiry-details__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.inquiry-details__status button {
+  min-height: 44px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.inquiry-details__status button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}

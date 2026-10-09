@@ -70,8 +70,7 @@ Submitting an inquiry does not create an order or send an email.
 - Optimistic locking to detect conflicting order updates.
 - Paginated inquiry list and detailed inquiry views.
 - Handling for expired sessions, access errors, and failed requests.
-
-Administrator accounts are provisioned separately. Public registration and customer account pages are not implemented.
+- Inquiry status updates with validated transitions and optimistic locking.
 
 ## A closer look
 
@@ -236,6 +235,7 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | GET | `/api/admin/project-inquiries` | Paginated inquiry list |
 | GET | `/api/admin/project-inquiries/{id}` | Inquiry details |
 | GET | `/actuator/health` | Application health |
+| PATCH | `/api/admin/project-inquiries/{id}/status` | Update an inquiry status |
 
 Administrator endpoints require the `ADMIN` role. State-changing requests require a valid CSRF token. Order submission also uses an `Idempotency-Key` header.
 
@@ -301,7 +301,6 @@ This stack uses a separate database volume from the database-only development st
 
 - Complete administrator inquiry details tests and update remaining demo copy.
 - Introduce GitHub Actions for tests, Docker image publishing, and deployment.
-- Add inquiry status management.
 - Expand administrator product management.
 - Implement customer registration, login, and order history.
 - Add email verification, password recovery, and transactional emails.

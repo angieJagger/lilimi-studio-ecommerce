@@ -21,7 +21,13 @@ export interface AdminInquiryPage {
 }
 
 export interface AdminInquiryDetails extends AdminInquirySummary {
+  readonly version: number;
   readonly language: 'pl' | 'en';
   readonly description: string;
   readonly inspirationUrl: string | null;
+}
+
+export interface ChangeInquiryStatusRequest {
+  readonly status: InquiryStatus;
+  readonly expectedVersion: number;
 }

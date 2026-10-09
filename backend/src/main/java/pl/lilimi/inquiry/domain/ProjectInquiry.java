@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Version;
 
 import java.time.Instant;
 import java.util.Locale;
@@ -21,11 +23,16 @@ public class ProjectInquiry {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
+  @Version
+  @Column(name = "version", nullable = false)
+  private long version;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
+  @Convert(converter = InquiryStatusConverter.class)
   @Column(name = "status", length = 32, nullable = false)
-  private String status;
+  private InquiryStatus status;
 
   @Column(name = "language", length = 2, nullable = false)
   private String language;
@@ -61,7 +68,7 @@ public class ProjectInquiry {
     String inspirationUrl,
     String productId
   ) {
-    this.status = "new";
+    this.status = InquiryStatus.NEW;
     this.language = Objects.requireNonNull(language);
     this.name = Objects.requireNonNull(name).trim();
     this.email = Objects.requireNonNull(email)
@@ -84,8 +91,48 @@ public class ProjectInquiry {
     return value == null || value.isBlank() ? null : value.trim();
   }
 
+  public void changeStatus(InquiryStatus nextStatus) {
+    if (nextStatus == null) {
+      throw new IllegalArgumentException(
+        "Inquiry status is required"
+      );
+    }
+
+    if (status == nextStatus) {
+      return;
+    }
+
+    boolean allowed = switch (status) {
+      case NEW ->
+        nextStatus == InquiryStatus.IN_PROGRESS ||
+          nextStatus == InquiryStatus.CLOSED;
+
+      case IN_PROGRESS ->
+        nextStatus == InquiryStatus.ANSWERED ||
+          nextStatus == InquiryStatus.CLOSED;
+
+      case ANSWERED ->
+        nextStatus == InquiryStatus.IN_PROGRESS ||
+          nextStatus == InquiryStatus.CLOSED;
+
+      case CLOSED -> false;
+    };
+
+    if (!allowed) {
+      throw new IllegalStateException(
+        "Inquiry status transition is not allowed"
+      );
+    }
+
+    this.status = nextStatus;
+  }
+
   public UUID getId() {
     return id;
+  }
+
+  public long getVersion() {
+    return version;
   }
 
   public Instant getCreatedAt() {
@@ -93,7 +140,7 @@ public class ProjectInquiry {
   }
 
   public String getStatus() {
-    return status;
+    return status.getValue();
   }
 
   public String getLanguage() {

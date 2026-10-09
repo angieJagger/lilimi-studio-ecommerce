@@ -25,6 +25,70 @@
   </button>
   }
   } @else if (inquiry(); as details) {
+  <div class="inquiry-details__card inquiry-details__status" [attr.aria-busy]="isSaving()">
+    <h2>{{ 'adminInquiries.details.changeStatus' | transloco }}</h2>
+  
+    <p>
+      {{ 'adminInquiries.details.status' | transloco }}:
+      <strong>
+        {{ 'adminInquiries.statuses.' + details.status | transloco }}
+      </strong>
+    </p>
+  
+    @if (statusErrorKey(); as message) {
+    <p role="alert">{{ message | transloco }}</p>
+  
+    @if (
+    message === 'adminOrders.errors.sessionExpired' ||
+    message === 'adminOrders.errors.accessDenied'
+    ) {
+    <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+      {{ 'adminInquiries.details.login' | transloco }}
+    </a>
+    } @else {
+    <button type="button" [disabled]="isSaving()" (click)="retry()">
+      {{ 'adminInquiries.details.reload' | transloco }}
+    </button>
+    }
+    } @else if (pendingStatus(); as nextStatus) {
+    <p>
+      {{
+      'adminInquiries.details.confirmStatus'
+      | transloco: {
+      status: (
+      'adminInquiries.statuses.' + nextStatus | transloco
+      )
+      }
+      }}
+    </p>
+  
+    <div class="inquiry-details__actions">
+      <button type="button" data-testid="confirm-status" [disabled]="isSaving()" (click)="confirmStatusChange()">
+        {{
+        (
+        isSaving()
+        ? 'adminInquiries.details.saving'
+        : 'adminInquiries.details.confirm'
+        ) | transloco
+        }}
+      </button>
+  
+      <button type="button" data-testid="cancel-status" [disabled]="isSaving()" (click)="cancelStatusChange()">
+        {{ 'adminInquiries.details.cancel' | transloco }}
+      </button>
+    </div>
+    } @else if (availableStatuses().length > 0) {
+    <div class="inquiry-details__actions">
+      @for (status of availableStatuses(); track status) {
+      <button type="button" [attr.data-status]="status" [disabled]="isSaving()" (click)="requestStatusChange(status)">
+        {{ 'adminInquiries.statuses.' + status | transloco }}
+      </button>
+      }
+    </div>
+    } @else {
+    <p>{{ 'adminInquiries.details.closedNotice' | transloco }}</p>
+    }
+  </div>
   <div class="inquiry-details__card">
     <h2>{{ 'adminInquiries.details.summary' | transloco }}</h2>
 
