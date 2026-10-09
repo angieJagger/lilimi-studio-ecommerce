@@ -1,0 +1,53 @@
+name: Deploy to Lightsail
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lightsail-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Check Lightsail connection
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.LIGHTSAIL_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/lilimi-actions
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Check connection and Docker access
+        env:
+          SERVER_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          SERVER_USER: ${{ secrets.LIGHTSAIL_USER }}
+        run: |
+          set -euo pipefail
+          ssh \
+            -i ~/.ssh/lilimi-actions \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            "$SERVER_USER@$SERVER_HOST" \
+            'set -eu
+             cd /home/ubuntu/lilimi
+             sudo -n docker compose config --quiet
+             sudo -n docker compose ps
+             echo "Lightsail connection and Docker access OK"'
+
+      - name: Remove SSH credentials
+        if: always()
+        run: rm -f ~/.ssh/lilimi-actions ~/.ssh/known_hosts
