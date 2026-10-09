@@ -71,6 +71,8 @@ Submitting an inquiry does not create an order or send an email.
 - Paginated inquiry list and detailed inquiry views.
 - Handling for expired sessions, access errors, and failed requests.
 - Inquiry status updates with validated transitions and optimistic locking.
+- Paginated product list including active and hidden products.
+- Product visibility updates with confirmation and optimistic locking.
 
 ## A closer look
 
@@ -236,6 +238,8 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | GET | `/api/admin/project-inquiries/{id}` | Inquiry details |
 | GET | `/actuator/health` | Application health |
 | PATCH | `/api/admin/project-inquiries/{id}/status` | Update an inquiry status |
+| GET | `/api/admin/products` | Paginated administrator product list |
+| PATCH | `/api/admin/products/{id}/visibility` | Update product visibility |
 
 Administrator endpoints require the `ADMIN` role. State-changing requests require a valid CSRF token. Order submission also uses an `Idempotency-Key` header.
 
@@ -301,7 +305,7 @@ This stack uses a separate database volume from the database-only development st
 
 - Complete administrator inquiry details tests and update remaining demo copy.
 - Introduce GitHub Actions for tests, Docker image publishing, and deployment.
-- Expand administrator product management.
+- Add editing of product translations, prices, and garment variants.
 - Implement customer registration, login, and order history.
 - Add email verification, password recovery, and transactional emails.
 - Integrate payments and controlled delivery of purchased digital files.

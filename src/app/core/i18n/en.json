@@ -136,6 +136,43 @@
     },
     "login": "Go to sign in"
   },
+  "adminProducts": {
+    "title": "Products",
+    "loading": "Loading products…",
+    "empty": "No products found.",
+    "total": "Total products: {{count}}",
+    "tableLabel": "Product list",
+    "product": "Product",
+    "type": "Type",
+    "visibility": "Store visibility",
+    "madeToOrder": "Made to order",
+    "personalization": "Personalization",
+    "active": "Visible",
+    "inactive": "Hidden",
+    "yes": "Yes",
+    "no": "No",
+    "pagination": "Product list pages",
+    "types": {
+      "digital": "Digital pattern",
+      "sweatshirt": "Sweatshirt",
+      "tshirt": "T-shirt",
+      "tote": "Tote bag"
+    },
+    "errors": {
+      "loadFailed": "Could not load products. Please try again.",
+      "notFound": "The product could not be found. Reload the list.",
+      "versionConflict": "The product has been modified. Reload the list before making another change.",
+      "visibilitySaveFailed": "The visibility change could not be confirmed. Reload the list to check the current state."
+    },
+    "hide": "Hide",
+    "show": "Show",
+    "confirmHide": "Hide “{{product}}” from the store?",
+    "confirmShow": "Show “{{product}}” in the store?",
+    "confirm": "Confirm change",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "reload": "Reload list"
+  },
   "auth": {
     "title": "Administrator login",
     "description": "Sign in to manage the store.",
@@ -157,7 +194,8 @@
       "logoutUnavailable": "Unable to sign out. Please try again."
     },
     "openOrders": "View orders",
-    "openInquiries": "View inquiries"
+    "openInquiries": "View inquiries",
+    "openProducts": "View products"
   },
   "nav": {
     "patterns": "Embroidery patterns",

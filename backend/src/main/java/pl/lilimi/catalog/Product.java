@@ -5,6 +5,7 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.time.Instant;
 
@@ -15,6 +16,10 @@ public class Product {
   @Id
   @Column(name = "id", length = 64, nullable = false)
   private String id;
+
+  @Version
+  @Column(name = "version", nullable = false)
+  private long version;
 
   @Column(name = "slug", length = 160, nullable = false, unique = true)
   private String slug;
@@ -44,8 +49,16 @@ public class Product {
     // Required by JPA.
   }
 
+  public void changeVisibility(boolean active) {
+    this.active = active;
+  }
+
   public String getId() {
     return id;
+  }
+
+  public long getVersion() {
+    return version;
   }
 
   public String getSlug() {

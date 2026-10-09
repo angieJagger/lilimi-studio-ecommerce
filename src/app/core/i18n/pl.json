@@ -136,6 +136,43 @@
     },
     "login": "Przejdź do logowania"
   },
+  "adminProducts": {
+    "title": "Produkty",
+    "loading": "Ładowanie produktów…",
+    "empty": "Brak produktów.",
+    "total": "Liczba produktów: {{count}}",
+    "tableLabel": "Lista produktów",
+    "product": "Produkt",
+    "type": "Rodzaj",
+    "visibility": "Widoczność w sklepie",
+    "madeToOrder": "Na zamówienie",
+    "personalization": "Personalizacja",
+    "active": "Widoczny",
+    "inactive": "Ukryty",
+    "yes": "Tak",
+    "no": "Nie",
+    "pagination": "Strony listy produktów",
+    "types": {
+      "digital": "Wzór cyfrowy",
+      "sweatshirt": "Bluza",
+      "tshirt": "Koszulka",
+      "tote": "Torba"
+    },
+    "errors": {
+      "loadFailed": "Nie udało się pobrać produktów. Spróbuj ponownie.",
+      "notFound": "Nie znaleziono produktu. Odśwież listę.",
+      "versionConflict": "Produkt został zmieniony. Odśwież listę przed kolejną zmianą.",
+      "visibilitySaveFailed": "Nie udało się potwierdzić zmiany widoczności. Odśwież listę, aby sprawdzić aktualny stan."
+    },
+    "hide": "Ukryj",
+    "show": "Pokaż",
+    "confirmHide": "Ukryć produkt „{{product}}” w sklepie?",
+    "confirmShow": "Pokazać produkt „{{product}}” w sklepie?",
+    "confirm": "Potwierdź zmianę",
+    "cancel": "Anuluj",
+    "saving": "Zapisywanie…",
+    "reload": "Odśwież listę"
+  },
   "auth": {
     "title": "Logowanie administratora",
     "description": "Zaloguj się, aby zarządzać sklepem.",
@@ -157,7 +194,8 @@
       "logoutUnavailable": "Nie udało się wylogować. Spróbuj ponownie."
     },
     "openOrders": "Przejdź do zamówień",
-    "openInquiries": "Przejdź do zapytań"
+    "openInquiries": "Przejdź do zapytań",
+    "openProducts": "Przejdź do produktów"
   },
   "nav": {
     "patterns": "Wzory haftów",

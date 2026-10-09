@@ -1,0 +1,189 @@
+<section class="products-page" aria-labelledby="products-title">
+  <h1 id="products-title">
+    {{ 'adminProducts.title' | transloco }}
+  </h1>
+
+  @if (isLoading()) {
+  <output>{{ 'adminProducts.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+  <p role="alert">{{ message | transloco }}</p>
+
+  @if (
+  message === 'adminOrders.errors.sessionExpired' ||
+  message === 'adminOrders.errors.accessDenied'
+  ) {
+  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+    {{ 'adminOrders.login' | transloco }}
+  </a>
+  } @else {
+  <button type="button" (click)="retry()">
+    {{ 'adminOrders.retry' | transloco }}
+  </button>
+  }
+  } @else if (products(); as result) {
+    @if (visibilityErrorKey(); as message) {
+    <div class="products-feedback">
+      <p role="alert">{{ message | transloco }}</p>
+    
+      @if (
+      message === 'adminOrders.errors.sessionExpired' ||
+      message === 'adminOrders.errors.accessDenied'
+      ) {
+      <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+        {{ 'adminOrders.login' | transloco }}
+      </a>
+      } @else {
+      <button type="button" data-testid="reload-products" (click)="retry()">
+        {{ 'adminProducts.reload' | transloco }}
+      </button>
+      }
+    </div>
+    } @else if (pendingProduct(); as product) {
+    <div class="products-feedback" [attr.aria-busy]="isSaving()">
+      <p>
+        {{
+        (
+        product.active
+        ? 'adminProducts.confirmHide'
+        : 'adminProducts.confirmShow'
+        ) | transloco: { product: product.slug }
+        }}
+      </p>
+    
+      <div class="products-actions">
+        <button type="button" data-testid="confirm-visibility" [disabled]="isSaving()" (click)="confirmVisibilityChange()">
+          {{
+          (
+          isSaving()
+          ? 'adminProducts.saving'
+          : 'adminProducts.confirm'
+          ) | transloco
+          }}
+        </button>
+    
+        <button type="button" data-testid="cancel-visibility" [disabled]="isSaving()" (click)="cancelVisibilityChange()">
+          {{ 'adminProducts.cancel' | transloco }}
+        </button>
+      </div>
+    </div>
+    }
+  @if (result.items.length === 0) {
+  <p>{{ 'adminProducts.empty' | transloco }}</p>
+  } @else {
+  <p>
+    {{ 'adminProducts.total' | transloco: { count: result.totalElements } }}
+  </p>
+
+  <div class="products-table-wrapper" tabindex="0" role="region"
+    [attr.aria-label]="'adminProducts.tableLabel' | transloco">
+    <table>
+      <caption class="visually-hidden">
+        {{ 'adminProducts.tableLabel' | transloco }}
+      </caption>
+
+      <thead>
+        <tr>
+          <th scope="col">{{ 'adminProducts.product' | transloco }}</th>
+          <th scope="col">{{ 'adminProducts.type' | transloco }}</th>
+          <th scope="col">{{ 'adminProducts.visibility' | transloco }}</th>
+          <th scope="col">{{ 'adminProducts.madeToOrder' | transloco }}</th>
+          <th scope="col">
+            {{ 'adminProducts.personalization' | transloco }}
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (product of result.items; track product.id) {
+        <tr>
+          <td>
+            <span>{{ product.slug }}</span>
+            <small>{{ product.id }}</small>
+          </td>
+
+          <td>
+            {{ 'adminProducts.types.' + product.productType | transloco }}
+          </td>
+
+          <td>
+            {{
+            (
+            product.active
+            ? 'adminProducts.active'
+            : 'adminProducts.inactive'
+            ) | transloco
+            }}
+
+            <button class="product-visibility-button" type="button" [attr.data-product-id]="product.id" [disabled]="
+                isSaving() ||
+                pendingProduct() !== null ||
+                visibilityErrorKey() !== null
+              " (click)="requestVisibilityChange(product)">
+              {{
+              (
+              product.active
+              ? 'adminProducts.hide'
+              : 'adminProducts.show'
+              ) | transloco
+              }}
+            </button>
+          </td>
+
+          <td>
+            {{
+            (
+            product.madeToOrder
+            ? 'adminProducts.yes'
+            : 'adminProducts.no'
+            ) | transloco
+            }}
+          </td>
+
+          <td>
+            {{
+            (
+            product.personalizationAvailable
+            ? 'adminProducts.yes'
+            : 'adminProducts.no'
+            ) | transloco
+            }}
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+
+  @if (result.totalPages > 1) {
+  <nav class="products-pagination" [attr.aria-label]="'adminProducts.pagination' | transloco">
+    <button type="button" [disabled]="
+  result.page === 0 ||
+  isSaving() ||
+  pendingProduct() !== null ||
+  visibilityErrorKey() !== null
+" (click)="previousPage()">
+      {{ 'adminOrders.previous' | transloco }}
+    </button>
+
+    <span>
+      {{
+      'adminOrders.page'
+      | transloco: {
+      current: result.page + 1,
+      total: result.totalPages
+      }
+      }}
+    </span>
+
+    <button type="button" [disabled]="result.page + 1 >= result.totalPages ||
+  isSaving() ||
+  pendingProduct() !== null ||
+  visibilityErrorKey() !== null
+" (click)="nextPage()">
+      {{ 'adminOrders.next' | transloco }}
+    </button>
+  </nav>
+  }
+  }
+</section>

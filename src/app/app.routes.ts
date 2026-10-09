@@ -79,6 +79,12 @@ const shopRoutes: Routes = [
     loadComponent: () =>
       import('./features/admin/inquiries/admin-inquiry-details').then((m) => m.AdminInquiryDetails),
   },
+  {
+    path: 'admin/products',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/products/admin-products').then((m) => m.AdminProducts),
+  },
 
   {
     path: 'checkout',

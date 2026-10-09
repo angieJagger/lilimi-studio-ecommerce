@@ -9,9 +9,13 @@
   <a class="button button--primary logout-button" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']">
     {{ 'auth.openOrders' | transloco }}
   </a>
-  
+
   <a class="button button--secondary logout-button" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'inquiries']">
     {{ 'auth.openInquiries' | transloco }}
+  </a>
+
+  <a class="button button--secondary logout-button" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'products']">
+    {{ 'auth.openProducts' | transloco }}
   </a>
 
   <button class="button button--secondary logout-button" type="button" [disabled]="isSubmitting()"
