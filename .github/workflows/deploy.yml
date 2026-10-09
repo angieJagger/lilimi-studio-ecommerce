@@ -2,9 +2,15 @@ name: Deploy to Lightsail
 
 on:
   workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Full commit SHA with successful CI and published images
+        required: true
+        type: string
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: lightsail-deployment
@@ -12,12 +18,38 @@ concurrency:
 
 jobs:
   deploy:
-    name: Check Lightsail connection
+    name: Deploy verified images
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 20
 
     steps:
+      - name: Verify selected version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$COMMIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Enter the full 40-character commit SHA."
+            exit 1
+          fi
+
+          successful_runs=$(gh api --method GET \
+            "repos/$REPOSITORY/actions/workflows/ci.yml/runs" \
+            -f head_sha="$COMMIT_SHA" \
+            -f branch=main \
+            -f event=push \
+            -f status=success \
+            --jq '.workflow_runs | length')
+
+          if [[ "$successful_runs" -eq 0 ]]; then
+            echo "This commit has no successful CI run on main."
+            exit 1
+          fi
+
       - name: Configure SSH
         env:
           SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
@@ -29,24 +61,80 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/lilimi-actions
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
 
-      - name: Check connection and Docker access
+      - name: Back up database and deploy
         env:
           SERVER_HOST: ${{ secrets.LIGHTSAIL_HOST }}
           SERVER_USER: ${{ secrets.LIGHTSAIL_USER }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
         run: |
           set -euo pipefail
+
           ssh \
             -i ~/.ssh/lilimi-actions \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
             -o ConnectTimeout=15 \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=4 \
             "$SERVER_USER@$SERVER_HOST" \
-            'set -eu
-             cd /home/ubuntu/lilimi
-             sudo -n docker compose config --quiet
-             sudo -n docker compose ps
-             echo "Lightsail connection and Docker access OK"'
+            "bash -s -- '$COMMIT_SHA'" <<'REMOTE'
+          set -euo pipefail
+          umask 077
+          cd /home/ubuntu/lilimi
+
+          exec 9>.deployment.lock
+          flock -n 9 || {
+            echo "Another deployment is already running."
+            exit 1
+          }
+
+          image_tag="sha-$1"
+
+          compose() {
+            sudo -n env IMAGE_TAG="$image_tag" docker compose "$@"
+          }
+
+          compose config --quiet
+          compose pull backend frontend
+
+          mkdir -p backups
+          chmod 700 backups
+          timestamp=$(date -u +%Y%m%d-%H%M%S)
+          backup_file="backups/lilimi-before-deploy-$timestamp.dump"
+
+          compose exec -T postgres \
+            pg_dump -U lilimi -d lilimi -Fc > "$backup_file"
+
+          test -s "$backup_file"
+          chmod 600 "$backup_file"
+          echo "Database backup created."
+
+          cp -p .env "backups/environment-before-deploy-$timestamp"
+          chmod 600 "backups/environment-before-deploy-$timestamp"
+
+          compose up -d --no-build --no-deps --force-recreate \
+            --wait --wait-timeout 180 backend
+
+          compose up -d --no-build --no-deps --force-recreate \
+            --wait --wait-timeout 180 frontend
+
+          compose restart gateway
+
+          curl --fail --silent --show-error \
+            --retry 5 --retry-delay 3 --retry-connrefused \
+            --connect-timeout 10 --max-time 30 \
+            --output /dev/null https://lilimistudio.com/en/products
+
+          if grep -q '^IMAGE_TAG=' .env; then
+            sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$image_tag/" .env
+          else
+            printf '\nIMAGE_TAG=%s\n' "$image_tag" >> .env
+          fi
+
+          compose ps
+          echo "Deployment completed: $image_tag"
+          REMOTE
 
       - name: Remove SSH credentials
         if: always()
