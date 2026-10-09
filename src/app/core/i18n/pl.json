@@ -1,4 +1,43 @@
 {
+  "adminInquiries": {
+    "title": "Zapytania projektowe",
+    "loading": "Ładowanie zapytań…",
+    "empty": "Brak zapytań do wyświetlenia.",
+    "total": "Liczba zapytań: {{ count }}",
+    "tableLabel": "Lista zapytań projektowych",
+    "date": "Data i numer",
+    "contact": "Kontakt",
+    "projectType": "Rodzaj projektu",
+    "pagination": "Strony listy zapytań",
+    "statuses": {
+      "new": "Nowe",
+      "in_progress": "W trakcie",
+      "answered": "Odpowiedziano",
+      "closed": "Zamknięte"
+    },
+    "details": {
+      "title": "Szczegóły zapytania",
+      "back": "Wróć do zapytań",
+      "login": "Przejdź do logowania",
+      "retry": "Spróbuj ponownie",
+      "summary": "Informacje o zapytaniu",
+      "reference": "Numer zapytania",
+      "createdAt": "Data utworzenia",
+      "status": "Status",
+      "language": "Język zapytania",
+      "productId": "Identyfikator produktu",
+      "description": "Opis projektu",
+      "languages": {
+        "pl": "Polski",
+        "en": "Angielski"
+      }
+    },
+    "errors": {
+      "loadFailed": "Nie udało się pobrać zapytań. Spróbuj ponownie.",
+      "notFound": "Nie znaleziono zapytania.",
+      "detailsLoadFailed": "Nie udało się pobrać szczegółów zapytania. Spróbuj ponownie."
+    }
+  },
   "adminOrderDetails": {
     "title": "Szczegóły zamówienia",
     "back": "Wróć do zamówień",
@@ -107,7 +146,8 @@
       "sessionUnavailable": "Nie udało się sprawdzić sesji. Spróbuj odświeżyć stronę.",
       "logoutUnavailable": "Nie udało się wylogować. Spróbuj ponownie."
     },
-    "openOrders": "Przejdź do zamówień"
+    "openOrders": "Przejdź do zamówień",
+    "openInquiries": "Przejdź do zapytań"
   },
   "nav": {
     "patterns": "Wzory haftów",
@@ -407,11 +447,23 @@
       "emailInvalid": "Podaj poprawny adres e-mail.",
       "projectTypeRequired": "Wybierz rodzaj projektu.",
       "descriptionRequired": "Opisz swój pomysł.",
-      "inspirationUrlInvalid": "Podaj pełny adres zaczynający się od https:// lub http://."
+      "inspirationUrlInvalid": "Podaj pełny adres zaczynający się od https:// lub http://.",
+      "productUnavailable": "Wybrany produkt jest niedostępny. Wróć do katalogu i sprawdź aktualną ofertę.",
+      "requestInvalid": "Sprawdź dane formularza. Niektóre pola mają nieprawidłową wartość lub są zbyt długie.",
+      "submitFailed": "Nie udało się potwierdzić wysłania zapytania. Sprawdź połączenie.",
+      "nameTooLong": "Imię może mieć maksymalnie 150 znaków.",
+      "emailTooLong": "Adres e-mail może mieć maksymalnie 254 znaki.",
+      "descriptionTooLong": "Opis może mieć maksymalnie 5000 znaków.",
+      "inspirationUrlTooLong": "Link może mieć maksymalnie 2048 znaków.",
+      "catalogLoading": "Trwa sprawdzanie wybranego produktu. Poczekaj chwilę i ponów wysłanie.",
+      "catalogUnavailable": "Nie udało się sprawdzić wybranego produktu. Odśwież stronę i spróbuj ponownie."
     },
 
-    "validationPassed": "Dane są poprawne. W tej wersji demonstracyjnej zapytanie nie zostało wysłane.",
-    "productContext": "Zapytanie dotyczy: {{ name }}"
+    "submitting": "Wysyłanie…",
+    "success": "Zapytanie zostało zapisane.",
+    "successDescription": "Zachowaj numer zapytania. Wysłanie formularza nie oznacza złożenia zamówienia.",
+    "reference": "Numer zapytania:",
+        "productContext": "Zapytanie dotyczy: {{ name }}"
   },
 
   "about": {

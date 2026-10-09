@@ -1,4 +1,43 @@
 {
+  "adminInquiries": {
+    "title": "Project inquiries",
+    "loading": "Loading inquiries…",
+    "empty": "No inquiries to display.",
+    "total": "Total inquiries: {{ count }}",
+    "tableLabel": "Project inquiry list",
+    "date": "Date and reference",
+    "contact": "Contact",
+    "projectType": "Project type",
+    "pagination": "Inquiry list pages",
+    "statuses": {
+      "new": "New",
+      "in_progress": "In progress",
+      "answered": "Answered",
+      "closed": "Closed"
+    },
+    "details": {
+      "title": "Inquiry details",
+      "back": "Back to inquiries",
+      "login": "Go to sign in",
+      "retry": "Try again",
+      "summary": "Inquiry information",
+      "reference": "Inquiry reference",
+      "createdAt": "Created at",
+      "status": "Status",
+      "language": "Inquiry language",
+      "productId": "Product ID",
+      "description": "Project description",
+      "languages": {
+        "pl": "Polish",
+        "en": "English"
+      }
+    },
+    "errors": {
+      "loadFailed": "Unable to load inquiries. Please try again.",
+      "notFound": "The inquiry could not be found.",
+      "detailsLoadFailed": "Could not load the inquiry details. Please try again."
+    }
+  },
   "adminOrderDetails": {
     "title": "Order details",
     "back": "Back to orders",
@@ -107,7 +146,8 @@
       "sessionUnavailable": "Unable to check your session. Please refresh the page.",
       "logoutUnavailable": "Unable to sign out. Please try again."
     },
-    "openOrders": "View orders"
+    "openOrders": "View orders",
+    "openInquiries": "View inquiries"
   },
   "nav": {
     "patterns": "Embroidery patterns",
@@ -407,10 +447,22 @@
       "emailInvalid": "Enter a valid email address.",
       "projectTypeRequired": "Select a project type.",
       "descriptionRequired": "Describe your idea.",
-      "inspirationUrlInvalid": "Enter a full URL starting with https:// or http://."
+      "inspirationUrlInvalid": "Enter a full URL starting with https:// or http://.",
+      "productUnavailable": "The selected product is unavailable. Return to the catalog to check the current offer.",
+      "requestInvalid": "Check your form details. Some fields contain invalid values or exceed the length limit.",
+      "submitFailed": "Unable to confirm submission of your inquiry. Check your connection.",
+      "nameTooLong": "The name must not exceed 150 characters.",
+      "emailTooLong": "The email address must not exceed 254 characters.",
+      "descriptionTooLong": "The description must not exceed 5000 characters.",
+      "inspirationUrlTooLong": "The URL must not exceed 2048 characters.",
+      "catalogLoading": "The selected product is being checked. Please wait a moment before submitting again.",
+      "catalogUnavailable": "Unable to check the selected product. Please refresh the page and try again."
     },
 
-    "validationPassed": "Your details are valid. This demo has not sent your inquiry.",
+    "submitting": "Submitting…",
+    "success": "Your inquiry has been saved.",
+    "successDescription": "Keep your inquiry reference. Submitting this form does not place an order.",
+    "reference": "Inquiry reference:",
     "productContext": "Your inquiry concerns: {{ name }}"
   },
 

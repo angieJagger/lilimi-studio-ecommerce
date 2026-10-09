@@ -1,0 +1,108 @@
+<section class="inquiry-details" aria-labelledby="inquiry-details-title">
+  <a class="inquiry-details__back" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'inquiries']">
+    {{ 'adminInquiries.details.back' | transloco }}
+  </a>
+
+  <h1 id="inquiry-details-title">
+    {{ 'adminInquiries.details.title' | transloco }}
+  </h1>
+
+  @if (isLoading()) {
+  <output>{{ 'adminInquiries.loading' | transloco }}</output>
+  } @else if (errorKey(); as error) {
+  <p role="alert">{{ error | transloco }}</p>
+
+  @if (
+  error === 'adminOrders.errors.sessionExpired' ||
+  error === 'adminOrders.errors.accessDenied'
+  ) {
+  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+    {{ 'adminInquiries.details.login' | transloco }}
+  </a>
+  } @else {
+  <button type="button" (click)="retry()">
+    {{ 'adminInquiries.details.retry' | transloco }}
+  </button>
+  }
+  } @else if (inquiry(); as details) {
+  <div class="inquiry-details__card">
+    <h2>{{ 'adminInquiries.details.summary' | transloco }}</h2>
+
+    <dl class="inquiry-details__metadata">
+      <div>
+        <dt>{{ 'adminInquiries.details.reference' | transloco }}</dt>
+        <dd>{{ details.id }}</dd>
+      </div>
+
+      <div>
+        <dt>{{ 'adminInquiries.details.createdAt' | transloco }}</dt>
+        <dd>
+          <time [attr.datetime]="details.createdAt">
+            {{ formatDate(details.createdAt) }}
+          </time>
+        </dd>
+      </div>
+
+      <div>
+        <dt>{{ 'adminInquiries.details.status' | transloco }}</dt>
+        <dd>
+          {{ 'adminInquiries.statuses.' + details.status | transloco }}
+        </dd>
+      </div>
+
+      <div>
+        <dt>{{ 'adminInquiries.projectType' | transloco }}</dt>
+        <dd>
+          {{
+          'projectInquiry.fields.projectType.options.' + details.projectType
+          | transloco
+          }}
+        </dd>
+      </div>
+
+      <div>
+        <dt>{{ 'adminInquiries.details.language' | transloco }}</dt>
+        <dd>
+          {{
+          'adminInquiries.details.languages.' + details.language | transloco
+          }}
+        </dd>
+      </div>
+
+      @if (details.productId) {
+      <div>
+        <dt>{{ 'adminInquiries.details.productId' | transloco }}</dt>
+        <dd>{{ details.productId }}</dd>
+      </div>
+      }
+    </dl>
+  </div>
+
+  <div class="inquiry-details__card">
+    <h2>{{ 'adminInquiries.contact' | transloco }}</h2>
+
+    <dl class="inquiry-details__metadata">
+      <div>
+        <dt>{{ 'projectInquiry.fields.name.label' | transloco }}</dt>
+        <dd>{{ details.name }}</dd>
+      </div>
+
+      <div>
+        <dt>{{ 'projectInquiry.fields.email.label' | transloco }}</dt>
+        <dd>{{ details.email }}</dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="inquiry-details__card">
+    <h2>{{ 'adminInquiries.details.description' | transloco }}</h2>
+
+    <p class="inquiry-details__description">{{ details.description }}</p>
+
+    @if (details.inspirationUrl) {
+    <h3>{{ 'projectInquiry.fields.inspirationUrl.label' | transloco }}</h3>
+    <p class="inquiry-details__inspiration">{{ details.inspirationUrl }}</p>
+    }
+  </div>
+  }
+</section>

@@ -59,18 +59,25 @@ const shopRoutes: Routes = [
   {
     path: 'admin/orders',
     canActivate: [adminGuard],
-    loadComponent: () =>
-      import('./features/admin/orders/admin-orders').then(
-        (m) => m.AdminOrders,
-      ),
+    loadComponent: () => import('./features/admin/orders/admin-orders').then((m) => m.AdminOrders),
   },
   {
     path: 'admin/orders/:id',
     canActivate: [adminGuard],
     loadComponent: () =>
-      import('./features/admin/orders/admin-order-details').then(
-        (m) => m.AdminOrderDetails,
-      ),
+      import('./features/admin/orders/admin-order-details').then((m) => m.AdminOrderDetails),
+  },
+  {
+    path: 'admin/inquiries',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/inquiries/admin-inquiries').then((m) => m.AdminInquiries),
+  },
+  {
+    path: 'admin/inquiries/:id',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/inquiries/admin-inquiry-details').then((m) => m.AdminInquiryDetails),
   },
 
   {

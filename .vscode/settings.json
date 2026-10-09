@@ -6,5 +6,8 @@
         "vue",
         "vue-html",
         "angular"
+    ],
+    "cSpell.words": [
+        "transloco"
     ]
 }

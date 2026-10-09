@@ -1,0 +1,107 @@
+<section class="inquiries-page" aria-labelledby="inquiries-title">
+  <h1 id="inquiries-title">{{ 'adminInquiries.title' | transloco }}</h1>
+
+  @if (isLoading()) {
+  <output>{{ 'adminInquiries.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+  <p role="alert">{{ message | transloco }}</p>
+
+  @if (
+  message === 'adminOrders.errors.sessionExpired' ||
+  message === 'adminOrders.errors.accessDenied'
+  ) {
+  <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+    {{ 'adminOrders.login' | transloco }}
+  </a>
+  } @else {
+  <button class="button button--secondary" type="button" (click)="retry()">
+    {{ 'adminOrders.retry' | transloco }}
+  </button>
+  }
+  } @else if (inquiries(); as result) {
+  @if (result.items.length === 0) {
+  <p>{{ 'adminInquiries.empty' | transloco }}</p>
+  } @else {
+  <p>
+    {{ 'adminInquiries.total' | transloco: { count: result.totalElements } }}
+  </p>
+
+  <div class="inquiries-table-wrapper" tabindex="0" role="region"
+    [attr.aria-label]="'adminInquiries.tableLabel' | transloco">
+    <table>
+      <caption class="visually-hidden">
+        {{ 'adminInquiries.tableLabel' | transloco }}
+      </caption>
+
+      <thead>
+        <tr>
+          <th scope="col">{{ 'adminInquiries.date' | transloco }}</th>
+          <th scope="col">{{ 'adminInquiries.contact' | transloco }}</th>
+          <th scope="col">{{ 'adminInquiries.projectType' | transloco }}</th>
+          <th scope="col">{{ 'adminOrders.status' | transloco }}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (inquiry of result.items; track inquiry.id) {
+        <tr>
+          <td>
+            <time [attr.datetime]="inquiry.createdAt">
+              {{ formatDate(inquiry.createdAt) }}
+            </time>
+            <small class="inquiry-reference">
+              <a [routerLink]="[
+                  '/',
+                  transloco.getActiveLang(),
+                  'admin',
+                  'inquiries',
+                  inquiry.id
+                ]">
+                {{ inquiry.id }}
+              </a>
+            </small>
+          </td>
+          <td>
+            <span>{{ inquiry.name }}</span>
+            <small>{{ inquiry.email }}</small>
+          </td>
+          <td>
+            {{
+            ('projectInquiry.fields.projectType.options.' + inquiry.projectType)
+            | transloco
+            }}
+          </td>
+          <td>
+            {{ ('adminInquiries.statuses.' + inquiry.status) | transloco }}
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+
+  @if (result.totalPages > 1) {
+  <nav class="inquiries-pagination" [attr.aria-label]="'adminInquiries.pagination' | transloco">
+    <button class="button button--secondary" type="button" [disabled]="result.page === 0" (click)="previousPage()">
+      {{ 'adminOrders.previous' | transloco }}
+    </button>
+
+    <span>
+      {{
+      'adminOrders.page'
+      | transloco: {
+      current: result.page + 1,
+      total: result.totalPages
+      }
+      }}
+    </span>
+
+    <button class="button button--secondary" type="button" [disabled]="result.page + 1 >= result.totalPages"
+      (click)="nextPage()">
+      {{ 'adminOrders.next' | transloco }}
+    </button>
+  </nav>
+  }
+  }
+</section>
