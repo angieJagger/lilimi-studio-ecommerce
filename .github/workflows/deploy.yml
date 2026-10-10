@@ -92,8 +92,8 @@ jobs:
           image_tag="sha-$1"
 
           compose() {
-            sudo -n env IMAGE_TAG="$image_tag" docker compose "$@"
-          }
+            sudo -n env IMAGE_TAG="$image_tag" docker compose "$@" < /dev/null
+          };
 
           compose config --quiet
           compose pull backend frontend
@@ -118,6 +118,21 @@ jobs:
 
           compose up -d --no-build --no-deps --force-recreate \
             --wait --wait-timeout 180 frontend
+
+          for service in backend frontend; do
+            container_id=$(compose ps -q "$service")
+            test -n "$container_id"
+
+            actual_image=$(sudo -n docker inspect \
+              --format '{{.Config.Image}}' "$container_id" < /dev/null)
+
+            expected_image="ghcr.io/angiejagger/lilimi-$service:$image_tag"
+
+            if [[ "$actual_image" != "$expected_image" ]]; then
+              echo "Incorrect image running for $service."
+              exit 1
+            fi
+          done
 
           compose restart gateway
 
