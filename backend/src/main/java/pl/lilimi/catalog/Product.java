@@ -21,6 +21,9 @@ public class Product {
   @Column(name = "version", nullable = false)
   private long version;
 
+  @Column(name = "translations_revision", nullable = false)
+  private long translationsRevision;
+
   @Column(name = "slug", length = 160, nullable = false, unique = true)
   private String slug;
 
@@ -51,6 +54,13 @@ public class Product {
 
   public void changeVisibility(boolean active) {
     this.active = active;
+  }
+
+  public void markTranslationsChanged() {
+    translationsRevision = Math.addExact(
+      translationsRevision,
+      1
+    );
   }
 
   public String getId() {

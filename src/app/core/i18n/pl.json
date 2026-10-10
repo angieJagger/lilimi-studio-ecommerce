@@ -162,7 +162,9 @@
       "loadFailed": "Nie udało się pobrać produktów. Spróbuj ponownie.",
       "notFound": "Nie znaleziono produktu. Odśwież listę.",
       "versionConflict": "Produkt został zmieniony. Odśwież listę przed kolejną zmianą.",
-      "visibilitySaveFailed": "Nie udało się potwierdzić zmiany widoczności. Odśwież listę, aby sprawdzić aktualny stan."
+      "visibilitySaveFailed": "Nie udało się potwierdzić zmiany widoczności. Odśwież listę, aby sprawdzić aktualny stan.",
+      "detailsLoadFailed": "Nie udało się pobrać szczegółów produktu. Spróbuj ponownie.",
+      "translationsMissing": "Brakuje tłumaczenia PL lub EN. Nie można otworzyć formularza edycji."
     },
     "hide": "Ukryj",
     "show": "Pokaż",
@@ -171,7 +173,30 @@
     "confirm": "Potwierdź zmianę",
     "cancel": "Anuluj",
     "saving": "Zapisywanie…",
-    "reload": "Odśwież listę"
+    "reload": "Odśwież listę",
+    "edit": {
+      "title": "Edycja produktu",
+      "back": "Wróć do produktów",
+      "name": "Nazwa produktu",
+      "description": "Opis produktu",
+      "save": "Zapisz tłumaczenia",
+      "saving": "Zapisywanie…",
+      "saved": "Tłumaczenia zostały zapisane.",
+      "reloadNotice": "Odświeżenie zastąpi wpisane treści danymi z serwera. Skopiuj swoje zmiany, jeśli chcesz je zachować.",
+      "languages": {
+        "pl": "Polski",
+        "en": "Angielski"
+      },
+      "errors": {
+        "nameRequired": "Podaj nazwę produktu.",
+        "descriptionRequired": "Podaj opis produktu.",
+        "nameTooLong": "Nazwa może mieć maksymalnie 200 znaków.",
+        "descriptionTooLong": "Opis może mieć maksymalnie 5000 znaków.",
+        "invalidRequest": "Dane zostały odrzucone. Odśwież produkt i sprawdź treść obu tłumaczeń.",
+        "conflict": "Nie można zapisać tłumaczeń w obecnym stanie produktu. Odśwież dane.",
+        "saveFailed": "Nie udało się potwierdzić zapisu tłumaczeń. Odśwież produkt, aby sprawdzić aktualny stan."
+      }
+    }
   },
   "auth": {
     "title": "Logowanie administratora",

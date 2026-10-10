@@ -125,4 +125,73 @@ class AdminProductControllerTest {
       )
       .andExpect(status().isBadRequest());
   }
+  @Test
+  void shouldReturnProductDetailsWithBothTranslations()
+    throws Exception {
+    var product = products.findById("pattern-001").orElseThrow();
+
+    mockMvc.perform(
+        get("/api/admin/products/{id}", product.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.id").value("pattern-001"))
+      .andExpect(jsonPath("$.slug").value("forest-dragon"))
+      .andExpect(jsonPath("$.productType").value("digital"))
+      .andExpect(jsonPath("$.active").value(true))
+      .andExpect(jsonPath("$.version").value(
+        Math.toIntExact(product.getVersion())
+      ))
+      .andExpect(jsonPath("$.translations.length()").value(2))
+      .andExpect(jsonPath("$.translations[0].language").value("en"))
+      .andExpect(jsonPath("$.translations[1].language").value("pl"))
+      .andExpect(jsonPath("$.translations[0].name").isNotEmpty())
+      .andExpect(jsonPath("$.translations[0].description").isNotEmpty())
+      .andExpect(jsonPath("$.translations[1].name").isNotEmpty())
+      .andExpect(jsonPath("$.translations[1].description").isNotEmpty());
+  }
+
+  @Test
+  void shouldReturnDetailsOfHiddenProduct() throws Exception {
+    jdbc.update(
+      "UPDATE products SET active = FALSE WHERE id = ?",
+      "pattern-001"
+    );
+
+    mockMvc.perform(
+        get("/api/admin/products/{id}", "pattern-001")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.active").value(false))
+      .andExpect(jsonPath("$.translations.length()").value(2));
+  }
+
+  @Test
+  void shouldRejectAnonymousUserForProductDetails()
+    throws Exception {
+    mockMvc.perform(
+        get("/api/admin/products/{id}", "pattern-001")
+      )
+      .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void shouldRejectCustomerForProductDetails() throws Exception {
+    mockMvc.perform(
+        get("/api/admin/products/{id}", "pattern-001")
+          .with(user("customer@example.com").roles("CUSTOMER"))
+      )
+      .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void shouldReturnNotFoundForMissingProductDetails()
+    throws Exception {
+    mockMvc.perform(
+        get("/api/admin/products/{id}", "missing-product")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isNotFound());
+  }
 }

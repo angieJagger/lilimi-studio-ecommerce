@@ -73,6 +73,7 @@ Submitting an inquiry does not create an order or send an email.
 - Inquiry status updates with validated transitions and optimistic locking.
 - Paginated product list including active and hidden products.
 - Product visibility updates with confirmation and optimistic locking.
+- Editing Polish and English product names and descriptions with validation and optimistic locking.
 
 ## A closer look
 
@@ -240,6 +241,8 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | PATCH | `/api/admin/project-inquiries/{id}/status` | Update an inquiry status |
 | GET | `/api/admin/products` | Paginated administrator product list |
 | PATCH | `/api/admin/products/{id}/visibility` | Update product visibility |
+| GET | `/api/admin/products/{id}` | Administrator product details and translations |
+| PATCH | `/api/admin/products/{id}/translations` | Update Polish and English product translations |
 
 Administrator endpoints require the `ADMIN` role. State-changing requests require a valid CSRF token. Order submission also uses an `Idempotency-Key` header.
 

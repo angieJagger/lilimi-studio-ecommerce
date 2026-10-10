@@ -22,6 +22,35 @@ public class ProductTranslation {
     // Required by JPA.
   }
 
+  public void updateContent(String name, String description) {
+    if (name == null || name.isBlank()) {
+      throw new IllegalArgumentException(
+        "Product name is required"
+      );
+    }
+
+    if (description == null || description.isBlank()) {
+      throw new IllegalArgumentException(
+        "Product description is required"
+      );
+    }
+
+    var normalizedName = name.trim();
+    var normalizedDescription = description.trim();
+
+    if (
+      normalizedName.length() > 200 ||
+        normalizedDescription.length() > 5000
+    ) {
+      throw new IllegalArgumentException(
+        "Product translation exceeds the allowed length"
+      );
+    }
+
+    this.name = normalizedName;
+    this.description = normalizedDescription;
+  }
+
   public ProductTranslationId getId() {
     return id;
   }

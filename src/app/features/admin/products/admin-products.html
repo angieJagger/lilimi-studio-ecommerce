@@ -97,7 +97,16 @@
         @for (product of result.items; track product.id) {
         <tr>
           <td>
-            <span>{{ product.slug }}</span>
+            <a [routerLink]="[
+                '/',
+                transloco.getActiveLang(),
+                'admin',
+                'products',
+                product.id,
+                'edit'
+              ]">
+              {{ product.slug }}
+            </a>
             <small>{{ product.id }}</small>
           </td>
 

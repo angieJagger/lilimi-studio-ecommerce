@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.lilimi.catalog.admin.application.AdminProductQueryService;
 import pl.lilimi.catalog.admin.application.AdminProductVisibilityService;
+import pl.lilimi.catalog.admin.application.AdminProductTranslationService;
 
 @RestController
 @RequestMapping("/api/admin/products")
@@ -19,13 +20,16 @@ public class AdminProductController {
 
   private final AdminProductQueryService queryService;
   private final AdminProductVisibilityService visibilityService;
+  private final AdminProductTranslationService translationService;
 
   public AdminProductController(
     AdminProductQueryService queryService,
-    AdminProductVisibilityService visibilityService
+    AdminProductVisibilityService visibilityService,
+    AdminProductTranslationService translationService
   ) {
     this.queryService = queryService;
     this.visibilityService = visibilityService;
+    this.translationService = translationService;
   }
 
   @GetMapping
@@ -36,6 +40,21 @@ public class AdminProductController {
     return AdminProductPageResponse.from(
       queryService.findProducts(page, size)
     );
+  }
+
+  @GetMapping("/{id}")
+  public AdminProductDetailsResponse findProduct(
+    @PathVariable String id
+  ) {
+    return queryService.findProduct(id);
+  }
+
+  @PatchMapping("/{id}/translations")
+  public AdminProductDetailsResponse updateTranslations(
+    @PathVariable String id,
+    @Valid @RequestBody UpdateProductTranslationsRequest request
+  ) {
+    return translationService.updateTranslations(id, request);
   }
 
   @PatchMapping("/{id}/visibility")

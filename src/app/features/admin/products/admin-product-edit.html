@@ -1,0 +1,132 @@
+<section class="product-edit" aria-labelledby="product-edit-title">
+  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'products']">
+    {{ 'adminProducts.edit.back' | transloco }}
+  </a>
+
+  <h1 id="product-edit-title">
+    {{ 'adminProducts.edit.title' | transloco }}
+  </h1>
+
+  @if (isLoading()) {
+  <output>{{ 'adminProducts.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+  <p role="alert">{{ message | transloco }}</p>
+
+  @if (
+  message === 'adminOrders.errors.sessionExpired' ||
+  message === 'adminOrders.errors.accessDenied'
+  ) {
+  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+    {{ 'adminOrders.login' | transloco }}
+  </a>
+  } @else {
+  <button type="button" (click)="retry()">
+    {{ 'adminProducts.reload' | transloco }}
+  </button>
+  }
+  } @else if (product(); as details) {
+  <p class="product-edit__reference">
+    {{ details.slug }} · {{ details.id }}
+  </p>
+
+  @if (saved()) {
+  <output class="product-edit__success">
+    {{ 'adminProducts.edit.saved' | transloco }}
+  </output>
+  }
+
+  @if (saveErrorKey(); as message) {
+  <div class="product-edit__feedback">
+    <p role="alert">{{ message | transloco }}</p>
+
+    @if (
+    message === 'adminOrders.errors.sessionExpired' ||
+    message === 'adminOrders.errors.accessDenied'
+    ) {
+    <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+      {{ 'adminOrders.login' | transloco }}
+    </a>
+    } @else {
+    <p>{{ 'adminProducts.edit.reloadNotice' | transloco }}</p>
+
+    <button type="button" data-testid="reload-product" [disabled]="isSaving()" (click)="retry()">
+      {{ 'adminProducts.reload' | transloco }}
+    </button>
+    }
+  </div>
+  }
+
+  <form novalidate (submit)="onSubmit($event)" [attr.aria-busy]="isSaving()">
+    <fieldset class="product-edit__fields" [disabled]="isSaving() || saveErrorKey() !== null">
+      @for (group of translationGroups; track group.language) {
+      <fieldset class="product-edit__language">
+        <legend>
+          {{ 'adminProducts.edit.languages.' + group.language | transloco }}
+        </legend>
+
+        <div class="form-field">
+          <label [for]="'product-name-' + group.language">
+            {{ 'adminProducts.edit.name' | transloco }}
+          </label>
+
+          <input [id]="'product-name-' + group.language" type="text" [formField]="group.name" [attr.aria-invalid]="
+                  group.name().touched() && group.name().invalid()
+                    ? 'true'
+                    : null
+                " [attr.aria-describedby]="
+                  group.name().touched() && group.name().invalid()
+                    ? 'product-name-errors-' + group.language
+                    : null
+                " />
+
+          @if (group.name().touched() && group.name().invalid()) {
+          <ul class="form-field__errors" [id]="'product-name-errors-' + group.language">
+            @for (error of group.name().errors(); track $index) {
+            <li>{{ error.message! | transloco }}</li>
+            }
+          </ul>
+          }
+        </div>
+
+        <div class="form-field">
+          <label [for]="'product-description-' + group.language">
+            {{ 'adminProducts.edit.description' | transloco }}
+          </label>
+
+          <textarea [id]="'product-description-' + group.language" rows="8" [formField]="group.description"
+            [attr.aria-invalid]="
+                  group.description().touched() && group.description().invalid()
+                    ? 'true'
+                    : null
+                " [attr.aria-describedby]="
+                  group.description().touched() && group.description().invalid()
+                    ? 'product-description-errors-' + group.language
+                    : null
+                "></textarea>
+
+          @if (
+          group.description().touched() && group.description().invalid()
+          ) {
+          <ul class="form-field__errors" [id]="'product-description-errors-' + group.language">
+            @for (error of group.description().errors(); track $index) {
+            <li>{{ error.message! | transloco }}</li>
+            }
+          </ul>
+          }
+        </div>
+      </fieldset>
+      }
+
+      <button type="submit">
+        {{
+        (
+        isSaving()
+        ? 'adminProducts.edit.saving'
+        : 'adminProducts.edit.save'
+        ) | transloco
+        }}
+      </button>
+    </fieldset>
+  </form>
+  }
+</section>

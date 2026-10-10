@@ -22,3 +22,26 @@ export interface ChangeProductVisibilityRequest {
   readonly active: boolean;
   readonly expectedVersion: number;
 }
+
+export type ProductTranslationLanguage = 'pl' | 'en';
+
+export interface AdminProductTranslation {
+  readonly language: ProductTranslationLanguage;
+  readonly name: string;
+  readonly description: string;
+}
+
+export interface AdminProductDetails extends AdminProductSummary {
+  readonly translations: readonly AdminProductTranslation[];
+}
+
+export interface UpdateProductTranslationRequest {
+  readonly name: string;
+  readonly description: string;
+}
+
+export interface UpdateProductTranslationsRequest {
+  readonly pl: UpdateProductTranslationRequest;
+  readonly en: UpdateProductTranslationRequest;
+  readonly expectedVersion: number;
+}

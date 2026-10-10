@@ -162,7 +162,9 @@
       "loadFailed": "Could not load products. Please try again.",
       "notFound": "The product could not be found. Reload the list.",
       "versionConflict": "The product has been modified. Reload the list before making another change.",
-      "visibilitySaveFailed": "The visibility change could not be confirmed. Reload the list to check the current state."
+      "visibilitySaveFailed": "The visibility change could not be confirmed. Reload the list to check the current state.",
+      "detailsLoadFailed": "Could not load product details. Please try again.",
+      "translationsMissing": "The Polish or English translation is missing. The editing form cannot be opened."
     },
     "hide": "Hide",
     "show": "Show",
@@ -171,7 +173,30 @@
     "confirm": "Confirm change",
     "cancel": "Cancel",
     "saving": "Saving…",
-    "reload": "Reload list"
+    "reload": "Reload list",
+    "edit": {
+      "title": "Edit product",
+      "back": "Back to products",
+      "name": "Product name",
+      "description": "Product description",
+      "save": "Save translations",
+      "saving": "Saving…",
+      "saved": "Translations have been saved.",
+      "reloadNotice": "Reloading will replace your entries with server data. Copy your changes first if you want to keep them.",
+      "languages": {
+        "pl": "Polish",
+        "en": "English"
+      },
+      "errors": {
+        "nameRequired": "Enter a product name.",
+        "descriptionRequired": "Enter a product description.",
+        "nameTooLong": "The name must not exceed 200 characters.",
+        "descriptionTooLong": "The description must not exceed 5000 characters.",
+        "invalidRequest": "The data was rejected. Reload the product and check both translations.",
+        "conflict": "Translations cannot be saved in the product's current state. Reload its details.",
+        "saveFailed": "The translation update could not be confirmed. Reload the product to check the current state."
+      }
+    }
   },
   "auth": {
     "title": "Administrator login",
