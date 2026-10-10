@@ -187,6 +187,22 @@
         "pl": "Polski",
         "en": "Angielski"
       },
+      "price": {
+        "title": "Cena produktu cyfrowego",
+        "label": "Cena w PLN",
+        "hint": "Podaj kwotę w złotych, np. 29,90. Cena musi być większa od zera.",
+        "save": "Zapisz cenę",
+        "saving": "Trwa zapis…",
+        "saved": "Cena została zapisana.",
+        "errors": {
+          "required": "Podaj cenę.",
+          "invalid": "Podaj dodatnią kwotę z maksymalnie dwoma miejscami po przecinku, nie większą niż 21 474 836,47 zł.",
+          "invalidRequest": "Dane ceny są niepoprawne. Odśwież produkt i spróbuj ponownie.",
+          "conflict": "Nie można zapisać ceny. Odśwież produkt, aby sprawdzić jego aktualny stan.",
+          "saveFailed": "Nie udało się potwierdzić zapisu ceny. Odśwież produkt, aby sprawdzić aktualny stan.",
+          "missing": "Produkt nie ma zapisanej ceny. Edycja ceny jest niedostępna."
+        }
+      },
       "errors": {
         "nameRequired": "Podaj nazwę produktu.",
         "descriptionRequired": "Podaj opis produktu.",
@@ -196,7 +212,7 @@
         "conflict": "Nie można zapisać tłumaczeń w obecnym stanie produktu. Odśwież dane.",
         "saveFailed": "Nie udało się potwierdzić zapisu tłumaczeń. Odśwież produkt, aby sprawdzić aktualny stan."
       }
-    }
+    }    
   },
   "auth": {
     "title": "Logowanie administratora",

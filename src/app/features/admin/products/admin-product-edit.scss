@@ -130,3 +130,7 @@ textarea:focus-visible {
     padding: 20px 16px;
   }
 }
+
+section[aria-labelledby='product-price-title'] {
+  margin-block: 2rem;
+}

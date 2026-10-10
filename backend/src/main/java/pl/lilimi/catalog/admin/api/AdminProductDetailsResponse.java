@@ -15,6 +15,7 @@ public record AdminProductDetailsResponse(
   boolean active,
   boolean madeToOrder,
   boolean personalizationAvailable,
+  Integer digitalPriceInGrosz,
   List<AdminProductTranslationResponse> translations
 ) {
 
@@ -24,7 +25,8 @@ public record AdminProductDetailsResponse(
 
   public static AdminProductDetailsResponse from(
     Product product,
-    List<ProductTranslation> translations
+    List<ProductTranslation> translations,
+    Integer digitalPriceInGrosz
   ) {
     return new AdminProductDetailsResponse(
       product.getId(),
@@ -34,6 +36,7 @@ public record AdminProductDetailsResponse(
       product.isActive(),
       product.isMadeToOrder(),
       product.isPersonalizationAvailable(),
+      digitalPriceInGrosz,
       translations.stream()
         .map(AdminProductTranslationResponse::from)
         .sorted(

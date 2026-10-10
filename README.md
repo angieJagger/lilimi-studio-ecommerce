@@ -74,6 +74,8 @@ Submitting an inquiry does not create an order or send an email.
 - Paginated product list including active and hidden products.
 - Product visibility updates with confirmation and optimistic locking.
 - Editing Polish and English product names and descriptions with validation and optimistic locking.
+- Editing digital product prices in PLN with validation and optimistic locking.
+- Price updates preserve unsaved product translation edits.
 
 ## A closer look
 
@@ -241,8 +243,9 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | PATCH | `/api/admin/project-inquiries/{id}/status` | Update an inquiry status |
 | GET | `/api/admin/products` | Paginated administrator product list |
 | PATCH | `/api/admin/products/{id}/visibility` | Update product visibility |
-| GET | `/api/admin/products/{id}` | Administrator product details and translations |
+| GET | `/api/admin/products/{id}` | Administrator product details, translations, and digital price |
 | PATCH | `/api/admin/products/{id}/translations` | Update Polish and English product translations |
+| PATCH | `/api/admin/products/{id}/digital-price` | Update a digital product price |
 
 Administrator endpoints require the `ADMIN` role. State-changing requests require a valid CSRF token. Order submission also uses an `Idempotency-Key` header.
 
@@ -282,9 +285,9 @@ Docker Compose runs:
 
 The backend and database are not directly exposed through public host ports.
 
-Deployment currently uses locally built Docker images transferred to the server. Database backups are taken before deployment, and container health checks verify application startup.
+GitHub Actions runs frontend and backend tests and builds. Successful CI runs for pushes to `main` publish Docker images to GitHub Container Registry, tagged with the full commit SHA.
 
-Automated testing, image publishing, and deployment through GitHub Actions are the next infrastructure milestone.
+Deployment is started manually through the “Deploy to Lightsail” workflow by selecting a commit with successful CI and published images. The workflow connects over SSH, backs up the database, pulls the selected images, recreates application containers, and checks their health and running image tags.
 
 ### Run the complete stack locally
 
@@ -307,8 +310,7 @@ This stack uses a separate database volume from the database-only development st
 ## Next milestones
 
 - Complete administrator inquiry details tests and update remaining demo copy.
-- Introduce GitHub Actions for tests, Docker image publishing, and deployment.
-- Add editing of product translations, prices, and garment variants.
+- Add editing of garment variants and their prices.
 - Implement customer registration, login, and order history.
 - Add email verification, password recovery, and transactional emails.
 - Integrate payments and controlled delivery of purchased digital files.

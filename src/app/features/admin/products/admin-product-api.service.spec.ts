@@ -30,6 +30,7 @@ describe('AdminProductApiService', () => {
 
   const details: AdminProductDetails = {
     ...page.items[0],
+    digitalPriceInGrosz: 2900,
     translations: [
       {
         language: 'en',
@@ -319,4 +320,99 @@ describe('AdminProductApiService', () => {
 
       http.expectNone(`/api/admin/products/${details.id}/translations`);
     });
+
+      it('should initialize CSRF before saving a digital price', () => {
+        const request = {
+          priceInGrosz: 3550,
+          expectedVersion: details.version,
+        };
+
+        const updated: AdminProductDetails = {
+          ...details,
+          version: details.version + 1,
+          digitalPriceInGrosz: 3550,
+        };
+
+        let result: AdminProductDetails | undefined;
+
+        service.updateDigitalPrice(details.id, request).subscribe((response) => {
+          result = response;
+        });
+
+        const url = `/api/admin/products/${details.id}/digital-price`;
+        const csrfRequest = http.expectOne('/api/auth/csrf');
+
+        expect(csrfRequest.request.method).toBe('GET');
+        http.expectNone(url);
+
+        csrfRequest.flush(null, {
+          status: 204,
+          statusText: 'No Content',
+        });
+
+        const pending = http.expectOne(url);
+
+        expect(pending.request.method).toBe('PATCH');
+        expect(pending.request.body).toEqual(request);
+
+        pending.flush(updated);
+
+        expect(result).toEqual(updated);
+      });
+
+      it('should propagate a price version conflict without retrying', () => {
+        let receivedError: HttpErrorResponse | undefined;
+
+        service
+          .updateDigitalPrice(details.id, {
+            priceInGrosz: 3550,
+            expectedVersion: details.version,
+          })
+          .subscribe({
+            error: (error: HttpErrorResponse) => {
+              receivedError = error;
+            },
+          });
+
+        http.expectOne('/api/auth/csrf').flush(null, {
+          status: 204,
+          statusText: 'No Content',
+        });
+
+        const url = `/api/admin/products/${details.id}/digital-price`;
+
+        http
+          .expectOne(url)
+          .flush({ code: 'PRODUCT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
+
+        expect(receivedError?.status).toBe(409);
+        expect(receivedError?.error.code).toBe('PRODUCT_VERSION_CONFLICT');
+
+        http.expectNone(url);
+        http.expectNone('/api/auth/csrf');
+      });
+
+      it('should not save a price when CSRF initialization fails', () => {
+        let receivedError: HttpErrorResponse | undefined;
+
+        service
+          .updateDigitalPrice(details.id, {
+            priceInGrosz: 3550,
+            expectedVersion: details.version,
+          })
+          .subscribe({
+            error: (error: HttpErrorResponse) => {
+              receivedError = error;
+            },
+          });
+
+        http.expectOne('/api/auth/csrf').flush(null, {
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
+
+        expect(receivedError?.status).toBe(503);
+
+        http.expectNone(`/api/admin/products/${details.id}/digital-price`);
+      });
 });

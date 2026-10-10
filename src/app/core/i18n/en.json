@@ -187,6 +187,22 @@
         "pl": "Polish",
         "en": "English"
       },
+      "price": {
+        "title": "Digital product price",
+        "label": "Price in PLN",
+        "hint": "Enter an amount in PLN, for example 29.90. The price must be greater than zero.",
+        "save": "Save price",
+        "saving": "Saving…",
+        "saved": "The price has been saved.",
+        "errors": {
+          "required": "Enter a price.",
+          "invalid": "Enter a positive amount with up to two decimal places, no greater than PLN 21,474,836.47.",
+          "invalidRequest": "The price data is invalid. Reload the product and try again.",
+          "conflict": "The price cannot be saved. Reload the product to check its current state.",
+          "saveFailed": "The price save could not be confirmed. Reload the product to check its current state.",
+          "missing": "This product has no saved price. Price editing is unavailable."
+        }
+      },
       "errors": {
         "nameRequired": "Enter a product name.",
         "descriptionRequired": "Enter a product description.",

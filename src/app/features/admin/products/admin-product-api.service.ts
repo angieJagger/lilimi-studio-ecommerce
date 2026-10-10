@@ -9,6 +9,7 @@ import type {
   AdminProductSummary,
   ChangeProductVisibilityRequest,
   UpdateProductTranslationsRequest,
+  UpdateDigitalProductPriceRequest,
 } from './admin-product.model';
 
 @Injectable({
@@ -41,6 +42,22 @@ export class AdminProductApiService {
         switchMap(() =>
           this.http.patch<AdminProductDetails>(
             `${this.baseUrl}/admin/products/${encodeURIComponent(id)}/translations`,
+            request,
+          ),
+        ),
+      );
+  }
+
+  updateDigitalPrice(
+    id: string,
+    request: UpdateDigitalProductPriceRequest,
+  ): Observable<AdminProductDetails> {
+    return this.csrf
+      .initialize()
+      .pipe(
+        switchMap(() =>
+          this.http.patch<AdminProductDetails>(
+            `${this.baseUrl}/admin/products/${encodeURIComponent(id)}/digital-price`,
             request,
           ),
         ),

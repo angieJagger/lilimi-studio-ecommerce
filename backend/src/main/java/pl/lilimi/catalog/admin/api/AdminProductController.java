@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.lilimi.catalog.admin.application.AdminProductQueryService;
 import pl.lilimi.catalog.admin.application.AdminProductVisibilityService;
 import pl.lilimi.catalog.admin.application.AdminProductTranslationService;
+import pl.lilimi.catalog.admin.application.AdminProductPriceService;
 
 @RestController
 @RequestMapping("/api/admin/products")
@@ -21,15 +22,18 @@ public class AdminProductController {
   private final AdminProductQueryService queryService;
   private final AdminProductVisibilityService visibilityService;
   private final AdminProductTranslationService translationService;
+  private final AdminProductPriceService priceService;
 
   public AdminProductController(
     AdminProductQueryService queryService,
     AdminProductVisibilityService visibilityService,
-    AdminProductTranslationService translationService
+    AdminProductTranslationService translationService,
+    AdminProductPriceService priceService
   ) {
     this.queryService = queryService;
     this.visibilityService = visibilityService;
     this.translationService = translationService;
+    this.priceService = priceService;
   }
 
   @GetMapping
@@ -63,5 +67,13 @@ public class AdminProductController {
     @Valid @RequestBody ChangeProductVisibilityRequest request
   ) {
     return visibilityService.changeVisibility(id, request);
+  }
+
+  @PatchMapping("/{id}/digital-price")
+  public AdminProductDetailsResponse updateDigitalPrice(
+    @PathVariable String id,
+    @Valid @RequestBody UpdateDigitalProductPriceRequest request
+  ) {
+    return priceService.updatePrice(id, request);
   }
 }

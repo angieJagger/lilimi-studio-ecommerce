@@ -24,6 +24,9 @@ public class Product {
   @Column(name = "translations_revision", nullable = false)
   private long translationsRevision;
 
+  @Column(name = "price_revision", nullable = false)
+  private long priceRevision;
+
   @Column(name = "slug", length = 160, nullable = false, unique = true)
   private String slug;
 
@@ -61,6 +64,10 @@ public class Product {
       translationsRevision,
       1
     );
+  }
+
+  public void markPriceChanged() {
+    priceRevision = Math.addExact(priceRevision, 1);
   }
 
   public String getId() {

@@ -56,7 +56,71 @@
   </div>
   }
 
-  <form novalidate (submit)="onSubmit($event)" [attr.aria-busy]="isSaving()">
+  @if (details.productType === 'digital') {
+  <section aria-labelledby="product-price-title">
+    <h2 id="product-price-title">
+      {{ 'adminProducts.price.title' | transloco }}
+    </h2>
+  
+    @if (details.digitalPriceInGrosz === null) {
+    <p role="alert">
+      {{ 'adminProducts.price.errors.missing' | transloco }}
+    </p>
+    } @else {
+    @if (priceSaved()) {
+    <output class="product-edit__success">
+      {{ 'adminProducts.price.saved' | transloco }}
+    </output>
+    }
+  
+    <form id="product-price-form" novalidate (submit)="onPriceSubmit($event)" [attr.aria-busy]="isSaving()">
+      <fieldset class="product-edit__language" [disabled]="isSaving() || saveErrorKey() !== null">
+        <div class="form-field">
+          <label for="product-price">
+            {{ 'adminProducts.price.label' | transloco }}
+          </label>
+  
+          <input id="product-price" type="text" inputmode="decimal" [formField]="priceForm.amount" [attr.aria-invalid]="
+                  priceForm.amount().touched() && priceForm.amount().invalid()
+                    ? 'true'
+                    : null
+                " [attr.aria-describedby]="
+                  priceForm.amount().touched() && priceForm.amount().invalid()
+                    ? 'product-price-hint product-price-errors'
+                    : 'product-price-hint'
+                " />
+  
+          <p id="product-price-hint">
+            {{ 'adminProducts.price.hint' | transloco }}
+          </p>
+  
+          @if (
+          priceForm.amount().touched() && priceForm.amount().invalid()
+          ) {
+          <ul class="form-field__errors" id="product-price-errors">
+            @for (error of priceForm.amount().errors(); track $index) {
+            <li>{{ error.message! | transloco }}</li>
+            }
+          </ul>
+          }
+        </div>
+  
+        <button type="submit">
+          {{
+          (
+          isSaving()
+          ? 'adminProducts.price.saving'
+          : 'adminProducts.price.save'
+          ) | transloco
+          }}
+        </button>
+      </fieldset>
+    </form>
+    }
+  </section>
+  }
+
+  <form id="product-translations-form" novalidate (submit)="onSubmit($event)" [attr.aria-busy]="isSaving()">
     <fieldset class="product-edit__fields" [disabled]="isSaving() || saveErrorKey() !== null">
       @for (group of translationGroups; track group.language) {
       <fieldset class="product-edit__language">

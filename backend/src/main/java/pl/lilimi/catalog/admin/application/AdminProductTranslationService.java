@@ -14,6 +14,9 @@ import pl.lilimi.catalog.ProductTranslationId;
 import pl.lilimi.catalog.ProductTranslationRepository;
 import pl.lilimi.catalog.admin.api.AdminProductDetailsResponse;
 import pl.lilimi.catalog.admin.api.UpdateProductTranslationsRequest;
+import pl.lilimi.catalog.DigitalProductPrice;
+import pl.lilimi.catalog.DigitalProductPriceRepository;
+import pl.lilimi.catalog.ProductType;
 
 import java.util.List;
 
@@ -24,12 +27,16 @@ public class AdminProductTranslationService {
   private final ProductRepository products;
   private final ProductTranslationRepository translations;
 
+  private final DigitalProductPriceRepository digitalPrices;
+
   public AdminProductTranslationService(
     ProductRepository products,
-    ProductTranslationRepository translations
+    ProductTranslationRepository translations,
+    DigitalProductPriceRepository digitalPrices
   ) {
     this.products = products;
     this.translations = translations;
+    this.digitalPrices = digitalPrices;
   }
 
   @Transactional
@@ -64,9 +71,17 @@ public class AdminProductTranslationService {
 
     products.flush();
 
+    Integer digitalPriceInGrosz =
+      product.getProductType() == ProductType.DIGITAL
+        ? digitalPrices.findById(id)
+        .map(DigitalProductPrice::getPriceInGrosz)
+        .orElse(null)
+        : null;
+
     return AdminProductDetailsResponse.from(
       product,
-      List.of(polish, english)
+      List.of(polish, english),
+      digitalPriceInGrosz
     );
   }
 

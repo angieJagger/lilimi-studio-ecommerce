@@ -32,6 +32,7 @@ export interface AdminProductTranslation {
 }
 
 export interface AdminProductDetails extends AdminProductSummary {
+  readonly digitalPriceInGrosz: number | null;
   readonly translations: readonly AdminProductTranslation[];
 }
 
@@ -43,5 +44,10 @@ export interface UpdateProductTranslationRequest {
 export interface UpdateProductTranslationsRequest {
   readonly pl: UpdateProductTranslationRequest;
   readonly en: UpdateProductTranslationRequest;
+  readonly expectedVersion: number;
+}
+
+export interface UpdateDigitalProductPriceRequest {
+  readonly priceInGrosz: number;
   readonly expectedVersion: number;
 }

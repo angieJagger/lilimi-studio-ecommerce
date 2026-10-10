@@ -11,6 +11,9 @@ import pl.lilimi.catalog.Product;
 import pl.lilimi.catalog.ProductRepository;
 import pl.lilimi.catalog.ProductTranslationRepository;
 import pl.lilimi.catalog.admin.api.AdminProductDetailsResponse;
+import pl.lilimi.catalog.DigitalProductPrice;
+import pl.lilimi.catalog.DigitalProductPriceRepository;
+import pl.lilimi.catalog.ProductType;
 
 import java.util.List;
 
@@ -20,12 +23,16 @@ public class AdminProductQueryService {
   private final ProductRepository repository;
   private final ProductTranslationRepository translations;
 
+  private final DigitalProductPriceRepository digitalPrices;
+
   public AdminProductQueryService(
     ProductRepository repository,
-    ProductTranslationRepository translations
+    ProductTranslationRepository translations,
+    DigitalProductPriceRepository digitalPrices
   ) {
     this.repository = repository;
     this.translations = translations;
+    this.digitalPrices = digitalPrices;
   }
 
   @Transactional(readOnly = true)
@@ -56,9 +63,17 @@ public class AdminProductQueryService {
     var productTranslations =
       translations.findAllByIdProductIdIn(List.of(id));
 
+    Integer digitalPriceInGrosz =
+      product.getProductType() == ProductType.DIGITAL
+        ? digitalPrices.findById(id)
+        .map(DigitalProductPrice::getPriceInGrosz)
+        .orElse(null)
+        : null;
+
     return AdminProductDetailsResponse.from(
       product,
-      productTranslations
+      productTranslations,
+      digitalPriceInGrosz
     );
   }
 }
