@@ -19,6 +19,8 @@ I develop both the Angular frontend and Spring Boot backend, including database 
 ### Studio website
 
 - Responsive homepage, service pages, about page, and contact page.
+- Services overview covering UX/UI and Figma, web development, WordPress and WooCommerce, graphic design, and embroidery digitizing.
+- Service inquiry links and shared navigation across the header, mobile menu, and footer.
 - Polish and English interfaces using Transloco.
 - English as the default language for the root URL.
 - Responsive navigation with a mobile menu and cart quantity badge.

@@ -15,6 +15,12 @@ const shopRoutes: Routes = [
       import('./features/products/product-list/product-list').then((m) => m.ProductList),
   },
   {
+    path: 'services',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./features/services/services-overview').then((m) => m.ServicesOverview),
+  },
+  {
     path: 'services/embroidery-digitizing',
     loadComponent: () =>
       import('./features/services/embroidery-digitizing/embroidery-digitizing').then(
@@ -87,13 +93,11 @@ const shopRoutes: Routes = [
   },
 
   {
-  path: 'admin/products/:id/edit',
-  canActivate: [adminGuard],
-  loadComponent: () =>
-    import('./features/admin/products/admin-product-edit').then(
-      (m) => m.AdminProductEdit,
-    ),
-},
+    path: 'admin/products/:id/edit',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin/products/admin-product-edit').then((m) => m.AdminProductEdit),
+  },
 
   {
     path: 'checkout',

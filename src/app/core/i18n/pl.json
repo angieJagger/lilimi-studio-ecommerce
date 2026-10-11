@@ -299,6 +299,68 @@
     "contact": "Kontakt"
   },
 
+  "servicesOverview": {
+  "title": "Usługi Lilimi Studio",
+  "intro": "Od projektu wizualnego po działającą stronę — pomagam tworzyć interfejsy, strony internetowe, materiały graficzne i pliki do haftu.",
+  "inquire": "Zapytaj o projekt",
+  "items": {
+    "uxUi": {
+      "title": "UX/UI i Figma",
+      "description": "Projektowanie interfejsów stron i sklepów internetowych, z uwzględnieniem wersji na komputer i telefon.",
+      "examples": {
+        "0": "Pojedyncze widoki UI, landing pages i projekty stron firmowych",
+        "1": "Responsywne projekty sklepów internetowych",
+        "2": "Podstawowe systemy projektowe: kolory, typografia i komponenty",
+        "3": "Klikalne prototypy w Figmie"
+      }
+    },
+    "webDevelopment": {
+      "title": "Web development",
+      "description": "Tworzenie stron internetowych oraz wdrażanie projektów graficznych w działające interfejsy.",
+      "examples": {
+        "0": "Landing pages i strony firmowe",
+        "1": "Implementacja projektów z Figmy",
+        "2": "Poprawki frontendu, formularze i proste interakcje",
+        "3": "Indywidualne rozwiązania w React i Angular"
+      }
+    },
+    "wordpress": {
+      "title": "WordPress i WooCommerce",
+      "description": "Strony i sklepy oparte na WordPressie, dopasowane do zakresu projektu i sposobu zarządzania treścią.",
+      "examples": {
+        "0": "Strony one-page i strony firmowe",
+        "1": "Wdrożenia własnych projektów z Figmy",
+        "2": "Sklepy WooCommerce ze standardowymi funkcjami",
+        "3": "Poprawki, konfiguracja, migracje i optymalizacja"
+      }
+    },
+    "graphicDesign": {
+      "title": "Grafika",
+      "description": "Materiały wizualne do internetu, prezentacji i druku oraz opracowanie podstawowej identyfikacji marki.",
+      "examples": {
+        "0": "Logo i mini identyfikacja wizualna",
+        "1": "Wizytówki, ulotki i plakaty",
+        "2": "Grafiki do social media i prezentacje",
+        "3": "Skład katalogów i ebooków oraz retusz zdjęć"
+      }
+    },
+    "embroideryDigitizing": {
+      "title": "Digitalizacja haftu",
+      "description": "Przygotowanie napisów, logo i grafik w postaci plików do haftu maszynowego.",
+      "examples": {
+        "0": "Napisy i monogramy",
+        "1": "Logo oraz proste i bardziej złożone grafiki",
+        "2": "Korekty istniejących plików, jeśli nadają się do poprawy",
+        "3": "Przygotowanie pliku i ustalenie zakresu próbnego haftu"
+      }
+    }
+  },
+  "pricing": {
+    "title": "Wycena indywidualna",
+    "description": "Cena zależy od zakresu, liczby widoków lub materiałów, funkcji, poprawek i terminu. Prześlij opis pomysłu, aby ustalić zakres i wycenę. Hosting, domeny, płatne licencje, druk oraz materiały i wykonanie próbnego haftu są wyceniane osobno."
+  }
+},
+
   "language": {
     "switchLabel": "Zmień język na angielski"
   },

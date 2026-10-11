@@ -299,6 +299,68 @@
     "contact": "Contact"
   },
 
+  "servicesOverview": {
+    "title": "Lilimi Studio services",
+    "intro": "From visual design to a working website — I help create interfaces, websites, graphic materials and machine embroidery files.",
+    "inquire": "Discuss your project",
+    "items": {
+      "uxUi": {
+        "title": "UX/UI and Figma",
+        "description": "Website and online shop interface design for desktop and mobile.",
+        "examples": {
+          "0": "Individual UI screens, landing pages and business website designs",
+          "1": "Responsive online shop designs",
+          "2": "Basic design systems: colours, typography and components",
+          "3": "Clickable Figma prototypes"
+        }
+      },
+      "webDevelopment": {
+        "title": "Web development",
+        "description": "Building websites and turning visual designs into working interfaces.",
+        "examples": {
+          "0": "Landing pages and business websites",
+          "1": "Implementation of Figma designs",
+          "2": "Frontend fixes, forms and simple interactions",
+          "3": "Custom solutions in React and Angular"
+        }
+      },
+      "wordpress": {
+        "title": "WordPress and WooCommerce",
+        "description": "WordPress websites and shops tailored to the project scope and content management needs.",
+        "examples": {
+          "0": "One-page and business websites",
+          "1": "Implementation of custom Figma designs",
+          "2": "WooCommerce shops with standard features",
+          "3": "Fixes, configuration, migrations and optimisation"
+        }
+      },
+      "graphicDesign": {
+        "title": "Graphic design",
+        "description": "Visual materials for the web, presentations and print, along with basic brand identity design.",
+        "examples": {
+          "0": "Logos and small visual identity packages",
+          "1": "Business cards, flyers and posters",
+          "2": "Social media graphics and presentations",
+          "3": "Catalogue and ebook layouts, and photo retouching"
+        }
+      },
+      "embroideryDigitizing": {
+        "title": "Embroidery digitizing",
+        "description": "Preparing lettering, logos and graphics as machine embroidery files.",
+        "examples": {
+          "0": "Lettering and monograms",
+          "1": "Logos, simple graphics and more complex designs",
+          "2": "Corrections to existing files where feasible",
+          "3": "File preparation and planning a test stitch-out"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Individual quotes",
+      "description": "Pricing depends on the scope, number of screens or materials, features, revisions and deadline. Send a description of your idea to discuss the scope and quote. Hosting, domains, paid licences, printing, and test stitch-out materials and production are priced separately."
+    }
+  },
+
   "language": {
     "switchLabel": "Switch to Polish"
   },

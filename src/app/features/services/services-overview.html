@@ -1,0 +1,54 @@
+<section class="services-overview container" aria-labelledby="services-title">
+  <header class="services-overview__intro">
+    <h1 id="services-title" class="heading-1">
+      {{ 'servicesOverview.title' | transloco }}
+    </h1>
+
+    <p>{{ 'servicesOverview.intro' | transloco }}</p>
+  </header>
+
+  <div class="services-overview__grid">
+    @for (service of services; track service) {
+    <article class="service-card" [attr.aria-labelledby]="'service-title-' + service">
+      <h2 [id]="'service-title-' + service">
+        {{ 'servicesOverview.items.' + service + '.title' | transloco }}
+      </h2>
+
+      <p>
+        {{ 'servicesOverview.items.' + service + '.description' | transloco }}
+      </p>
+
+      <ul>
+        @for (index of [0, 1, 2, 3]; track index) {
+        <li>
+          {{
+          'servicesOverview.items.' + service + '.examples.' + index
+          | transloco
+          }}
+        </li>
+        }
+      </ul>
+
+      <a class="button button--primary service-card__action" [routerLink]="[
+            '/',
+            transloco.getActiveLang(),
+            'project-inquiry'
+          ]" [attr.aria-label]="
+            ('servicesOverview.inquire' | transloco) +
+            ': ' +
+            ('servicesOverview.items.' + service + '.title' | transloco)
+          ">
+        {{ 'servicesOverview.inquire' | transloco }}
+      </a>
+    </article>
+    }
+  </div>
+
+  <aside class="services-overview__pricing" aria-labelledby="services-pricing-title">
+    <h2 id="services-pricing-title">
+      {{ 'servicesOverview.pricing.title' | transloco }}
+    </h2>
+
+    <p>{{ 'servicesOverview.pricing.description' | transloco }}</p>
+  </aside>
+</section>

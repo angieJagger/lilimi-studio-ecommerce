@@ -8,8 +8,7 @@ export interface NavigationItem {
 export const shopNavigation: readonly NavigationItem[] = [
   {
     labelKey: 'nav.services',
-    path: '',
-    fragment: 'offer',
+    path: 'services',
   },
   {
     labelKey: 'nav.shop',
