@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, of } from 'rxjs';
 import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { AdminProductApiService } from './admin-product-api.service';
@@ -20,6 +20,7 @@ describe('AdminProductEdit', () => {
     getProduct: vi.fn(),
     updateTranslations: vi.fn(),
     updateDigitalPrice: vi.fn(),
+    getVariants: vi.fn(),
   };
 
   const product: AdminProductDetails = {
@@ -57,6 +58,16 @@ describe('AdminProductEdit', () => {
     api.updateTranslations.mockReturnValue(saveResult.asObservable());
     api.updateDigitalPrice.mockReset();
     api.updateDigitalPrice.mockReturnValue(priceResult.asObservable());
+        api.getVariants.mockReset();
+        api.getVariants.mockReturnValue(
+          of({
+            items: [],
+            page: 0,
+            size: 20,
+            totalElements: 0,
+            totalPages: 0,
+          }),
+        );
 
     await TestBed.configureTestingModule({
       imports: [AdminProductEdit, getTranslocoTestingModule()],
@@ -477,6 +488,8 @@ describe('AdminProductEdit', () => {
 
           expect(element.querySelector('#product-price-form')).toBeNull();
           expect(element.querySelector('#product-translations-form')).not.toBeNull();
+          expect(element.querySelector('app-admin-product-variants')).not.toBeNull();
+          expect(api.getVariants).toHaveBeenCalledExactlyOnceWith(product.id, 0,);
         });
 
         it('should block price editing when the price is missing', async () => {

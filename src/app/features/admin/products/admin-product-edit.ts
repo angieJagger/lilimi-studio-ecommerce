@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { form, FormField, required, validate } from '@angular/forms/signals';
+import { AdminProductVariants } from './admin-product-variants';
 import {
   catchError,
   combineLatest,
@@ -33,7 +34,7 @@ interface ProductPriceModel {
 
 @Component({
   selector: 'app-admin-product-edit',
-  imports: [TranslocoPipe, RouterLink, FormField],
+  imports: [TranslocoPipe, RouterLink, FormField, AdminProductVariants],
   templateUrl: './admin-product-edit.html',
   styleUrl: './admin-product-edit.scss',
 })

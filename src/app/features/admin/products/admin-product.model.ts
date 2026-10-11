@@ -51,3 +51,31 @@ export interface UpdateDigitalProductPriceRequest {
   readonly priceInGrosz: number;
   readonly expectedVersion: number;
 }
+
+export interface AdminGarmentVariant {
+  readonly id: string;
+  readonly version: number;
+  readonly productId: string;
+  readonly patternId: string;
+  readonly embroideryOptionId: string;
+  readonly fit: 'women' | 'men' | 'children';
+  readonly size: string;
+  readonly color: 'white' | 'navy' | 'grey' | 'black';
+  readonly priceInGrosz: number;
+  readonly currency: 'PLN';
+  readonly active: boolean;
+}
+
+export interface AdminGarmentVariantPage {
+  readonly items: readonly AdminGarmentVariant[];
+  readonly page: number;
+  readonly size: number;
+  readonly totalElements: number;
+  readonly totalPages: number;
+}
+
+export interface UpdateGarmentVariantRequest {
+  readonly priceInGrosz: number;
+  readonly active: boolean;
+  readonly expectedVersion: number;
+}

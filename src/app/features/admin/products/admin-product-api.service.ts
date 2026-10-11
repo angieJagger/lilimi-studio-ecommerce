@@ -10,6 +10,9 @@ import type {
   ChangeProductVisibilityRequest,
   UpdateProductTranslationsRequest,
   UpdateDigitalProductPriceRequest,
+  AdminGarmentVariant,
+  AdminGarmentVariantPage,
+  UpdateGarmentVariantRequest,
 } from './admin-product.model';
 
 @Injectable({
@@ -58,6 +61,32 @@ export class AdminProductApiService {
         switchMap(() =>
           this.http.patch<AdminProductDetails>(
             `${this.baseUrl}/admin/products/${encodeURIComponent(id)}/digital-price`,
+            request,
+          ),
+        ),
+      );
+  }
+
+  getVariants(productId: string, page = 0, size = 20): Observable<AdminGarmentVariantPage> {
+    const params = new HttpParams().set('page', page).set('size', size);
+
+    return this.http.get<AdminGarmentVariantPage>(
+      `${this.baseUrl}/admin/products/${encodeURIComponent(productId)}/variants`,
+      { params },
+    );
+  }
+
+  updateVariant(
+    productId: string,
+    variantId: string,
+    request: UpdateGarmentVariantRequest,
+  ): Observable<AdminGarmentVariant> {
+    return this.csrf
+      .initialize()
+      .pipe(
+        switchMap(() =>
+          this.http.patch<AdminGarmentVariant>(
+            `${this.baseUrl}/admin/products/${encodeURIComponent(productId)}/variants/${encodeURIComponent(variantId)}`,
             request,
           ),
         ),

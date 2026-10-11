@@ -212,6 +212,50 @@
         "conflict": "Translations cannot be saved in the product's current state. Reload its details.",
         "saveFailed": "The translation update could not be confirmed. Reload the product to check the current state."
       }
+    },
+    "variants": {
+      "title": "Garment variants",
+      "empty": "This product has no variants.",
+      "total": "Total variants:",
+      "pattern": "Pattern",
+      "option": "Embroidery option",
+      "fit": "Fit",
+      "size": "Size",
+      "color": "Colour",
+      "price": "Price",
+      "status": "Availability",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pagination": "Variant pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} of {{total}}",
+      "fits": {
+        "women": "Women",
+        "men": "Men",
+        "children": "Children"
+      },
+      "colors": {
+        "white": "White",
+        "navy": "Navy",
+        "grey": "Grey",
+        "black": "Black"
+      },
+      "errors": {
+        "loadFailed": "Variants could not be loaded. Please try again.",
+        "invalidRequest": "The variant data is invalid. Reload the list and try again.",
+        "notFound": "The variant was not found for this product. Reload the list.",
+        "versionConflict": "The variant was modified or the save conflicts with another update. Reload the list before trying again.",
+        "saveFailed": "The variant save could not be confirmed. Reload the list to check its current state."
+      },
+      "actions": "Actions",
+      "edit": "Edit variant",
+      "available": "Variant active",
+      "availabilityHint": "An active variant is available in the shop when its product and associated pattern are also visible.",
+      "save": "Save variant",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "reloadNotice": "Copy the entered price before reloading if you want to keep it. Reloading will close the form."
     }
   },
   "auth": {

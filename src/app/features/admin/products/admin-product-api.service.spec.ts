@@ -3,8 +3,14 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { API_BASE_URL } from '../../../core/api/api-base-url';
 import { AdminProductApiService } from './admin-product-api.service';
-import type { AdminProductPage, AdminProductSummary, AdminProductDetails,
-UpdateProductTranslationsRequest, } from './admin-product.model';
+import type {
+  AdminProductPage,
+  AdminProductSummary,
+  AdminProductDetails,
+  UpdateProductTranslationsRequest,
+  AdminGarmentVariant,
+  AdminGarmentVariantPage,
+} from './admin-product.model';
 
 describe('AdminProductApiService', () => {
   let service: AdminProductApiService;
@@ -56,6 +62,28 @@ describe('AdminProductApiService', () => {
     },
     expectedVersion: details.version,
   };
+
+    const variant: AdminGarmentVariant = {
+      id: '00000000-0000-0000-0000-000000000001',
+      version: 2,
+      productId: 'embroidered-002',
+      patternId: 'pattern-001',
+      embroideryOptionId: 'small-front',
+      fit: 'women',
+      size: 'M',
+      color: 'navy',
+      priceInGrosz: 14900,
+      currency: 'PLN',
+      active: true,
+    };
+
+    const variantPage: AdminGarmentVariantPage = {
+      items: [variant],
+      page: 0,
+      size: 20,
+      totalElements: 1,
+      totalPages: 1,
+    };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -415,4 +443,141 @@ describe('AdminProductApiService', () => {
 
         http.expectNone(`/api/admin/products/${details.id}/digital-price`);
       });
+
+        it('should request the default variant page', () => {
+          let result: AdminGarmentVariantPage | undefined;
+
+          service.getVariants(variant.productId).subscribe((response) => {
+            result = response;
+          });
+
+          const pending = http.expectOne(
+            '/api/admin/products/embroidered-002/variants?page=0&size=20',
+          );
+
+          expect(pending.request.method).toBe('GET');
+
+          pending.flush(variantPage);
+
+          expect(result).toEqual(variantPage);
+        });
+
+        it('should request the selected variant page and size', () => {
+          service.getVariants(variant.productId, 2, 10).subscribe();
+
+          const pending = http.expectOne(
+            '/api/admin/products/embroidered-002/variants?page=2&size=10',
+          );
+
+          expect(pending.request.method).toBe('GET');
+
+          pending.flush({
+            ...variantPage,
+            page: 2,
+            size: 10,
+          });
+        });
+
+        it('should initialize CSRF before updating a variant', () => {
+          const request = {
+            priceInGrosz: 18990,
+            active: false,
+            expectedVersion: variant.version,
+          };
+
+          const updated: AdminGarmentVariant = {
+            ...variant,
+            priceInGrosz: 18990,
+            active: false,
+            version: variant.version + 1,
+          };
+
+          let result: AdminGarmentVariant | undefined;
+
+          service.updateVariant(variant.productId, variant.id, request).subscribe((response) => {
+            result = response;
+          });
+
+          const url = `/api/admin/products/${variant.productId}/variants/${variant.id}`;
+
+          const csrfRequest = http.expectOne('/api/auth/csrf');
+
+          expect(csrfRequest.request.method).toBe('GET');
+          http.expectNone(url);
+
+          csrfRequest.flush(null, {
+            status: 204,
+            statusText: 'No Content',
+          });
+
+          const pending = http.expectOne(url);
+
+          expect(pending.request.method).toBe('PATCH');
+          expect(pending.request.body).toEqual(request);
+
+          pending.flush(updated);
+
+          expect(result).toEqual(updated);
+        });
+
+        it('should propagate a variant conflict without retrying', () => {
+          let receivedError: HttpErrorResponse | undefined;
+
+          service
+            .updateVariant(variant.productId, variant.id, {
+              priceInGrosz: 18990,
+              active: false,
+              expectedVersion: variant.version,
+            })
+            .subscribe({
+              error: (error: HttpErrorResponse) => {
+                receivedError = error;
+              },
+            });
+
+          http.expectOne('/api/auth/csrf').flush(null, {
+            status: 204,
+            statusText: 'No Content',
+          });
+
+          const url = `/api/admin/products/${variant.productId}/variants/${variant.id}`;
+
+          http
+            .expectOne(url)
+            .flush(
+              { code: 'GARMENT_VARIANT_VERSION_CONFLICT' },
+              { status: 409, statusText: 'Conflict' },
+            );
+
+          expect(receivedError?.status).toBe(409);
+          expect(receivedError?.error.code).toBe('GARMENT_VARIANT_VERSION_CONFLICT');
+
+          http.expectNone(url);
+          http.expectNone('/api/auth/csrf');
+        });
+
+        it('should not update a variant when CSRF initialization fails', () => {
+          let receivedError: HttpErrorResponse | undefined;
+
+          service
+            .updateVariant(variant.productId, variant.id, {
+              priceInGrosz: 18990,
+              active: false,
+              expectedVersion: variant.version,
+            })
+            .subscribe({
+              error: (error: HttpErrorResponse) => {
+                receivedError = error;
+              },
+            });
+
+          http.expectOne('/api/auth/csrf').flush(null, {
+            status: 503,
+            statusText: 'Service Unavailable',
+          });
+
+          expect(receivedError?.status).toBe(503);
+
+          http.expectNone(`/api/admin/products/${variant.productId}/variants/${variant.id}`);
+        });
 });

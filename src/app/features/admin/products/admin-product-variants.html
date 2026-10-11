@@ -1,0 +1,196 @@
+<section class="variants" aria-labelledby="variants-title">
+  <h2 id="variants-title">
+    {{ 'adminProducts.variants.title' | transloco }}
+  </h2>
+
+  @if (selectedVariant(); as variant) {
+  <form id="variant-edit-form" novalidate (submit)="saveVariant($event)" [attr.aria-busy]="isSaving()">
+    <fieldset [disabled]="isSaving() || saveErrorKey() !== null">
+      <legend>{{ 'adminProducts.variants.edit' | transloco }}</legend>
+  
+      <p>
+        {{ variant.patternId }} · {{ variant.embroideryOptionId }} ·
+        {{ 'adminProducts.variants.fits.' + variant.fit | transloco }} ·
+        {{ variant.size }} ·
+        {{ 'adminProducts.variants.colors.' + variant.color | transloco }}
+      </p>
+  
+      <div class="variants__field">
+        <label for="variant-price">
+          {{ 'adminProducts.price.label' | transloco }}
+        </label>
+  
+        <input id="variant-price" type="text" inputmode="decimal" [formField]="editForm.amount" [attr.aria-invalid]="
+              editForm.amount().touched() && editForm.amount().invalid()
+                ? 'true'
+                : null
+            " [attr.aria-describedby]="
+              editForm.amount().touched() && editForm.amount().invalid()
+                ? 'variant-price-errors'
+                : null
+            " />
+  
+        @if (editForm.amount().touched() && editForm.amount().invalid()) {
+        <ul id="variant-price-errors" class="variants__errors">
+          @for (error of editForm.amount().errors(); track $index) {
+          <li>{{ error.message! | transloco }}</li>
+          }
+        </ul>
+        }
+      </div>
+  
+      <label class="variants__checkbox">
+        <input type="checkbox" [formField]="editForm.active" />
+        {{ 'adminProducts.variants.available' | transloco }}
+      </label>
+  
+      <p>{{ 'adminProducts.variants.availabilityHint' | transloco }}</p>
+  
+      <div class="variants__actions">
+        <button type="submit">
+          {{
+          (
+          isSaving()
+          ? 'adminProducts.variants.saving'
+          : 'adminProducts.variants.save'
+          ) | transloco
+          }}
+        </button>
+  
+        <button type="button" (click)="cancelEdit()">
+          {{ 'adminProducts.variants.cancel' | transloco }}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+  }
+  
+  @if (saveErrorKey(); as message) {
+  <div class="variants__feedback">
+    <p role="alert">{{ message | transloco }}</p>
+    <p>{{ 'adminProducts.variants.reloadNotice' | transloco }}</p>
+  
+    <button type="button" [disabled]="isSaving()" (click)="retry()">
+      {{ 'adminProducts.reload' | transloco }}
+    </button>
+  </div>
+  }
+
+  @if (isLoading()) {
+  <output>{{ 'adminProducts.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+  <p role="alert">{{ message | transloco }}</p>
+
+  <button type="button" (click)="retry()">
+    {{ 'adminProducts.reload' | transloco }}
+  </button>
+  } @else if (variants(); as page) {
+  @if (page.totalElements === 0) {
+  <p>{{ 'adminProducts.variants.empty' | transloco }}</p>
+  } @else {
+  <p>
+    {{ 'adminProducts.variants.total' | transloco }}
+    {{ page.totalElements }}
+  </p>
+
+  <div class="variants__table" role="region" [attr.aria-label]="'adminProducts.variants.title' | transloco"
+    tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">
+            {{ 'adminProducts.variants.pattern' | transloco }}
+          </th>
+          <th scope="col">
+            {{ 'adminProducts.variants.option' | transloco }}
+          </th>
+          <th scope="col">
+            {{ 'adminProducts.variants.fit' | transloco }}
+          </th>
+          <th scope="col">
+            {{ 'adminProducts.variants.size' | transloco }}
+          </th>
+          <th scope="col">
+            {{ 'adminProducts.variants.color' | transloco }}
+          </th>
+          <th scope="col">
+            {{ 'adminProducts.variants.price' | transloco }}
+          </th>
+          <th scope="col">
+            {{ 'adminProducts.variants.status' | transloco }}
+          </th>
+          <th scope="col">
+            {{ 'adminProducts.variants.actions' | transloco }}
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (variant of page.items; track variant.id) {
+        <tr>
+          <td>{{ variant.patternId }}</td>
+          <td>{{ variant.embroideryOptionId }}</td>
+          <td>
+            {{
+            'adminProducts.variants.fits.' + variant.fit
+            | transloco
+            }}
+          </td>
+          <td>{{ variant.size }}</td>
+          <td>
+            {{
+            'adminProducts.variants.colors.' + variant.color
+            | transloco
+            }}
+          </td>
+          <td>
+            {{ variant.priceInGrosz / 100 | currency:'PLN':'code':'1.2-2' }}
+          </td>
+          <td>
+            {{
+            (
+            variant.active
+            ? 'adminProducts.variants.active'
+            : 'adminProducts.variants.inactive'
+            ) | transloco
+            }}
+          </td>
+          <td>
+            <button type="button" [disabled]="isSaving() || selectedVariant() !== null" (click)="editVariant(variant)">
+              {{ 'adminProducts.variants.edit' | transloco }}
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <nav class="variants__pagination" [attr.aria-label]="'adminProducts.variants.pagination' | transloco">
+    <button type="button" [disabled]="
+  page.page === 0 || isSaving() || selectedVariant() !== null
+" (click)="previousPage()">
+      {{ 'adminProducts.variants.previous' | transloco }}
+    </button>
+
+    <span>
+      {{
+      'adminProducts.variants.page'
+      | transloco:{
+      current: page.page + 1,
+      total: page.totalPages
+      }
+      }}
+    </span>
+
+    <button type="button" [disabled]="
+  page.page + 1 >= page.totalPages ||
+  isSaving() ||
+  selectedVariant() !== null
+" (click)="nextPage()">
+      {{ 'adminProducts.variants.next' | transloco }}
+    </button>
+  </nav>
+  }
+  }
+</section>

@@ -212,7 +212,51 @@
         "conflict": "Nie można zapisać tłumaczeń w obecnym stanie produktu. Odśwież dane.",
         "saveFailed": "Nie udało się potwierdzić zapisu tłumaczeń. Odśwież produkt, aby sprawdzić aktualny stan."
       }
-    }    
+    },
+    "variants": {
+      "title": "Warianty odzieży",
+      "empty": "Ten produkt nie ma wariantów.",
+      "total": "Liczba wariantów:",
+      "pattern": "Wzór",
+      "option": "Opcja haftu",
+      "fit": "Krój",
+      "size": "Rozmiar",
+      "color": "Kolor",
+      "price": "Cena",
+      "status": "Aktywność",
+      "active": "Aktywny",
+      "inactive": "Nieaktywny",
+      "pagination": "Strony wariantów",
+      "previous": "Poprzednia",
+      "next": "Następna",
+      "page": "Strona {{current}} z {{total}}",
+      "fits": {
+        "women": "Damski",
+        "men": "Męski",
+        "children": "Dziecięcy"
+      },
+      "colors": {
+        "white": "Biały",
+        "navy": "Granatowy",
+        "grey": "Szary",
+        "black": "Czarny"
+      },
+      "errors": {
+        "loadFailed": "Nie udało się pobrać wariantów. Spróbuj ponownie.",
+        "invalidRequest": "Dane wariantu są niepoprawne. Odśwież listę i spróbuj ponownie.",
+        "notFound": "Nie znaleziono wariantu dla tego produktu. Odśwież listę.",
+        "versionConflict": "Wariant został zmieniony lub zapis jest w konflikcie. Odśwież listę przed kolejną próbą.",
+        "saveFailed": "Nie udało się potwierdzić zapisu wariantu. Odśwież listę, aby sprawdzić aktualny stan."
+      },
+      "actions": "Akcje",
+      "edit": "Edytuj wariant",
+      "available": "Wariant aktywny",
+      "availabilityHint": "Aktywny wariant jest dostępny w sklepie, jeśli produkt i powiązany wzór również są widoczne.",
+      "save": "Zapisz wariant",
+      "saving": "Trwa zapis…",
+      "cancel": "Anuluj",
+      "reloadNotice": "Przed odświeżeniem skopiuj wpisaną cenę, jeśli chcesz ją zachować. Odświeżenie zamknie formularz." 
+    } 
   },
   "auth": {
     "title": "Logowanie administratora",

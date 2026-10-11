@@ -76,6 +76,8 @@ Submitting an inquiry does not create an order or send an email.
 - Editing Polish and English product names and descriptions with validation and optimistic locking.
 - Editing digital product prices in PLN with validation and optimistic locking.
 - Price updates preserve unsaved product translation edits.
+- Paginated garment variant list including inactive configurations.
+- Editing garment variant prices and availability with validation and optimistic locking.
 
 ## A closer look
 
@@ -246,6 +248,8 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | GET | `/api/admin/products/{id}` | Administrator product details, translations, and digital price |
 | PATCH | `/api/admin/products/{id}/translations` | Update Polish and English product translations |
 | PATCH | `/api/admin/products/{id}/digital-price` | Update a digital product price |
+| GET | `/api/admin/products/{productId}/variants` | Paginated administrator garment variant list |
+| PATCH | `/api/admin/products/{productId}/variants/{variantId}` | Update a garment variant's price and availability |
 
 Administrator endpoints require the `ADMIN` role. State-changing requests require a valid CSRF token. Order submission also uses an `Idempotency-Key` header.
 
@@ -310,7 +314,6 @@ This stack uses a separate database volume from the database-only development st
 ## Next milestones
 
 - Complete administrator inquiry details tests and update remaining demo copy.
-- Add editing of garment variants and their prices.
 - Implement customer registration, login, and order history.
 - Add email verification, password recovery, and transactional emails.
 - Integrate payments and controlled delivery of purchased digital files.

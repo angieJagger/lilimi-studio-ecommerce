@@ -116,6 +116,7 @@
         </button>
       </fieldset>
     </form>
+
     }
   </section>
   }
@@ -192,5 +193,11 @@
       </button>
     </fieldset>
   </form>
+  @if (
+  details.productType === 'sweatshirt' ||
+  details.productType === 'tshirt'
+  ) {
+  <app-admin-product-variants [productId]="details.id" />
+  }
   }
 </section>
