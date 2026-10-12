@@ -141,6 +141,48 @@ jobs:
             --connect-timeout 10 --max-time 30 \
             --output /dev/null https://lilimistudio.com/en/products
 
+          check_status() {
+            local path="$1"
+            local expected="$2"
+            local actual
+
+            actual=$(curl --silent --show-error \
+              --connect-timeout 10 --max-time 30 \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              "https://lilimistudio.com$path")
+
+            if [[ "$actual" != "$expected" ]]; then
+              echo "Check failed: $path returned $actual; expected $expected."
+              exit 1
+            fi
+
+            echo "Check passed: $path ($actual)."
+          }
+
+          check_status /en/services 200
+          check_status /api/products 200
+          check_status /api/auth/me 401
+          check_status /api/admin/products 401
+          check_status /api/admin/orders 401
+          check_status /api/admin/project-inquiries 401
+
+          csrf_status=$(curl --silent --show-error \
+            --connect-timeout 10 --max-time 30 \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --data '{}' \
+            --output /dev/null \
+            --write-out '%{http_code}' \
+            https://lilimistudio.com/api/project-inquiries)
+
+          if [[ "$csrf_status" != "403" ]]; then
+            echo "CSRF check failed: returned $csrf_status; expected 403."
+            exit 1
+          fi
+
+          echo "CSRF protection check passed."
+
           if grep -q '^IMAGE_TAG=' .env; then
             sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$image_tag/" .env
           else
