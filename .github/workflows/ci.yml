@@ -105,6 +105,7 @@ jobs:
           context: ${{ matrix.context }}
           platforms: linux/amd64
           push: true
+          pull: true
           tags: ghcr.io/angiejagger/lilimi-${{ matrix.service }}:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
