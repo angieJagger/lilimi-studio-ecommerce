@@ -5,7 +5,7 @@ RUN mvn -B dependency:go-offline
 COPY src ./src
 RUN mvn -B -DskipTests package
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 RUN groupadd --system app && useradd --system --gid app app \
     && apt-get update \
     && apt-get install -y --no-install-recommends curl libssl3 \
