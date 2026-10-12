@@ -77,7 +77,7 @@ describe('AdminInquiries', () => {
     expect(row.textContent).toContain('Anna Kowalska');
     expect(row.textContent).toContain('anna@example.com');
     expect(row.textContent).toContain(firstPage.items[0].id);
-    expect(row.textContent).toContain('Strona internetowa');
+    expect(row.textContent).toContain('Web development');
     expect(row.textContent).toContain('Nowe');
 
     expect(row.querySelector('time')?.getAttribute('datetime')).toBe(firstPage.items[0].createdAt);

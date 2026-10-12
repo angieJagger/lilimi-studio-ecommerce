@@ -24,7 +24,9 @@ public record CreateInquiryRequest(
   String email,
 
   @NotBlank
-  @Pattern(regexp = "embroideredProduct|digitizing|website|other")
+  @Pattern(
+    regexp = "embroideredProduct|digitizing|website|uxUi|wordpress|graphicDesign|other"
+  )
   String projectType,
 
   @NotBlank

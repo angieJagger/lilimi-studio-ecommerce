@@ -353,6 +353,122 @@ describe('ProjectInquiry product context', () => {
     await harness.fixture.whenStable();
   }
 
+    it.each(['uxUi', 'website', 'wordpress', 'graphicDesign', 'digitizing'])(
+      'should select %s from the URL and submit it to the API',
+      async (projectType) => {
+        await harness.navigateByUrl(
+          `/pl/project-inquiry?projectType=${projectType}`,
+          ProjectInquiry,
+        );
+
+        await harness.fixture.whenStable();
+
+        const element = harness.routeNativeElement!;
+
+        expect(element.querySelector<HTMLSelectElement>('#inquiry-project-type')!.value).toBe(
+          projectType,
+        );
+
+        const values = {
+          'inquiry-name': 'Anna',
+          'inquiry-email': 'anna@example.com',
+          'inquiry-description': 'Proszę o wycenę mojego projektu.',
+        };
+
+        for (const [id, value] of Object.entries(values)) {
+          const control = element.querySelector<HTMLInputElement | HTMLTextAreaElement>(`#${id}`)!;
+
+          control.value = value;
+          control.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        await harness.fixture.whenStable();
+
+        element.querySelector('form')!.dispatchEvent(
+          new Event('submit', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+
+        await harness.fixture.whenStable();
+
+        expect(api.createInquiry).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({
+            projectType,
+            name: 'Anna',
+            email: 'anna@example.com',
+            description: 'Proszę o wycenę mojego projektu.',
+            productId: null,
+          }),
+        );
+
+        inquiryResult.next({
+          id: '1548c928-f278-4cbb-b8d0-d57455c72f91',
+          createdAt: '2026-10-12T08:00:00Z',
+          status: 'new',
+        });
+        inquiryResult.complete();
+
+        await harness.fixture.whenStable();
+      },
+    );
+
+    it('should ignore an unknown project type from the URL', async () => {
+      await harness.navigateByUrl(
+        '/pl/project-inquiry?projectType=unknown-service',
+        ProjectInquiry,
+      );
+
+      await harness.fixture.whenStable();
+
+      expect(
+        harness.routeNativeElement!.querySelector<HTMLSelectElement>('#inquiry-project-type')!
+          .value,
+      ).toBe('');
+
+      expect(api.createInquiry).not.toHaveBeenCalled();
+    });
+
+    it('should preserve entered text when the service changes in the URL', async () => {
+      await harness.navigateByUrl('/pl/project-inquiry?projectType=uxUi', ProjectInquiry);
+
+      await harness.fixture.whenStable();
+
+      const values = {
+        'inquiry-name': 'Anna',
+        'inquiry-email': 'anna@example.com',
+        'inquiry-description': 'Mój wpisany opis projektu.',
+      };
+
+      for (const [id, value] of Object.entries(values)) {
+        const control = harness.routeNativeElement!.querySelector<
+          HTMLInputElement | HTMLTextAreaElement
+        >(`#${id}`)!;
+
+        control.value = value;
+        control.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      await harness.fixture.whenStable();
+
+      await harness.navigateByUrl('/pl/project-inquiry?projectType=wordpress', ProjectInquiry);
+
+      await harness.fixture.whenStable();
+
+      const element = harness.routeNativeElement!;
+
+      expect(element.querySelector<HTMLSelectElement>('#inquiry-project-type')!.value).toBe(
+        'wordpress',
+      );
+
+      for (const [id, value] of Object.entries(values)) {
+        expect(element.querySelector<HTMLInputElement | HTMLTextAreaElement>(`#${id}`)!.value).toBe(
+          value,
+        );
+      }
+    });
+
   it.each([
     ['forest-dragon', 'Wzór testowy'],
     ['embroidered-sweatshirt', 'Bluza z haftem'],

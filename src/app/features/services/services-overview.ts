@@ -18,4 +18,12 @@ export class ServicesOverview {
     'graphicDesign',
     'embroideryDigitizing',
   ] as const;
+
+  protected readonly inquiryTypes = {
+    uxUi: 'uxUi',
+    webDevelopment: 'website',
+    wordpress: 'wordpress',
+    graphicDesign: 'graphicDesign',
+    embroideryDigitizing: 'digitizing',
+  } as const;
 }

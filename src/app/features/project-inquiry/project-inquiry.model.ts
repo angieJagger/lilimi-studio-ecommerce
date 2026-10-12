@@ -1,4 +1,11 @@
-export type ProjectType = 'embroideredProduct' | 'digitizing' | 'website' | 'other';
+export type ProjectType =
+  | 'embroideredProduct'
+  | 'digitizing'
+  | 'website'
+  | 'uxUi'
+  | 'wordpress'
+  | 'graphicDesign'
+  | 'other';
 
 export interface CreateInquiryRequest {
   readonly language: 'pl' | 'en';

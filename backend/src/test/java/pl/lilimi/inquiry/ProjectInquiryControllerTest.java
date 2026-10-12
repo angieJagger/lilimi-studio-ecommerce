@@ -1,6 +1,8 @@
 package pl.lilimi.inquiry;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -15,6 +17,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -148,6 +152,70 @@ class ProjectInquiryControllerTest {
       )
       .andExpect(status().isBadRequest())
       .andExpect(jsonPath("$.code").value("INQUIRY_REQUEST_INVALID"));
+
+    assertThat(inquiries.count()).isEqualTo(initialCount);
+  }
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "uxUi",
+    "website",
+    "wordpress",
+    "graphicDesign",
+    "digitizing"
+  })
+  void shouldSaveServiceTypeAndReturnItToAdmin(String projectType)
+    throws Exception {
+    long initialCount = inquiries.count();
+
+    var result = mockMvc.perform(
+        post("/api/project-inquiries")
+          .with(csrf())
+          .contentType("application/json")
+          .content(validRequest().replace(
+            "\"projectType\": \"website\"",
+            "\"projectType\": \"" + projectType + "\""
+          ))
+      )
+      .andExpect(status().isCreated())
+      .andReturn();
+
+    String id = JsonMapper.builder().build()
+      .readTree(result.getResponse().getContentAsString())
+      .get("id")
+      .asText();
+
+    var saved = inquiries.findById(UUID.fromString(id))
+      .orElseThrow();
+
+    assertThat(inquiries.count()).isEqualTo(initialCount + 1);
+    assertThat(saved.getProjectType()).isEqualTo(projectType);
+
+    mockMvc.perform(
+        get("/api/admin/project-inquiries/{id}", id)
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.projectType").value(projectType));
+  }
+
+  @Test
+  void shouldRejectUnknownServiceTypeWithoutSavingInquiry()
+    throws Exception {
+    long initialCount = inquiries.count();
+
+    mockMvc.perform(
+        post("/api/project-inquiries")
+          .with(csrf())
+          .contentType("application/json")
+          .content(validRequest().replace(
+            "\"projectType\": \"website\"",
+            "\"projectType\": \"unknown-service\""
+          ))
+      )
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.code").value(
+        "INQUIRY_VALIDATION_FAILED"
+      ));
 
     assertThat(inquiries.count()).isEqualTo(initialCount);
   }

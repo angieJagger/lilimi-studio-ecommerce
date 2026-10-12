@@ -532,9 +532,9 @@
 
   "home": {
     "hero": {
-      "eyebrow": "Projektowanie graficzne • UX/UI • Programowanie",
-      "title": "Grafika, strony i aplikacje dla Twojej marki",
-      "description": "Łączę projektowanie graficzne z programowaniem. Tworzę identyfikację wizualną, materiały graficzne oraz strony i aplikacje internetowe dopasowane do Twoich potrzeb.",
+      "eyebrow": "UX/UI • Strony internetowe • Grafika • Digitalizacja haftu",
+      "title": "Od pomysłu do projektu i realizacji",
+      "description": "Projektuję interfejsy w Figmie, tworzę strony i aplikacje internetowe oraz rozwiązania WordPress i WooCommerce. Przygotowuję też materiały graficzne i pliki do haftu maszynowego.",
       "mediaPlaceholder": "Miejsce na wybraną realizację Lilimi",
       "viewOffer": "Poznaj usługi",
       "requestProject": "Porozmawiajmy o projekcie"
@@ -619,8 +619,11 @@
         "placeholder": "Wybierz rodzaj projektu",
         "options": {
           "embroideredProduct": "Produkt haftowany",
+          "uxUi": "UX/UI i Figma",
+          "website": "Web development",
+          "wordpress": "WordPress i WooCommerce",
+          "graphicDesign": "Grafika",
           "digitizing": "Digitalizacja haftu",
-          "website": "Strona internetowa",
           "other": "Inny pomysł"
         }
       },
@@ -680,7 +683,7 @@
   },
 
   "footer": {
-    "description": "Wzory haftów, personalizowane produkty i strony internetowe tworzone z pomysłem.",
+    "description": "Projektowanie interfejsów, strony internetowe, WordPress i WooCommerce, grafika oraz digitalizacja haftu. W sklepie znajdziesz wzory i produkty haftowane.",
     "offerTitle": "Oferta",
     "informationTitle": "Informacje",
     "about": "O nas",

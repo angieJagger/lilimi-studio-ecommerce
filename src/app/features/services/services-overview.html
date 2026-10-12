@@ -33,7 +33,7 @@
             '/',
             transloco.getActiveLang(),
             'project-inquiry'
-          ]" [attr.aria-label]="
+          ]" [queryParams]="{ projectType: inquiryTypes[service] }" [attr.aria-label]="
             ('servicesOverview.inquire' | transloco) +
             ': ' +
             ('servicesOverview.items.' + service + '.title' | transloco)

@@ -533,9 +533,9 @@
 
   "home": {
     "hero": {
-      "eyebrow": "Graphic design • UX/UI • Development",
-      "title": "Graphic design, websites and apps for your brand",
-      "description": "I combine graphic design with development to create visual identities, graphic materials, websites and web applications tailored to your needs.",
+      "eyebrow": "UX/UI • Websites • Graphic design • Embroidery digitizing",
+      "title": "From your idea to design and delivery",
+      "description": "I design interfaces in Figma, build websites and web applications, and create WordPress and WooCommerce solutions. I also prepare graphic materials and machine embroidery files.",
       "mediaPlaceholder": "Space for a featured Lilimi project",
       "viewOffer": "Explore services",
       "requestProject": "Let's discuss your project"
@@ -619,8 +619,11 @@
         "placeholder": "Select a project type",
         "options": {
           "embroideredProduct": "Embroidered product",
+          "uxUi": "UX/UI and Figma",
+          "website": "Web development",
+          "wordpress": "WordPress and WooCommerce",
+          "graphicDesign": "Graphic design",
           "digitizing": "Embroidery digitizing",
-          "website": "Website",
           "other": "Other idea"
         }
       },
@@ -680,7 +683,7 @@
   },
 
   "footer": {
-    "description": "Embroidery patterns, personalised products and thoughtfully crafted websites.",
+    "description": "Interface design, web development, WordPress and WooCommerce, graphic design, and embroidery digitizing. Explore embroidery patterns and embroidered products in the shop.",
     "offerTitle": "Offer",
     "informationTitle": "Information",
     "about": "About us",

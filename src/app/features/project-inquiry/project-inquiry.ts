@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, effect } from '@angular/core';
 import { email, form, FormField, required, validate } from '@angular/forms/signals';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -53,8 +53,11 @@ export class ProjectInquiry {
 
   protected readonly projectTypes: readonly ProjectType[] = [
     'embroideredProduct',
-    'digitizing',
+    'uxUi',
     'website',
+    'wordpress',
+    'graphicDesign',
+    'digitizing',
     'other',
   ];
 
@@ -159,6 +162,21 @@ export class ProjectInquiry {
   protected readonly createdInquiry = signal<CreateInquiryResponse | null>(null);
   protected readonly inquiryErrorKey = signal<string | null>(null);
 
+  constructor() {
+    effect(() => {
+      const projectType = this.queryParams().get('projectType');
+
+      if (!this.isProjectType(projectType)) {
+        return;
+      }
+
+      this.inquiryModel.update((model) => ({
+        ...model,
+        projectType,
+      }));
+    });
+  }
+
   protected onSubmit(event: Event): void {
     event.preventDefault();
 
@@ -220,6 +238,10 @@ export class ProjectInquiry {
           this.inquiryErrorKey.set(this.getInquiryErrorKey(error));
         },
       });
+  }
+
+  private isProjectType(value: string | null): value is ProjectType {
+    return this.projectTypes.some((type) => type === value);
   }
 
   private getInquiryErrorKey(error: unknown): string {

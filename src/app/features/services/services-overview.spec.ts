@@ -36,24 +36,30 @@ describe('ServicesOverview', () => {
     expect(element.querySelectorAll('.service-card li')).toHaveLength(20);
   });
 
-  it('should link every service to the inquiry form in the current language', async () => {
-    const links = () =>
-      Array.from(element.querySelectorAll<HTMLAnchorElement>('.service-card__action'));
+    it('should pass the correct project type in both languages', async () => {
+      const projectTypes = ['uxUi', 'website', 'wordpress', 'graphicDesign', 'digitizing'];
 
-    expect(links()).toHaveLength(5);
+      const links = () =>
+        Array.from(element.querySelectorAll<HTMLAnchorElement>('.service-card__action'));
 
-    for (const link of links()) {
-      expect(link.getAttribute('href')).toBe('/pl/project-inquiry');
-    }
+      expect(links()).toHaveLength(5);
 
-    TestBed.inject(TranslocoService).setActiveLang('en');
+      links().forEach((link, index) => {
+        expect(link.getAttribute('href')).toBe(
+          `/pl/project-inquiry?projectType=${projectTypes[index]}`,
+        );
+      });
 
-    await fixture.whenStable();
+      TestBed.inject(TranslocoService).setActiveLang('en');
 
-    for (const link of links()) {
-      expect(link.getAttribute('href')).toBe('/en/project-inquiry');
-    }
+      await fixture.whenStable();
 
-    expect(element.querySelector('h1')?.textContent).toContain('Lilimi Studio services');
-  });
+      links().forEach((link, index) => {
+        expect(link.getAttribute('href')).toBe(
+          `/en/project-inquiry?projectType=${projectTypes[index]}`,
+        );
+      });
+
+      expect(element.querySelector('h1')?.textContent).toContain('Lilimi Studio services');
+    });
 });

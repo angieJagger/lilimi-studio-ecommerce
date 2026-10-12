@@ -1,8 +1,8 @@
 # Lilimi Studio
 
-**A full-stack studio website and e-commerce application for digital embroidery patterns, embroidered clothing, and custom projects.**
+**A full-stack studio website combining digital services, an embroidery shop, and custom project inquiries.**
 
-I am building Lilimi Studio for my own planned business. The application combines a product shop with project inquiries for custom embroidery and web development work.
+I am building Lilimi Studio for my own planned business. The studio offers UX/UI and Figma design, web development, WordPress and WooCommerce, graphic design, and embroidery digitizing. The application combines this service offering with a shop for digital embroidery patterns and embroidered products.
 
 I develop both the Angular frontend and Spring Boot backend, including database migrations, integration tests, administrator tools, and deployment on AWS.
 
@@ -53,7 +53,8 @@ Delivery currently uses fixed demonstration rates for Poland. No payment is coll
 
 ### Project inquiries
 
-- Inquiry form for embroidered products, embroidery digitizing, websites, and other projects.
+- Inquiry form for embroidered products, UX/UI and Figma, web development, WordPress and WooCommerce, graphic design, embroidery digitizing, and other projects.
+- Service links preselect the project type, which is stored with the inquiry and displayed in the administrator panel.
 - Optional product context passed from a product page.
 - Frontend and backend validation.
 - Optional inspiration URL.
