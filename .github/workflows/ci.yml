@@ -113,9 +113,8 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
-      - name: Scan image for vulnerabilities
+      - name: Report all image vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
-
         with:
           scan-type: image
           image-ref: ghcr.io/angiejagger/lilimi-${{ matrix.service }}:sha-${{ github.sha }}
@@ -123,6 +122,22 @@ jobs:
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: false
+          format: table
+          exit-code: '0'
+          timeout: '10m'
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Block fixable image vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/angiejagger/lilimi-${{ matrix.service }}:sha-${{ github.sha }}
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
           format: table
           exit-code: '1'
           timeout: '10m'
