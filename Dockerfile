@@ -1,11 +1,11 @@
-FROM node:24-trixie-slim AS build
+FROM node:26-trixie-slim AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:24-trixie-slim AS runtime
+FROM node:26-trixie-slim AS runtime
 
 RUN apt-get update \
     && apt-get upgrade -y \
