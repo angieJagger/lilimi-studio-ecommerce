@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.auth.domain.UserAccount;
+import pl.lilimi.auth.domain.UserRole;
+import pl.lilimi.auth.persistence.UserAccountRepository;
 import tools.jackson.databind.json.JsonMapper;
 
 
@@ -22,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 
 @SpringBootTest
@@ -38,6 +42,9 @@ class OrderControllerTest {
 
   @Autowired
   private OrderItemRepository orderItemRepository;
+
+  @Autowired
+  private UserAccountRepository accountRepository;
 
   @Test
   void shouldCreateDigitalOrder() throws Exception {
@@ -67,7 +74,8 @@ class OrderControllerTest {
 
     var orderId = UUID.fromString(json.get("id").asText());
 
-    assertThat(orderRepository.findById(orderId)).isPresent();
+    var savedOrder = orderRepository.findById(orderId).orElseThrow();
+    assertThat(savedOrder.getCustomerAccountId()).isNull();
 
     var items = orderItemRepository
       .findByOrder_IdOrderByPositionAsc(orderId);
@@ -353,5 +361,93 @@ class OrderControllerTest {
     assertThat(secondResponse).isEqualTo(firstResponse);
     assertThat(orderRepository.count()).isEqualTo(ordersBefore + 1);
     assertThat(orderItemRepository.count()).isEqualTo(itemsBefore + 1);
+  }
+
+  @Test
+  void shouldAssignOrderToAuthenticatedAccount() throws Exception {
+    var account = accountRepository.saveAndFlush(new UserAccount(
+      "order-owner@example.com",
+      "{noop}unused-test-password",
+      UserRole.CUSTOMER
+    ));
+
+    var result = mockMvc.perform(post("/api/orders")
+        .with(user(account.getEmail()).roles("CUSTOMER"))
+        .with(csrf())
+        .header("Idempotency-Key", UUID.randomUUID().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(request(
+          "pattern-001",
+          "different-contact@example.com",
+          """
+          {"kind": "digital"}
+          """
+        )))
+      .andExpect(status().isCreated())
+      .andReturn();
+
+    var response = JsonMapper.builder().build()
+      .readTree(result.getResponse().getContentAsString());
+
+    var orderId = UUID.fromString(response.get("id").asText());
+    var savedOrder = orderRepository.findById(orderId).orElseThrow();
+
+    assertThat(savedOrder.getCustomerAccountId())
+      .isEqualTo(account.getId());
+    assertThat(savedOrder.getContact().getEmail())
+      .isEqualTo("different-contact@example.com");
+  }
+
+  @Test
+  void shouldRejectRepeatedSubmissionByDifferentAccount() throws Exception {
+    var owner = accountRepository.saveAndFlush(new UserAccount(
+      "original-owner@example.com",
+      "{noop}unused-test-password",
+      UserRole.CUSTOMER
+    ));
+
+    var other = accountRepository.saveAndFlush(new UserAccount(
+      "other-owner@example.com",
+      "{noop}unused-test-password",
+      UserRole.CUSTOMER
+    ));
+
+    var key = UUID.randomUUID().toString();
+    var body = request(
+      "pattern-001",
+      "contact@example.com",
+      """
+      {"kind": "digital"}
+      """
+    );
+
+    long ordersBefore = orderRepository.count();
+
+    var first = mockMvc.perform(post("/api/orders")
+        .with(user(owner.getEmail()).roles("CUSTOMER"))
+        .with(csrf())
+        .header("Idempotency-Key", key)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(body))
+      .andExpect(status().isCreated())
+      .andReturn();
+
+    mockMvc.perform(post("/api/orders")
+        .with(user(other.getEmail()).roles("CUSTOMER"))
+        .with(csrf())
+        .header("Idempotency-Key", key)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(body))
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("ORDER_SUBMISSION_CONFLICT"));
+
+    var response = JsonMapper.builder().build()
+      .readTree(first.getResponse().getContentAsString());
+
+    var orderId = UUID.fromString(response.get("id").asText());
+    var savedOrder = orderRepository.findById(orderId).orElseThrow();
+
+    assertThat(orderRepository.count()).isEqualTo(ordersBefore + 1);
+    assertThat(savedOrder.getCustomerAccountId()).isEqualTo(owner.getId());
   }
 }

@@ -42,6 +42,11 @@ public class SecurityConfig {
           HttpMethod.GET,
           "/api/auth/me"
         ).authenticated()
+        .requestMatchers(
+          HttpMethod.GET,
+          "/api/account/orders",
+          "/api/account/orders/**"
+        ).authenticated()
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
         .anyRequest().denyAll()
       )

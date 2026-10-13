@@ -1,0 +1,105 @@
+<section class="customer-orders container" aria-labelledby="customer-orders-title">
+  <h1 id="customer-orders-title">
+    {{ 'customerOrders.title' | transloco }}
+  </h1>
+
+  <p>{{ 'customerOrders.intro' | transloco }}</p>
+
+  <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+    {{ 'customerOrders.backToAccount' | transloco }}
+  </a>
+
+  @if (isLoading()) {
+  <output aria-live="polite">
+    {{ 'customerOrders.loading' | transloco }}
+  </output>
+  }
+
+  @if (errorKey(); as error) {
+  <div class="customer-orders__error" role="alert">
+    <p>{{ error | transloco }}</p>
+
+    @if (sessionExpired()) {
+    <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+      {{ 'customerOrders.signIn' | transloco }}
+    </a>
+    } @else {
+    <button type="button" (click)="retry()" [disabled]="isLoading()">
+      {{ 'customerOrders.retry' | transloco }}
+    </button>
+    }
+  </div>
+  }
+
+  @if (orders(); as result) {
+  @if (result.totalElements === 0) {
+  <p>{{ 'customerOrders.empty' | transloco }}</p>
+
+  <a [routerLink]="['/', transloco.getActiveLang(), 'shop']">
+    {{ 'customerOrders.browseShop' | transloco }}
+  </a>
+  } @else {
+  <ul class="customer-orders__list" [attr.aria-busy]="isLoading()">
+    @for (order of result.items; track order.id) {
+    <li class="customer-orders__item">
+      <h2>
+        <a [routerLink]="[
+                  '/',
+                  transloco.getActiveLang(),
+                  'account',
+                  'orders',
+                  order.id
+                ]">
+          {{ 'customerOrders.orderNumber' | transloco }}
+          {{ order.id }}
+        </a>
+      </h2>
+
+      <dl>
+        <div>
+          <dt>{{ 'customerOrders.date' | transloco }}</dt>
+          <dd>
+            <time [attr.datetime]="order.createdAt">
+              {{ formatDate(order.createdAt) }}
+            </time>
+          </dd>
+        </div>
+
+        <div>
+          <dt>{{ 'customerOrders.status' | transloco }}</dt>
+          <dd>
+            {{ ('customerOrders.statuses.' + order.status) | transloco }}
+          </dd>
+        </div>
+
+        <div>
+          <dt>{{ 'customerOrders.total' | transloco }}</dt>
+          <dd>{{ formatPrice(order.totalInGrosz) }}</dd>
+        </div>
+      </dl>
+    </li>
+    }
+  </ul>
+
+  <nav class="customer-orders__pagination" [attr.aria-label]="'customerOrders.pagination' | transloco">
+    <button type="button" (click)="previousPage()" [disabled]="isLoading() || result.page === 0">
+      {{ 'customerOrders.previous' | transloco }}
+    </button>
+
+    <span>
+      {{
+      'customerOrders.page'
+      | transloco: {
+      current: result.page + 1,
+      total: result.totalPages
+      }
+      }}
+    </span>
+
+    <button type="button" (click)="nextPage()" [disabled]="isLoading() || result.page + 1 >= result.totalPages">
+      {{ 'customerOrders.next' | transloco }}
+    </button>
+  </nav>
+  }
+  }
+</section>

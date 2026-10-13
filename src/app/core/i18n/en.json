@@ -53,6 +53,63 @@
           "logoutUnavailable": "Sign-out failed. Please try again."
         }
       },
+
+  "customerOrders": {
+    "title": "My orders",
+    "intro": "Orders placed while signed in to your account.",
+    "backToAccount": "Back to my account",
+    "loading": "Loading orders…",
+    "signIn": "Sign in",
+    "retry": "Try again",
+    "empty": "You have not placed any orders from this account yet.",
+    "browseShop": "Browse the shop",
+    "orderNumber": "Order",
+    "date": "Date",
+    "status": "Status",
+    "total": "Total",
+    "pagination": "Order history pages",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{current}} of {{total}}",
+    "statuses": {
+      "new": "New",
+      "processing": "Processing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "errors": {
+      "sessionExpired": "Your session has expired. Sign in again to view your orders.",
+      "accessDenied": "Order history cannot be displayed for this session.",
+      "loadFailed": "Could not load your orders. Please try again."
+    }
+  },
+
+  "customerOrderDetails": {
+    "title": "Order details",
+    "backToOrders": "Back to my orders",
+    "loading": "Loading order…",
+    "items": "Ordered products",
+    "pattern": "Embroidery pattern",
+    "fit": "Fit",
+    "size": "Size",
+    "color": "Colour",
+    "embroidery": "Embroidery option",
+    "quantity": "Quantity",
+    "unitPrice": "Unit price",
+    "lineTotal": "Item total",
+    "contact": "Contact details",
+    "delivery": "Delivery",
+    "digitalDelivery": "Digital products — no courier delivery. Automatic file downloads are not available yet.",
+    "paymentSummary": "Amount summary",
+    "subtotal": "Products",
+    "deliveryCost": "Delivery cost",
+    "errors": {
+      "notFound": "No matching order was found in your account.",
+      "sessionExpired": "Your session has expired. Sign in again to view this order.",
+      "accessDenied": "This order cannot be displayed for this session.",
+      "loadFailed": "Could not load your order. Please try again."
+    }
+  },
   "adminInquiries": {
     "title": "Project inquiries",
     "loading": "Loading inquiries…",

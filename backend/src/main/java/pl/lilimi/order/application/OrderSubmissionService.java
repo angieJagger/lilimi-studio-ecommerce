@@ -15,6 +15,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.UUID;
+import java.util.Objects;
 
 @Service
 @Validated
@@ -41,6 +42,15 @@ public class OrderSubmissionService {
     @NotNull UUID idempotencyKey,
     @NotNull @Valid CreateOrderRequest request
   ) {
+    return submit(idempotencyKey, request, null);
+  }
+
+  @Transactional
+  public Order submit(
+    @NotNull UUID idempotencyKey,
+    @NotNull @Valid CreateOrderRequest request,
+    UUID customerAccountId
+  ) {
     String requestHash = hash(request);
 
     submissionRepository.reserve(idempotencyKey, requestHash);
@@ -52,13 +62,22 @@ public class OrderSubmissionService {
     }
 
     if (submission.orderId() != null) {
-      return orderRepository.findById(submission.orderId())
+      var existingOrder = orderRepository.findById(submission.orderId())
         .orElseThrow(() -> new IllegalStateException(
           "Order referenced by submission does not exist"
         ));
+
+      if (!Objects.equals(
+        existingOrder.getCustomerAccountId(),
+        customerAccountId
+      )) {
+        throw new OrderSubmissionConflictException();
+      }
+
+      return existingOrder;
     }
 
-    var order = orderService.createOrder(request);
+    var order = orderService.createOrder(request, customerAccountId);
 
     orderRepository.flush();
 
