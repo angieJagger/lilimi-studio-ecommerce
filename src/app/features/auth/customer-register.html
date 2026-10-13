@@ -1,0 +1,137 @@
+<section class="customer-register container" aria-labelledby="customer-register-title">
+  <h1 id="customer-register-title">
+    {{ 'customerRegister.title' | transloco }}
+  </h1>
+
+  @if (registered()) {
+      <output aria-live="polite">
+        {{ 'customerRegister.success' | transloco }}
+      </output>
+  } @else {
+  <p>{{ 'customerRegister.description' | transloco }}</p>
+
+  @if (errorKey(); as error) {
+  <p class="customer-register__error" role="alert">
+    {{ error | transloco }}
+  </p>
+  }
+
+  <form [formGroup]="registrationForm" (ngSubmit)="submit()" [attr.aria-busy]="isSubmitting()" novalidate>
+    <div class="customer-register__field">
+      <label for="registration-email">
+        {{ 'customerRegister.fields.email' | transloco }}
+      </label>
+
+      <input id="registration-email" type="email" formControlName="email" autocomplete="email" maxlength="254" required
+        [attr.aria-invalid]="
+            registrationForm.controls.email.touched &&
+            registrationForm.controls.email.invalid
+              ? 'true'
+              : null
+          " [attr.aria-describedby]="
+            registrationForm.controls.email.touched &&
+            registrationForm.controls.email.invalid
+              ? 'registration-email-error'
+              : null
+          " />
+
+      @if (
+      registrationForm.controls.email.touched &&
+      registrationForm.controls.email.invalid
+      ) {
+      <p id="registration-email-error" class="customer-register__error">
+        {{ 'customerRegister.validation.email' | transloco }}
+      </p>
+      }
+    </div>
+
+    <div class="customer-register__field">
+      <label for="registration-password">
+        {{ 'customerRegister.fields.password' | transloco }}
+      </label>
+
+      <input id="registration-password" type="password" formControlName="password" autocomplete="new-password"
+        minlength="12" maxlength="72" required [attr.aria-invalid]="
+            registrationForm.controls.password.touched &&
+            registrationForm.controls.password.invalid
+              ? 'true'
+              : null
+          " [attr.aria-describedby]="
+            registrationForm.controls.password.touched &&
+            registrationForm.controls.password.invalid
+              ? 'registration-password-hint registration-password-error'
+              : 'registration-password-hint'
+          " />
+
+      <p id="registration-password-hint">
+        {{ 'customerRegister.passwordHint' | transloco }}
+      </p>
+
+      @if (
+      registrationForm.controls.password.touched &&
+      registrationForm.controls.password.invalid
+      ) {
+      <p id="registration-password-error" class="customer-register__error">
+        {{ 'customerRegister.validation.password' | transloco }}
+      </p>
+      }
+    </div>
+
+    <div class="customer-register__field">
+      <label for="registration-confirm-password">
+        {{ 'customerRegister.fields.confirmPassword' | transloco }}
+      </label>
+
+      <input id="registration-confirm-password" type="password" formControlName="confirmPassword"
+        autocomplete="new-password" maxlength="72" required [attr.aria-invalid]="
+            registrationForm.controls.confirmPassword.touched &&
+            (
+              registrationForm.controls.confirmPassword.invalid ||
+              registrationForm.hasError('passwordsMismatch')
+            )
+              ? 'true'
+              : null
+          " [attr.aria-describedby]="
+            registrationForm.controls.confirmPassword.touched &&
+            (
+              registrationForm.controls.confirmPassword.invalid ||
+              registrationForm.hasError('passwordsMismatch')
+            )
+              ? 'registration-confirm-password-error'
+              : null
+          " />
+
+      @if (
+      registrationForm.controls.confirmPassword.touched &&
+      (
+      registrationForm.controls.confirmPassword.invalid ||
+      registrationForm.hasError('passwordsMismatch')
+      )
+      ) {
+      <p id="registration-confirm-password-error" class="customer-register__error">
+        {{ 'customerRegister.validation.confirmPassword' | transloco }}
+      </p>
+      }
+    </div>
+
+    <button class="button button--primary" type="submit" [disabled]="isSubmitting()">
+      {{
+      (
+      isSubmitting()
+      ? 'customerRegister.submitting'
+      : 'customerRegister.submit'
+      ) | transloco
+      }}
+    </button>
+  </form>
+  }
+    <p class="customer-register__login">
+      @if (!registered()) {
+      {{ 'customerRegister.alreadyHaveAccount' | transloco }}
+      }
+    
+      <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+        {{ 'customerRegister.signIn' | transloco }}
+      </a>
+    </p>
+</section>

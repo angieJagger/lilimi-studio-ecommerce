@@ -35,7 +35,8 @@ public class SecurityConfig {
         .requestMatchers(
           HttpMethod.POST,
           "/api/orders",
-          "/api/project-inquiries"
+          "/api/project-inquiries",
+          "/api/auth/register"
         ).permitAll()
         .requestMatchers(
           HttpMethod.GET,

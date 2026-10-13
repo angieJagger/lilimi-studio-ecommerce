@@ -74,7 +74,7 @@
 " />
         @if (inquiryForm.email().touched() && inquiryForm.email().invalid()) {
         <ul id="inquiry-email-errors" class="form-field__errors">
-          @for (error of inquiryForm.email().errors(); track error) {
+          @for (error of inquiryForm.email().errors(); track error.kind) {
           <li>{{ error.message! | transloco }}</li>
           }
         </ul>

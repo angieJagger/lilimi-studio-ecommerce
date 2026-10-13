@@ -193,4 +193,94 @@ describe('AuthApiService', () => {
     http.expectNone('/api/auth/login');
     http.expectNone('/api/auth/me');
   });
+    it('should initialize CSRF and register without logging in', () => {
+      let completed = false;
+
+      service
+        .register({
+          email: '  customer@example.com  ',
+          password: ' Customer-password! ',
+        })
+        .subscribe({
+          complete: () => {
+            completed = true;
+          },
+        });
+
+      http.expectNone('/api/auth/register');
+
+      completeCsrfRequest();
+
+      const registration = http.expectOne('/api/auth/register');
+
+      expect(registration.request.method).toBe('POST');
+      expect(registration.request.body).toEqual({
+        email: 'customer@example.com',
+        password: ' Customer-password! ',
+      });
+
+      registration.flush(null, {
+        status: 201,
+        statusText: 'Created',
+      });
+
+      expect(completed).toBe(true);
+      http.expectNone('/api/auth/login');
+      http.expectNone('/api/auth/me');
+    });
+
+    it('should return a duplicate email error without logging in', () => {
+      let receivedError: HttpErrorResponse | undefined;
+
+      service
+        .register({
+          email: 'customer@example.com',
+          password: 'Customer-password!',
+        })
+        .subscribe({
+          next: () => {
+            throw new Error('Rejected registration should not succeed');
+          },
+          error: (error: HttpErrorResponse) => {
+            receivedError = error;
+          },
+        });
+
+      completeCsrfRequest();
+
+      http.expectOne('/api/auth/register').flush(null, {
+        status: 409,
+        statusText: 'Conflict',
+      });
+
+      expect(receivedError?.status).toBe(409);
+      http.expectNone('/api/auth/login');
+      http.expectNone('/api/auth/me');
+    });
+
+    it('should not send registration data when CSRF initialization fails', () => {
+      let receivedError: HttpErrorResponse | undefined;
+
+      service
+        .register({
+          email: 'customer@example.com',
+          password: 'Customer-password!',
+        })
+        .subscribe({
+          next: () => {
+            throw new Error('Failed CSRF initialization should not succeed');
+          },
+          error: (error: HttpErrorResponse) => {
+            receivedError = error;
+          },
+        });
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+      expect(receivedError?.status).toBe(503);
+      http.expectNone('/api/auth/register');
+    });
 });

@@ -1,4 +1,58 @@
 {
+      "customerRegister": {
+        "title": "Create an account",
+        "description": "Create your Lilimi Studio customer account.",
+        "fields": {
+          "email": "Email address",
+          "password": "Password",
+          "confirmPassword": "Confirm password"
+        },
+        "passwordHint": "Use at least 12 characters. The maximum is 72 UTF-8 bytes; accented characters and emoji may use more than one byte.",
+        "submit": "Create account",
+        "submitting": "Creating account…",
+        "success": "Your account has been created. You can now sign in.",
+        "validation": {
+          "email": "Enter a valid email address of no more than 254 characters.",
+          "password": "Use at least 12 characters, including a non-space character, within the 72 UTF-8 byte limit.",
+          "confirmPassword": "Confirm your password. Both passwords must match."
+        },
+        "errors": {
+          "emailTaken": "An account cannot be created with this email address. If you already have an account, sign in.",
+          "invalidData": "Check your email address and the password requirements.",
+          "session": "The request security check failed. Please try again.",
+          "tooManyRequests": "Too many attempts. Please try again later.",
+          "generic": "Your account could not be created. Please try again later."
+        },
+        "alreadyHaveAccount": "Already have an account?",
+        "signIn": "Sign in"
+      },
+
+      "customerLogin": {
+        "title": "Sign in",
+        "loadingSession": "Checking your session…",
+        "signedIn": "You are signed in as:",
+        "adminPanel": "Administrator panel",
+        "signOut": "Sign out",
+        "signingOut": "Signing out…",
+        "fields": {
+          "email": "Email address",
+          "password": "Password"
+        },
+        "submit": "Sign in",
+        "submitting": "Signing in…",
+        "noAccount": "Don't have an account yet?",
+        "createAccount": "Create an account",
+        "validation": {
+          "email": "Enter a valid email address of no more than 254 characters.",
+          "password": "Enter your password."
+        },
+        "errors": {
+          "sessionUnavailable": "Your session could not be checked. Refresh the page and try again.",
+          "invalidCredentials": "Incorrect email address or password.",
+          "loginUnavailable": "Sign-in failed. Please try again later.",
+          "logoutUnavailable": "Sign-out failed. Please try again."
+        }
+      },
   "adminInquiries": {
     "title": "Project inquiries",
     "loading": "Loading inquiries…",
@@ -296,7 +350,8 @@
     "services": "Services",
     "shop": "Shop",
     "about": "About Lilimi",
-    "contact": "Contact"
+    "contact": "Contact",
+    "accountLink": "My account"
   },
 
   "servicesOverview": {
