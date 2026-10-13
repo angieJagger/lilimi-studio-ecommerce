@@ -63,6 +63,19 @@ Delivery currently uses fixed demonstration rates for Poland. No payment is coll
 
 Submitting an inquiry does not create an order or send an email.
 
+### Customer accounts
+
+- Customer registration with frontend and backend validation.
+- Password hashing with BCrypt and validation of its 72-byte input limit.
+- Email normalization and duplicate-account handling.
+- Customer login and logout using server-side sessions.
+- Session restoration after a page reload.
+- Separate customer and administrator permissions enforced by the backend.
+- Polish and English registration and login forms.
+- Integration tests covering registration, authentication, validation, and access restrictions.
+
+Registration does not sign the customer in automatically. Email verification, password recovery, and customer order history are not implemented yet.
+
 ### Administrator tools
 
 - Administrator login and logout using server-side sessions.
@@ -167,7 +180,7 @@ src/app/
 
 backend/
 ├── src/main/java/pl/lilimi/
-│   ├── auth/      # Sessions and administrator account provisioning
+│   ├── auth/      # Customer registration, sessions and administrator account provisioning
 │   ├── catalog/   # Products and garment variants
 │   ├── inquiry/   # Public inquiries and administrator queries
 │   ├── order/     # Submission, pricing and administrator operations
@@ -234,6 +247,7 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | GET | `/api/products/{slug}` | Product details |
 | GET | `/api/products/{slug}/variants` | Available garment configurations |
 | GET | `/api/auth/csrf` | Initialize the CSRF token |
+| POST | `/api/auth/register` | Register a customer account |
 | POST | `/api/auth/login` | Sign in |
 | POST | `/api/auth/logout` | Sign out |
 | GET | `/api/auth/me` | Current authenticated user |
@@ -275,7 +289,7 @@ Backend, from `backend`, with Docker running:
 
 Backend integration tests create a separate PostgreSQL container and apply migrations. They do not use the development database.
 
-Tests cover catalogue and cart behaviour, checkout validation, order submission and idempotency, authentication and CSRF, administrator access, order status conflicts, and inquiry submission.
+Tests cover catalogue and cart behaviour, checkout validation, order submission and idempotency, customer registration and login, authentication and CSRF, administrator access, order status conflicts, and inquiry submission.
 
 Administrator inquiry details component tests are currently marked as TODO and remain to be implemented.
 
@@ -292,9 +306,17 @@ Docker Compose runs:
 
 The backend and database are not directly exposed through public host ports.
 
-GitHub Actions runs frontend and backend tests and builds. Successful CI runs for pushes to `main` publish Docker images to GitHub Container Registry, tagged with the full commit SHA.
+GitHub Actions runs frontend tests and builds, an npm dependency audit, and backend tests and builds with PostgreSQL Testcontainers. Docker images are built and scanned with Trivy before publication.
 
-Deployment is started manually through the “Deploy to Lightsail” workflow by selecting a commit with successful CI and published images. The workflow connects over SSH, backs up the database, pulls the selected images, recreates application containers, and checks their health and running image tags.
+CI reports HIGH and CRITICAL vulnerabilities and blocks images with fixable findings at these severity levels. Unfixed findings remain visible in the scan report.
+
+Successful CI runs for pushes to `main` publish the scanned images to GitHub Container Registry, tagged with the full commit SHA. Pull requests build and scan images without publishing them.
+
+Deployment is started manually through the “Deploy to Lightsail” workflow using a full commit SHA with successful CI on `main`. The workflow verifies the SSH host key, backs up the database and environment configuration, pulls the selected images, and recreates the application containers. It then checks container health, running image tags, public endpoints, and selected access restrictions.
+
+Workflow actions are pinned to commit SHAs. Dependabot checks dependencies weekly and groups minor and patch updates separately for npm, Maven, and GitHub Actions.
+
+Recovery procedures are documented in [deploy/RECOVERY.md](deploy/RECOVERY.md). A database backup has been successfully restored into a separate test database. Backups currently remain on the deployment host; off-host storage is a planned improvement.
 
 ### Run the complete stack locally
 
@@ -317,7 +339,7 @@ This stack uses a separate database volume from the database-only development st
 ## Next milestones
 
 - Complete administrator inquiry details tests and update remaining demo copy.
-- Implement customer registration, login, and order history.
+- Add customer order history and associate orders with authenticated customers.
 - Add email verification, password recovery, and transactional emails.
 - Integrate payments and controlled delivery of purchased digital files.
 - Replace visual placeholders with original assets and portfolio work.
