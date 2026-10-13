@@ -67,6 +67,15 @@ const shopRoutes: Routes = [
       import('./features/auth/customer-register').then((m) => m.CustomerRegister),
   },
   {
+    path: 'account/orders',
+    loadComponent: () => import('./features/account/customer-orders').then((m) => m.CustomerOrders),
+  },
+  {
+    path: 'account/orders/:id',
+    loadComponent: () =>
+      import('./features/account/customer-order-details').then((m) => m.CustomerOrderDetails),
+  },
+  {
     path: 'admin/login',
     loadComponent: () =>
       import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),

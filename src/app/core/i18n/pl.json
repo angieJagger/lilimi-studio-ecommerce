@@ -1,58 +1,116 @@
 {
-      "customerRegister": {
-        "title": "Utwórz konto",
-        "description": "Zarejestruj konto klienta Lilimi Studio.",
-        "fields": {
-          "email": "Adres e-mail",
-          "password": "Hasło",
-          "confirmPassword": "Powtórz hasło"
-        },
-        "passwordHint": "Użyj co najmniej 12 znaków. Maksymalna długość to 72 bajty UTF-8; polskie litery i emoji mogą zajmować więcej niż jeden bajt.",
-        "submit": "Utwórz konto",
-        "submitting": "Tworzenie konta…",
-        "success": "Konto zostało utworzone. Możesz teraz się zalogować.",
-        "validation": {
-          "email": "Podaj poprawny adres e-mail, nie dłuższy niż 254 znaki.",
-          "password": "Hasło musi mieć co najmniej 12 znaków, zawierać znak inny niż spacja i mieścić się w limicie 72 bajtów UTF-8.",
-          "confirmPassword": "Powtórz hasło. Oba hasła muszą być identyczne."
-        },
-        "errors": {
-          "emailTaken": "Nie można utworzyć konta z tym adresem e-mail. Jeśli masz już konto, zaloguj się.",
-          "invalidData": "Sprawdź adres e-mail i wymagania dotyczące hasła.",
-          "session": "Nie udało się potwierdzić bezpieczeństwa żądania. Spróbuj ponownie.",
-          "tooManyRequests": "Zbyt wiele prób. Spróbuj ponownie później.",
-          "generic": "Nie udało się utworzyć konta. Spróbuj ponownie później."
-        },
-        "alreadyHaveAccount": "Masz już konto?",
-        "signIn": "Zaloguj się"
-      },
+  "customerRegister": {
+    "title": "Utwórz konto",
+    "description": "Zarejestruj konto klienta Lilimi Studio.",
+    "fields": {
+      "email": "Adres e-mail",
+      "password": "Hasło",
+      "confirmPassword": "Powtórz hasło"
+    },
+    "passwordHint": "Użyj co najmniej 12 znaków. Maksymalna długość to 72 bajty UTF-8; polskie litery i emoji mogą zajmować więcej niż jeden bajt.",
+    "submit": "Utwórz konto",
+    "submitting": "Tworzenie konta…",
+    "success": "Konto zostało utworzone. Możesz teraz się zalogować.",
+    "validation": {
+      "email": "Podaj poprawny adres e-mail, nie dłuższy niż 254 znaki.",
+      "password": "Hasło musi mieć co najmniej 12 znaków, zawierać znak inny niż spacja i mieścić się w limicie 72 bajtów UTF-8.",
+      "confirmPassword": "Powtórz hasło. Oba hasła muszą być identyczne."
+    },
+    "errors": {
+      "emailTaken": "Nie można utworzyć konta z tym adresem e-mail. Jeśli masz już konto, zaloguj się.",
+      "invalidData": "Sprawdź adres e-mail i wymagania dotyczące hasła.",
+      "session": "Nie udało się potwierdzić bezpieczeństwa żądania. Spróbuj ponownie.",
+      "tooManyRequests": "Zbyt wiele prób. Spróbuj ponownie później.",
+      "generic": "Nie udało się utworzyć konta. Spróbuj ponownie później."
+    },
+    "alreadyHaveAccount": "Masz już konto?",
+    "signIn": "Zaloguj się"
+  },
 
-      "customerLogin": {
-        "title": "Logowanie",
-        "loadingSession": "Sprawdzanie sesji…",
-        "signedIn": "Jesteś zalogowana lub zalogowany jako:",
-        "adminPanel": "Panel administratora",
-        "signOut": "Wyloguj się",
-        "signingOut": "Wylogowywanie…",
-        "fields": {
-          "email": "Adres e-mail",
-          "password": "Hasło"
-        },
-        "submit": "Zaloguj się",
-        "submitting": "Logowanie…",
-        "noAccount": "Nie masz jeszcze konta?",
-        "createAccount": "Utwórz konto",
-        "validation": {
-          "email": "Podaj poprawny adres e-mail, nie dłuższy niż 254 znaki.",
-          "password": "Podaj hasło."
-        },
-        "errors": {
-          "sessionUnavailable": "Nie udało się sprawdzić sesji. Odśwież stronę i spróbuj ponownie.",
-          "invalidCredentials": "Niepoprawny adres e-mail lub hasło.",
-          "loginUnavailable": "Nie udało się zalogować. Spróbuj ponownie później.",
-          "logoutUnavailable": "Nie udało się wylogować. Spróbuj ponownie."
-        }
-      },
+  "customerLogin": {
+    "title": "Logowanie",
+    "loadingSession": "Sprawdzanie sesji…",
+    "signedIn": "Jesteś zalogowana lub zalogowany jako:",
+    "adminPanel": "Panel administratora",
+    "signOut": "Wyloguj się",
+    "signingOut": "Wylogowywanie…",
+    "fields": {
+      "email": "Adres e-mail",
+      "password": "Hasło"
+    },
+    "submit": "Zaloguj się",
+    "submitting": "Logowanie…",
+    "noAccount": "Nie masz jeszcze konta?",
+    "createAccount": "Utwórz konto",
+    "validation": {
+      "email": "Podaj poprawny adres e-mail, nie dłuższy niż 254 znaki.",
+      "password": "Podaj hasło."
+    },
+    "errors": {
+      "sessionUnavailable": "Nie udało się sprawdzić sesji. Odśwież stronę i spróbuj ponownie.",
+      "invalidCredentials": "Niepoprawny adres e-mail lub hasło.",
+      "loginUnavailable": "Nie udało się zalogować. Spróbuj ponownie później.",
+      "logoutUnavailable": "Nie udało się wylogować. Spróbuj ponownie."
+    }
+  },
+
+  "customerOrders": {
+    "title": "Moje zamówienia",
+    "intro": "Zamówienia złożone po zalogowaniu na Twoje konto.",
+    "backToAccount": "Wróć do mojego konta",
+    "loading": "Ładowanie zamówień…",
+    "signIn": "Zaloguj się",
+    "retry": "Spróbuj ponownie",
+    "empty": "Nie masz jeszcze zamówień złożonych z tego konta.",
+    "browseShop": "Przejdź do sklepu",
+    "orderNumber": "Zamówienie",
+    "date": "Data",
+    "status": "Status",
+    "total": "Łączna kwota",
+    "pagination": "Strony historii zamówień",
+    "previous": "Poprzednia",
+    "next": "Następna",
+    "page": "Strona {{current}} z {{total}}",
+    "statuses": {
+      "new": "Nowe",
+      "processing": "W realizacji",
+      "completed": "Zakończone",
+      "cancelled": "Anulowane"
+    },
+    "errors": {
+      "sessionExpired": "Sesja wygasła. Zaloguj się ponownie, aby zobaczyć zamówienia.",
+      "accessDenied": "Nie można wyświetlić historii zamówień dla tej sesji.",
+      "loadFailed": "Nie udało się pobrać zamówień. Spróbuj ponownie."
+    }
+  },
+
+  "customerOrderDetails": {
+    "title": "Szczegóły zamówienia",
+    "backToOrders": "Wróć do moich zamówień",
+    "loading": "Ładowanie zamówienia…",
+    "items": "Zamówione produkty",
+    "pattern": "Wzór haftu",
+    "fit": "Fason",
+    "size": "Rozmiar",
+    "color": "Kolor",
+    "embroidery": "Opcja haftu",
+    "quantity": "Liczba sztuk",
+    "unitPrice": "Cena za sztukę",
+    "lineTotal": "Razem za produkt",
+    "contact": "Dane kontaktowe",
+    "delivery": "Dostawa",
+    "digitalDelivery": "Produkty cyfrowe — bez dostawy kurierskiej. Automatyczne pobieranie plików nie jest jeszcze dostępne.",
+    "paymentSummary": "Podsumowanie kwot",
+    "subtotal": "Produkty",
+    "deliveryCost": "Koszt dostawy",
+    "errors": {
+      "notFound": "Nie znaleziono zamówienia na Twoim koncie.",
+      "sessionExpired": "Sesja wygasła. Zaloguj się ponownie, aby zobaczyć zamówienie.",
+      "accessDenied": "Nie można wyświetlić zamówienia dla tej sesji.",
+      "loadFailed": "Nie udało się pobrać zamówienia. Spróbuj ponownie."
+    }
+  },
+
   "adminInquiries": {
     "title": "Zapytania projektowe",
     "loading": "Ładowanie zapytań…",
@@ -69,39 +127,39 @@
       "answered": "Odpowiedziano",
       "closed": "Zamknięte"
     },
-    "details": {
-      "title": "Szczegóły zapytania",
-      "back": "Wróć do zapytań",
-      "login": "Przejdź do logowania",
-      "retry": "Spróbuj ponownie",
-      "summary": "Informacje o zapytaniu",
-      "reference": "Numer zapytania",
-      "createdAt": "Data utworzenia",
-      "status": "Status",
-      "language": "Język zapytania",
-      "productId": "Identyfikator produktu",
-      "description": "Opis projektu",
-      "languages": {
-        "pl": "Polski",
-        "en": "Angielski"
-      },
-      "changeStatus": "Zmiana statusu",
-      "confirmStatus": "Zmienić status na „{{status}}”?",
-      "confirm": "Potwierdź zmianę",
-      "cancel": "Anuluj",
-      "saving": "Zapisywanie…",
-      "reload": "Odśwież szczegóły",
-      "closedNotice": "Zapytanie jest zamknięte. Nie można zmienić jego statusu."
+  "details": {
+    "title": "Szczegóły zapytania",
+    "back": "Wróć do zapytań",
+    "login": "Przejdź do logowania",
+    "retry": "Spróbuj ponownie",
+    "summary": "Informacje o zapytaniu",
+    "reference": "Numer zapytania",
+    "createdAt": "Data utworzenia",
+    "status": "Status",
+    "language": "Język zapytania",
+    "productId": "Identyfikator produktu",
+    "description": "Opis projektu",
+    "languages": {
+      "pl": "Polski",
+      "en": "Angielski"
     },
-    "errors": {
-      "loadFailed": "Nie udało się pobrać zapytań. Spróbuj ponownie.",
-      "notFound": "Nie znaleziono zapytania.",
-      "detailsLoadFailed": "Nie udało się pobrać szczegółów zapytania. Spróbuj ponownie.",
-      "versionConflict": "Zapytanie zostało zmienione. Odśwież szczegóły przed kolejną zmianą.",
-      "statusTransitionInvalid": "Ta zmiana statusu jest niedozwolona. Odśwież szczegóły.",
-      "statusSaveFailed": "Nie udało się potwierdzić zmiany statusu. Odśwież szczegóły, aby sprawdzić aktualny stan."
-    }
+    "changeStatus": "Zmiana statusu",
+    "confirmStatus": "Zmienić status na „{{status}}”?",
+    "confirm": "Potwierdź zmianę",
+    "cancel": "Anuluj",
+    "saving": "Zapisywanie…",
+    "reload": "Odśwież szczegóły",
+    "closedNotice": "Zapytanie jest zamknięte. Nie można zmienić jego statusu."
   },
+  "errors": {
+    "loadFailed": "Nie udało się pobrać zapytań. Spróbuj ponownie.",
+    "notFound": "Nie znaleziono zapytania.",
+    "detailsLoadFailed": "Nie udało się pobrać szczegółów zapytania. Spróbuj ponownie.",
+    "versionConflict": "Zapytanie zostało zmienione. Odśwież szczegóły przed kolejną zmianą.",
+    "statusTransitionInvalid": "Ta zmiana statusu jest niedozwolona. Odśwież szczegóły.",
+    "statusSaveFailed": "Nie udało się potwierdzić zmiany statusu. Odśwież szczegóły, aby sprawdzić aktualny stan."
+  }
+},
   "adminOrderDetails": {
     "title": "Szczegóły zamówienia",
     "back": "Wróć do zamówień",

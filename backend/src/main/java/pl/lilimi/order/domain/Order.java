@@ -23,6 +23,9 @@ public class Order {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
+  @Column(name = "customer_account_id", updatable = false)
+  private UUID customerAccountId;
+
   @Version
   @Column(name = "version", nullable = false)
   private long version;
@@ -80,6 +83,24 @@ public class Order {
       subtotalInGrosz,
       deliveryPriceInGrosz
     );
+  }
+
+  public Order(
+    String language,
+    OrderContact contact,
+    OrderDelivery delivery,
+    long subtotalInGrosz,
+    long deliveryPriceInGrosz,
+    UUID customerAccountId
+  ) {
+    this(
+      language,
+      contact,
+      delivery,
+      subtotalInGrosz,
+      deliveryPriceInGrosz
+    );
+    this.customerAccountId = customerAccountId;
   }
 
   @PrePersist
@@ -160,5 +181,9 @@ public class Order {
 
   public long getVersion() {
     return version;
+  }
+
+  public UUID getCustomerAccountId() {
+    return customerAccountId;
   }
 }

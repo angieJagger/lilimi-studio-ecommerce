@@ -14,6 +14,7 @@ import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Service
 @Validated
@@ -38,6 +39,14 @@ public class OrderService {
 
   @Transactional
   public Order createOrder(@NotNull @Valid CreateOrderRequest request) {
+    return createOrder(request, null);
+  }
+
+  @Transactional
+  public Order createOrder(
+    @NotNull @Valid CreateOrderRequest request,
+    UUID customerAccountId
+  ) {
     var pricedItems = pricingService.priceItems(
       request.items(),
       request.language()
@@ -65,7 +74,8 @@ public class OrderService {
       contact,
       deliveryQuote.delivery(),
       subtotalInGrosz,
-      deliveryQuote.priceInGrosz()
+      deliveryQuote.priceInGrosz(),
+      customerAccountId
     );
 
     orderRepository.save(order);

@@ -1,0 +1,144 @@
+<section class="order-details container" aria-labelledby="order-details-title">
+  <h1 id="order-details-title">
+    {{ 'customerOrderDetails.title' | transloco }}
+  </h1>
+
+  <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'orders']">
+    {{ 'customerOrderDetails.backToOrders' | transloco }}
+  </a>
+
+  @if (isLoading()) {
+  <output aria-live="polite">
+    {{ 'customerOrderDetails.loading' | transloco }}
+  </output>
+  }
+
+  @if (errorKey(); as error) {
+  <div class="order-details__error" role="alert">
+    <p>{{ error | transloco }}</p>
+
+    @if (sessionExpired()) {
+    <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+      {{ 'customerOrders.signIn' | transloco }}
+    </a>
+    } @else if (error === 'customerOrderDetails.errors.loadFailed') {
+    <button type="button" (click)="retry()" [disabled]="isLoading()">
+      {{ 'customerOrders.retry' | transloco }}
+    </button>
+    }
+  </div>
+  }
+
+  @if (order(); as details) {
+  <p class="order-details__reference">
+    {{ 'customerOrders.orderNumber' | transloco }} {{ details.id }}
+  </p>
+
+  <dl class="order-details__summary">
+    <div>
+      <dt>{{ 'customerOrders.date' | transloco }}</dt>
+      <dd>
+        <time [attr.datetime]="details.createdAt">
+          {{ formatDate(details.createdAt) }}
+        </time>
+      </dd>
+    </div>
+    <div>
+      <dt>{{ 'customerOrders.status' | transloco }}</dt>
+      <dd>
+        {{ ('customerOrders.statuses.' + details.status) | transloco }}
+      </dd>
+    </div>
+  </dl>
+
+  <h2>{{ 'customerOrderDetails.items' | transloco }}</h2>
+
+  <ul class="order-details__items">
+    @for (item of details.items; track $index) {
+    <li>
+      <h3>{{ item.productName }}</h3>
+
+      @if (item.kind === 'sweatshirt') {
+      <dl class="order-details__configuration">
+        <div>
+          <dt>{{ 'customerOrderDetails.pattern' | transloco }}</dt>
+          <dd>{{ item.patternName }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'customerOrderDetails.fit' | transloco }}</dt>
+          <dd>{{ ('adminOrderDetails.fits.' + item.fit) | transloco }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'customerOrderDetails.size' | transloco }}</dt>
+          <dd>{{ item.size }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'customerOrderDetails.color' | transloco }}</dt>
+          <dd>{{ ('adminOrderDetails.colors.' + item.color) | transloco }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'customerOrderDetails.embroidery' | transloco }}</dt>
+          <dd>
+  {{ ('adminOrderDetails.embroideryOptions.' + item.embroideryOptionId) | transloco }}
+</dd>
+        </div>
+      </dl>
+      }
+
+      <p>
+        {{ 'customerOrderDetails.quantity' | transloco }}:
+        {{ item.quantity }}
+      </p>
+      <p>
+        {{ 'customerOrderDetails.unitPrice' | transloco }}:
+        {{ formatPrice(item.unitPriceInGrosz) }}
+      </p>
+      <p>
+        {{ 'customerOrderDetails.lineTotal' | transloco }}:
+        {{ formatPrice(item.lineTotalInGrosz) }}
+      </p>
+    </li>
+    }
+  </ul>
+
+  <h2>{{ 'customerOrderDetails.contact' | transloco }}</h2>
+  <p>{{ details.contact.fullName }}</p>
+  <p>{{ details.contact.email }}</p>
+  @if (details.contact.phone) {
+  <p>{{ details.contact.phone }}</p>
+  }
+
+  <h2>{{ 'customerOrderDetails.delivery' | transloco }}</h2>
+  @if (details.delivery.kind === 'digital') {
+  <p>{{ 'customerOrderDetails.digitalDelivery' | transloco }}</p>
+  } @else {
+  <p>
+  {{ ('adminOrderDetails.deliveryMethods.' + details.delivery.methodId) | transloco }}
+</p>
+  <address>
+    {{ details.delivery.addressLine1 }}<br />
+    @if (details.delivery.addressLine2) {
+    {{ details.delivery.addressLine2 }}<br />
+    }
+    {{ details.delivery.postalCode }} {{ details.delivery.city }}<br />
+    {{ details.delivery.countryCode }}
+  </address>
+  }
+
+  <h2>{{ 'customerOrderDetails.paymentSummary' | transloco }}</h2>
+  <dl class="order-details__totals">
+    <div>
+      <dt>{{ 'customerOrderDetails.subtotal' | transloco }}</dt>
+      <dd>{{ formatPrice(details.subtotalInGrosz) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'customerOrderDetails.deliveryCost' | transloco }}</dt>
+      <dd>{{ formatPrice(details.deliveryPriceInGrosz) }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'customerOrders.total' | transloco }}</dt>
+      <dd>{{ formatPrice(details.totalInGrosz) }}</dd>
+    </div>
+  </dl>
+  }
+</section>
