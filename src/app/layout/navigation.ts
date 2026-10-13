@@ -22,4 +22,8 @@ export const shopNavigation: readonly NavigationItem[] = [
     labelKey: 'nav.contact',
     path: 'contact',
   },
+  {
+    labelKey: 'nav.accountLink',
+    path: 'account/login',
+  },
 ];

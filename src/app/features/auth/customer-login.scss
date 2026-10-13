@@ -1,0 +1,91 @@
+:host {
+  display: block;
+}
+
+.customer-login {
+  max-width: 36rem;
+  padding-block: 3rem;
+
+  h1 {
+    margin-bottom: 1rem;
+  }
+
+  form {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  output {
+    display: block;
+    margin-block: 1.5rem;
+  }
+
+  > .button {
+    display: inline-flex;
+    margin-right: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  form button {
+    justify-self: start;
+  }
+}
+
+.customer-login__field {
+  display: grid;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 600;
+  }
+
+  input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border-default);
+    border-radius: 0.5rem;
+    background: var(--surface-default);
+    color: inherit;
+    font: inherit;
+
+    &:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    &[aria-invalid='true'] {
+      border-color: #b42318;
+    }
+
+    &:disabled {
+      opacity: 0.65;
+    }
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+}
+
+.customer-login__error {
+  color: #b42318;
+}
+
+.customer-login__register {
+  margin-top: 1.5rem;
+
+  a {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+@media (max-width: 36rem) {
+  .customer-login form button {
+    width: 100%;
+  }
+}

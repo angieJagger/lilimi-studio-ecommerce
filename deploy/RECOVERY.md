@@ -11,6 +11,7 @@ workflow. The selected commit must have successful CI on `main`.
 Server directory: `/home/ubuntu/lilimi`.
 
 A deployment creates:
+
 - a PostgreSQL dump in `backups/`;
 - a copy of `.env` in `backups/`.
 
@@ -61,6 +62,7 @@ failed. Application rollback and database recovery are separate
 operations.
 
 After recovery, confirm:
+
 - frontend and backend run the intended image tags;
 - both containers are healthy;
 - the public catalogue and services page work;
@@ -120,6 +122,7 @@ queries succeed. It does not test every application feature.
 Production database restoration has not been rehearsed.
 
 Before restoring production:
+
 - identify the incident and select the recovery point;
 - account for orders, inquiries and other changes made after the backup;
 - stop application writes;
@@ -139,6 +142,7 @@ Successfully restored:
 `backups/lilimi-before-deploy-20261012-120007.dump`
 
 The restored database contained:
+
 - 12 public tables;
 - 5 products;
 - successful migration history through V17.

@@ -15,7 +15,7 @@
           @for (item of shopNavigation; track item.labelKey) {
           <li>
             <a class="mobile-menu__link"
-              [routerLink]="['/', transloco.getActiveLang(), item.path]"
+              [routerLink]="['/', transloco.getActiveLang()].concat(item.path.split('/'))"
               [queryParams]="item.queryParams"
               [fragment]="item.fragment"
               (click)="close()">

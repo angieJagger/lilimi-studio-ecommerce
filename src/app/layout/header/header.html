@@ -6,7 +6,7 @@
     <nav class="site-header__navigation" [attr.aria-label]="'nav.mainNavigation' | transloco">
       @for (item of shopNavigation; track item.labelKey) {
       <a class="site-header__link"
-        [routerLink]="['/', transloco.getActiveLang(), item.path]"
+        [routerLink]="['/', transloco.getActiveLang()].concat(item.path.split('/'))"
         [queryParams]="item.queryParams"
         [fragment]="item.fragment">
         {{ item.labelKey | transloco }}

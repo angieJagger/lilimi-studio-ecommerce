@@ -9,3 +9,8 @@ export interface LoginRequest {
   readonly email: string;
   readonly password: string;
 }
+
+export interface RegisterCustomerRequest {
+  readonly email: string;
+  readonly password: string;
+}

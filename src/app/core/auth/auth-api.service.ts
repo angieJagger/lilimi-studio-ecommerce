@@ -2,7 +2,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { switchMap, type Observable } from 'rxjs';
 import { API_BASE_URL } from '../api/api-base-url';
-import type { CurrentUser, LoginRequest } from './auth.model';
+import type {
+  CurrentUser,
+  LoginRequest,
+  RegisterCustomerRequest,
+} from './auth.model';
 import { CsrfService } from './csrf.service';
 
 @Injectable({
@@ -15,6 +19,17 @@ export class AuthApiService {
 
   getCurrentUser(): Observable<CurrentUser> {
     return this.http.get<CurrentUser>(`${this.baseUrl}/auth/me`);
+  }
+
+  register(request: RegisterCustomerRequest): Observable<void> {
+    const body: RegisterCustomerRequest = {
+      email: request.email.trim(),
+      password: request.password,
+    };
+
+    return this.csrf
+      .initialize()
+      .pipe(switchMap(() => this.http.post<void>(`${this.baseUrl}/auth/register`, body)));
   }
 
   login(request: LoginRequest): Observable<CurrentUser> {
