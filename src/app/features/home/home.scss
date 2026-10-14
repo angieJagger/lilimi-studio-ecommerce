@@ -35,19 +35,13 @@
 .hero__media {
   display: grid;
   place-items: center;
-  min-height: 220px;
-  padding: var(--spacing-24);
-  border: 1px solid var(--border-brand);
-  border-radius: var(--radius-12);
-  background-color: var(--brand-lilac);
-  color: var(--text-secondary);
-  text-align: center;
+  min-width: 0;
 }
 
-.hero__media p {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.428571;
+.hero__image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .hero__actions {
