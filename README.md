@@ -73,8 +73,11 @@ Submitting an inquiry does not create an order or send an email.
 - Separate customer and administrator permissions enforced by the backend.
 - Polish and English registration and login forms.
 - Integration tests covering registration, authentication, validation, and access restrictions.
+- New orders associated with the signed-in account, while preserving guest checkout.
+- Paginated order history and detailed views of purchased items, prices, and delivery information.
+- Backend ownership checks preventing access to another account's orders.
 
-Registration does not sign the customer in automatically. Email verification, password recovery, and customer order history are not implemented yet.
+Registration does not sign the customer in automatically. Order history includes orders placed while signed in; guest orders are not automatically linked by email. Email verification and password recovery are not implemented yet.
 
 ### Administrator tools
 
@@ -339,7 +342,6 @@ This stack uses a separate database volume from the database-only development st
 ## Next milestones
 
 - Complete administrator inquiry details tests and update remaining demo copy.
-- Add customer order history and associate orders with authenticated customers.
 - Add email verification, password recovery, and transactional emails.
 - Integrate payments and controlled delivery of purchased digital files.
 - Replace visual placeholders with original assets and portfolio work.

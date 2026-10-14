@@ -16,7 +16,11 @@
         </button>
         } @else if (product(); as currentProduct) {
     <div class="product-detail__overview">
-      <div class="product-detail__media" aria-hidden="true"></div>
+      <div class="product-detail__media">
+        <p class="product-detail__media-placeholder">
+          {{ 'productDetail.imageUnavailable' | transloco }}
+        </p>
+      </div>
     
       <div class="product-detail__info">
         <p class="product-detail__type">

@@ -9,7 +9,7 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  border: 1px solid var(--border-brand);
+  border: 1px solid var(--border-brand-soft);
   border-radius: var(--radius-12);
   background-color: var(--surface-default);
 }
@@ -17,7 +17,7 @@
 .product-card__media {
   height: 180px;
   flex-shrink: 0;
-  background-color: var(--lilac-300);
+  background-color: var(--border-brand-soft);
 }
 
 .product-card__content {

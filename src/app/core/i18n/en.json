@@ -494,7 +494,8 @@
     "relatedTitle": "You may also like",
     "loading": "Loading product…",
     "loadError": "Could not load the product. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "imageUnavailable": "Product image unavailable"
   },
 
   "configurator": {
