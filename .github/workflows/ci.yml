@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -13,7 +14,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Plan required checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      frontend: ${{ steps.plan.outputs.frontend }}
+      backend: ${{ steps.plan.outputs.backend }}
+      images: ${{ steps.plan.outputs.images }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select checks and validate whitespace
+        id: plan
+        run: python3 .github/scripts/ci-plan.py
+
   frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     name: Frontend tests and build
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -41,6 +63,8 @@ jobs:
         run: npm run build
 
   backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     name: Backend tests and build
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -67,7 +91,15 @@ jobs:
 
   images:
     name: Verify ${{ matrix.service }} image
-    needs: [frontend, backend]
+    needs: [changes, frontend, backend]
+    if: >-
+      always() &&
+      needs.changes.result == 'success' &&
+      needs.changes.outputs.images == 'true' &&
+      (needs.frontend.result == 'success' ||
+       (needs.changes.outputs.frontend == 'false' && needs.frontend.result == 'skipped')) &&
+      (needs.backend.result == 'success' ||
+       (needs.changes.outputs.backend == 'false' && needs.backend.result == 'skipped'))
     runs-on: ubuntu-24.04
     timeout-minutes: 40
 
@@ -152,27 +184,38 @@ jobs:
 
   ci-result:
     name: CI result
-    needs: [frontend, backend, images]
+    needs: [changes, frontend, backend, images]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-
     permissions: {}
-
     steps:
       - name: Check required jobs
         env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          FRONTEND_REQUIRED: ${{ needs.changes.outputs.frontend }}
+          BACKEND_REQUIRED: ${{ needs.changes.outputs.backend }}
+          IMAGES_REQUIRED: ${{ needs.changes.outputs.images }}
           FRONTEND_RESULT: ${{ needs.frontend.result }}
           BACKEND_RESULT: ${{ needs.backend.result }}
           IMAGES_RESULT: ${{ needs.images.result }}
         run: |
           set -euo pipefail
+          [[ "$CHANGES_RESULT" == "success" ]] || exit 1
 
-          for result in "$FRONTEND_RESULT" "$BACKEND_RESULT" "$IMAGES_RESULT"; do
-            if [[ "$result" != "success" ]]; then
-              echo "Required CI job did not succeed: $result"
+          check_job() {
+            local name="$1" required="$2" result="$3"
+            if [[ "$required" == "true" && "$result" == "success" ]]; then
+              echo "$name passed."
+            elif [[ "$required" == "false" && "$result" == "skipped" ]]; then
+              echo "$name was intentionally skipped."
+            else
+              echo "$name failed validation: required=$required, result=$result"
               exit 1
             fi
-          done
+          }
 
+          check_job frontend "$FRONTEND_REQUIRED" "$FRONTEND_RESULT"
+          check_job backend "$BACKEND_REQUIRED" "$BACKEND_RESULT"
+          check_job images "$IMAGES_REQUIRED" "$IMAGES_RESULT"
           echo "All required CI jobs passed."
