@@ -55,7 +55,7 @@
   gap: var(--spacing-16);
   padding: var(--spacing-16);
   background-color: var(--brand-lilac);
-  border: 1px solid var(--border-brand);
+  border: 1px solid var(--border-brand-soft);
   border-radius: var(--radius-12);
 }
 
@@ -109,6 +109,7 @@
 .cart__summary {
   padding: var(--spacing-24);
   background-color: var(--brand-lilac);
+  border: 1px solid var(--border-brand-soft);
   border-radius: var(--radius-12);
 }
 

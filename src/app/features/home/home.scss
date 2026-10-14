@@ -76,12 +76,15 @@
   height: 100%;
   min-height: 160px;
   padding: var(--spacing-24);
-  border: 1px solid var(--border-brand);
-  border-radius: var(--radius-12);
+  border: none;
+  box-shadow: 6px 6px 3px 5px #0000;
+  border-radius: 0;
   background-color: var(--brand-lilac);
   color: var(--text-primary);
   text-decoration: none;
-}
+  overflow: visible;
+  transition: .8s;
+} 
 
 .offer-card__title {
   margin: 0;
@@ -279,7 +282,7 @@
   align-items: flex-start;
   gap: var(--spacing-12);
   padding: var(--spacing-24);
-  border: 1px solid var(--border-brand);
+  border: 1px solid var(--border-brand-soft);
   border-radius: var(--radius-8);
 }
 

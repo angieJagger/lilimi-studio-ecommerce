@@ -494,8 +494,9 @@
     "inCart": "Ten wzór jest w Twoim koszyku.",
     "relatedTitle": "Może Ci się spodobać",
     "loading": "Ładowanie produktu…",
-  "loadError": "Nie udało się pobrać produktu. Spróbuj ponownie.",
-  "retry": "Spróbuj ponownie"
+    "loadError": "Nie udało się pobrać produktu. Spróbuj ponownie.",
+    "retry": "Spróbuj ponownie",
+    "imageUnavailable": "Zdjęcie produktu niedostępne"
     },
 
   "configurator": {
