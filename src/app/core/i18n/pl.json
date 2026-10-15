@@ -425,6 +425,55 @@
       "failed": "Nie udało się zmienić hasła. Spróbuj ponownie lub poproś o nowy link."
     }
   },
+  "customerProfile": {
+    "title": "Moje dane",
+    "description": "Tutaj znajdziesz swoje dane kontaktowe i domyślny adres dostawy. Możesz je dodać, zmienić lub usunąć.",
+    "loading": "Pobieranie danych…",
+    "saved": "Dane zostały zapisane.",
+    "reload": "Pobierz aktualne dane i zastąp moje zmiany",
+    "retry": "Spróbuj ponownie",
+    "email": "E-mail konta",
+    "contact": "Dane kontaktowe",
+    "address": "Domyślny adres dostawy",
+    "saveAddress": "Zapisz adres dostawy",
+    "addressHint": "Adres jest opcjonalny. Odznaczenie tej opcji i zapisanie formularza usunie zapisany adres.",
+    "country": "Kraj: Polska",
+    "save": "Zapisz dane",
+    "saving": "Zapisywanie…",
+    "navigation": "Nawigacja konta",
+    "backToAccount": "Moje konto",
+    "fields": {
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "phone": "Telefon (opcjonalnie)",
+      "addressLine1": "Ulica, numer domu i mieszkania",
+      "addressLine2": "Dodatkowe informacje adresowe (opcjonalnie)",
+      "postalCode": "Kod pocztowy",
+      "city": "Miejscowość"
+    },
+    "errors": {
+      "sessionExpired": "Sesja wygasła. Zaloguj się ponownie.",
+      "accessDenied": "Ten profil jest dostępny dla aktywnego konta klienta z wymaganą weryfikacją e-mail.",
+      "conflict": "Profil zmienił się w innej karcie. Twoje wpisy pozostały w formularzu. Pobranie aktualnych danych zastąpi je zapisanym profilem.",
+      "invalid": "Sprawdź długość pól i kompletność adresu. Imię z nazwiskiem mogą mieć łącznie 150 znaków ze spacją. Kod pocztowy musi mieć format 00-001.",
+      "loadFailed": "Nie udało się pobrać danych. Spróbuj ponownie.",
+      "saveFailed": "Nie udało się zapisać danych. Twoje wpisy pozostały w formularzu.",
+      "deleteFailed": "Nie udało się usunąć danych. Spróbuj ponownie."
+    },
+    "add": "Dodaj dane",
+    "edit": "Edytuj dane",
+    "cancel": "Anuluj",
+    "delete": "Usuń zapisane dane",
+    "emptyTitle": "Nie masz jeszcze zapisanych danych",
+    "emptyDescription": "Dodaj dane kontaktowe i adres, aby szybciej wypełniać formularz zamówienia.",
+    "noContact": "Nie zapisano danych kontaktowych.",
+    "noAddress": "Nie zapisano adresu dostawy.",
+    "deleteTitle": "Usunąć zapisane dane?",
+    "deleteDescription": "Usuniemy dane kontaktowe i adres z profilu. Twoje konto, e-mail logowania i dane wcześniejszych zamówień pozostaną.",
+    "confirmDelete": "Tak, usuń dane",
+    "deleting": "Usuwanie…",
+    "deleted": "Zapisane dane zostały usunięte."
+  },
   "auth": {
     "title": "Logowanie administratora",
     "description": "Zaloguj się, aby zarządzać sklepem.",
@@ -647,7 +696,9 @@
       "edit": "Popraw dane",
       "products": "Zamawiane produkty",
       "lineTotal": "Wartość pozycji"
-    }
+    },
+    "profileLoading": "Pobieranie zapisanych danych…",
+    "profileLoadFailed": "Nie udało się pobrać zapisanych danych. Możesz wpisać je ręcznie."
   },
 
   "cart": {

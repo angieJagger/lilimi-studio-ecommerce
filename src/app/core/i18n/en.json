@@ -424,6 +424,55 @@
       "failed": "Could not change your password. Try again or request a new link."
     }
   },
+  "customerProfile": {
+    "title": "My details",
+    "description": "View your contact details and default delivery address. You can add, edit or remove them.",
+    "loading": "Loading your details…",
+    "saved": "Your details have been saved.",
+    "reload": "Load current details and replace my changes",
+    "retry": "Try again",
+    "email": "Account email",
+    "contact": "Contact details",
+    "address": "Default delivery address",
+    "saveAddress": "Save a delivery address",
+    "addressHint": "An address is optional. Unchecking this option and saving the form will remove your saved address.",
+    "country": "Country: Poland",
+    "save": "Save details",
+    "saving": "Saving…",
+    "navigation": "Account navigation",
+    "backToAccount": "My account",
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "phone": "Phone (optional)",
+      "addressLine1": "Street, building and apartment number",
+      "addressLine2": "Additional address information (optional)",
+      "postalCode": "Postal code",
+      "city": "City"
+    },
+    "errors": {
+      "sessionExpired": "Your session has expired. Please sign in again.",
+      "accessDenied": "This profile requires an active customer account with any required email verification completed.",
+      "conflict": "Your profile changed in another tab. Your entries are still in the form. Loading current details will replace them with your saved profile.",
+      "invalid": "Check field lengths and complete the address. Your full name can contain up to 150 characters including the space. Use postal code format 00-001.",
+      "loadFailed": "Your details could not be loaded. Please try again.",
+      "saveFailed": "Your details could not be saved. Your entries are still in the form.",
+      "deleteFailed": "Your details could not be removed. Please try again."
+    },
+    "add": "Add details",
+    "edit": "Edit details",
+    "cancel": "Cancel",
+    "delete": "Remove saved details",
+    "emptyTitle": "You have no saved details yet",
+    "emptyDescription": "Add your contact details and address to fill out checkout faster.",
+    "noContact": "No contact details saved.",
+    "noAddress": "No delivery address saved.",
+    "deleteTitle": "Remove your saved details?",
+    "deleteDescription": "We will remove your contact details and address from your profile. Your account, sign-in email and previous order details will remain.",
+    "confirmDelete": "Yes, remove details",
+    "deleting": "Removing…",
+    "deleted": "Your saved details have been removed."
+  },
   "auth": {
     "title": "Administrator login",
     "description": "Sign in to manage the store.",
@@ -647,7 +696,9 @@
       "edit": "Edit details",
       "products": "Ordered products",
       "lineTotal": "Line total"
-    }
+    },
+    "profileLoading": "Loading your saved details…",
+    "profileLoadFailed": "Your saved details could not be loaded. You can enter them manually."
   },
 
   "cart": {

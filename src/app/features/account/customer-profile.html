@@ -1,0 +1,164 @@
+<section class="customer-profile container" aria-labelledby="profile-title">
+  <header class="customer-profile__header">
+    <h1 id="profile-title">{{ 'customerProfile.title' | transloco }}</h1>
+    <p>{{ 'customerProfile.description' | transloco }}</p>
+  </header>
+
+  @if (isLoading()) {
+    <output aria-live="polite">{{ 'customerProfile.loading' | transloco }}</output>
+  }
+
+  @if (loaded() && !accessBlocked()) {
+    <section class="customer-profile__account" aria-labelledby="profile-account-title">
+      <h2 id="profile-account-title">{{ 'customerProfile.email' | transloco }}</h2>
+      <p>{{ email() }}</p>
+    </section>
+
+    @if (editing()) {
+      <h2>{{ (hasDetails() ? 'customerProfile.edit' : 'customerProfile.add') | transloco }}</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="isSaving() || isLoading()" novalidate>
+    <fieldset [disabled]="isSaving() || isLoading()">
+      <legend>{{ 'customerProfile.contact' | transloco }}</legend>
+      @for (field of contactFields; track field.name) {
+      <div class="customer-profile__field">
+        <label [for]="'profile-' + field.name">
+          {{ 'customerProfile.fields.' + field.name | transloco }}
+        </label>
+        <input [id]="'profile-' + field.name" [type]="field.type" [formControlName]="field.name"
+          [autocomplete]="field.autocomplete" [attr.maxlength]="field.max"
+          [attr.aria-invalid]="form.controls[field.name].touched && form.controls[field.name].invalid ? 'true' : null" />
+      </div>
+      }
+    </fieldset>
+
+    <fieldset [disabled]="isSaving() || isLoading()">
+      <legend>{{ 'customerProfile.address' | transloco }}</legend>
+      <label class="customer-profile__checkbox">
+        <input type="checkbox" formControlName="saveAddress" />
+        {{ 'customerProfile.saveAddress' | transloco }}
+      </label>
+      <p>{{ 'customerProfile.addressHint' | transloco }}</p>
+      @if (form.controls.saveAddress.value) {
+      @for (field of addressFields; track field.name) {
+      <div class="customer-profile__field">
+        <label [for]="'profile-' + field.name">
+          {{ 'customerProfile.fields.' + field.name | transloco }}
+        </label>
+        <input [id]="'profile-' + field.name" type="text" [formControlName]="field.name"
+          [autocomplete]="field.autocomplete" [attr.maxlength]="field.max" [required]="field.name !== 'addressLine2'"
+          [attr.aria-invalid]="form.touched && (form.hasError('addressIncomplete') || form.controls[field.name].invalid) ? 'true' : null"
+          [attr.aria-describedby]="form.touched && form.invalid ? 'profile-validation' : null" />
+      </div>
+      }
+      <p>{{ 'customerProfile.country' | transloco }}</p>
+      }
+    </fieldset>
+
+    @if (form.touched && form.invalid) {
+    <p id="profile-validation" class="customer-profile__error" role="alert">
+      {{ 'customerProfile.errors.invalid' | transloco }}
+    </p>
+    }
+    <button class="button button--primary" type="submit" [disabled]="isSaving() || isLoading() || conflict()">
+      {{ (isSaving() ? 'customerProfile.saving' : 'customerProfile.save') | transloco }}
+    </button>
+
+    <button class="button button--secondary" type="button"
+      [disabled]="busy()" (click)="cancelEditing()">
+      {{ 'customerProfile.cancel' | transloco }}
+    </button>
+  </form>
+    } @else {
+      @if (hasDetails()) {
+        @if (profile(); as data) {
+          <div class="customer-profile__cards">
+            <section class="customer-profile__card" aria-labelledby="profile-contact-title">
+              <h2 id="profile-contact-title">{{ 'customerProfile.contact' | transloco }}</h2>
+              <dl>
+                @for (field of contactFields; track field.name) {
+                  @if (data[field.name]; as value) {
+                    <div>
+                      <dt>{{ 'customerProfile.fields.' + field.name | transloco }}</dt>
+                      <dd>{{ value }}</dd>
+                    </div>
+                  }
+                }
+              </dl>
+              @if (!data.firstName && !data.lastName && !data.phone) {
+                <p>{{ 'customerProfile.noContact' | transloco }}</p>
+              }
+            </section>
+            <section class="customer-profile__card" aria-labelledby="profile-address-title">
+              <h2 id="profile-address-title">{{ 'customerProfile.address' | transloco }}</h2>
+              @if (data.addressLine1) {
+                <address>
+                  <span>{{ data.addressLine1 }}</span>
+                  @if (data.addressLine2) { <span>{{ data.addressLine2 }}</span> }
+                  <span>{{ data.postalCode }} {{ data.city }}</span>
+                  <span>{{ 'customerProfile.country' | transloco }}</span>
+                </address>
+              } @else {
+                <p>{{ 'customerProfile.noAddress' | transloco }}</p>
+              }
+            </section>
+          </div>
+        }
+      } @else {
+        <div class="customer-profile__empty">
+          <h2>{{ 'customerProfile.emptyTitle' | transloco }}</h2>
+          <p>{{ 'customerProfile.emptyDescription' | transloco }}</p>
+        </div>
+      }
+
+      @if (confirmingDelete()) {
+        <section class="customer-profile__confirmation" aria-labelledby="profile-delete-title"
+          [attr.aria-busy]="isDeleting()">
+          <h2 id="profile-delete-title">{{ 'customerProfile.deleteTitle' | transloco }}</h2>
+          <p>{{ 'customerProfile.deleteDescription' | transloco }}</p>
+          <div class="customer-profile__actions">
+            <button class="button button--secondary" type="button" (click)="cancelDelete()"
+              [disabled]="busy()">{{ 'customerProfile.cancel' | transloco }}</button>
+            <button class="button button--primary" type="button" (click)="deleteDetails()"
+              [disabled]="busy() || conflict()" data-action="confirm-delete">
+              {{ (isDeleting() ? 'customerProfile.deleting' : 'customerProfile.confirmDelete') | transloco }}
+            </button>
+          </div>
+        </section>
+      } @else {
+        <div class="customer-profile__actions">
+          <button class="button button--primary" type="button" (click)="startEditing()"
+            [disabled]="busy() || conflict()" data-action="edit">
+            {{ (hasDetails() ? 'customerProfile.edit' : 'customerProfile.add') | transloco }}
+          </button>
+          @if (hasDetails()) {
+            <button class="button button--secondary" type="button" (click)="requestDelete()"
+              [disabled]="busy() || conflict()" data-action="delete">
+              {{ 'customerProfile.delete' | transloco }}
+            </button>
+          }
+        </div>
+      }
+    }
+  }
+
+  @if (errorKey(); as error) {
+    <p class="customer-profile__error" role="alert">{{ error | transloco }}</p>
+  }
+  @if (!accessBlocked() && !busy() && (!loaded() || conflict())) {
+    <button type="button" class="button button--secondary" (click)="load()" data-action="reload">
+      {{ (conflict() ? 'customerProfile.reload' : 'customerProfile.retry') | transloco }}
+    </button>
+  }
+  @if (noticeKey(); as notice) {
+    <output class="customer-profile__success" aria-live="polite">{{ notice | transloco }}</output>
+  }
+
+  <nav class="customer-profile__links" [attr.aria-label]="'customerProfile.navigation' | transloco">
+    <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+      {{ 'customerProfile.backToAccount' | transloco }}
+    </a>
+    <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'orders']">
+      {{ 'customerOrders.title' | transloco }}
+    </a>
+  </nav>
+</section>
