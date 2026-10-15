@@ -8,7 +8,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+
+
+import pl.lilimi.auth.persistence.UserAccountRepository;
 
 
 @Configuration
@@ -20,10 +24,16 @@ public class SecurityConfig {
 
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http)
-    throws Exception {
+  public SecurityFilterChain securityFilterChain(
+    HttpSecurity http,
+    UserAccountRepository accounts
+  ) throws Exception {
 
     http
+      .addFilterAfter(
+        new CredentialsVersionFilter(accounts),
+        SecurityContextHolderFilter.class
+      )
       .authorizeHttpRequests(authorize -> authorize
         .requestMatchers(
           HttpMethod.GET,
@@ -38,7 +48,9 @@ public class SecurityConfig {
           "/api/project-inquiries",
           "/api/auth/register",
           "/api/auth/verify-email",
-          "/api/auth/resend-verification"
+          "/api/auth/resend-verification",
+          "/api/auth/request-password-reset",
+          "/api/auth/reset-password"
         ).permitAll()
         .requestMatchers(
           HttpMethod.GET,

@@ -394,6 +394,36 @@
     "backToLogin": "Back to sign in",
     "link": "Didn't receive your verification email?"
   },
+  "forgotPassword": {
+    "title": "Forgot your password?",
+    "description": "Enter the email address of your customer account. If you have not verified a newly registered account yet, verify your email address first.",
+    "email": "Email address",
+    "invalidEmail": "Enter a valid email address.",
+    "submit": "Send password reset link",
+    "submitting": "Sending…",
+    "success": "If this address is eligible for a password reset and the sending limit has not been reached, we will send a link valid for 30 minutes. Please also check your spam folder.",
+    "error": "Could not process your request. Please try again later.",
+    "backToLogin": "Back to sign in",
+    "link": "Forgot my password"
+  },
+  "resetPassword": {
+    "title": "Set a new password",
+    "description": "Enter a new password for your account. Changing it will invalidate existing sessions.",
+    "password": "New password",
+    "confirmPassword": "Confirm new password",
+    "invalidPassword": "Use 12–72 characters, including at least one non-whitespace character, and no more than 72 UTF-8 bytes.",
+    "passwordMismatch": "Enter the same password in both fields.",
+    "submit": "Change password",
+    "submitting": "Changing password…",
+    "success": "Your password has been changed. Sign in with your new password.",
+    "signIn": "Sign in",
+    "requestNewLink": "Request a new link",
+    "errors": {
+      "invalidLink": "This link is invalid or incomplete. Please request a new one.",
+      "invalidRequest": "Your password could not be changed. Check the password requirements; the link may also have expired or already been used.",
+      "failed": "Could not change your password. Try again or request a new link."
+    }
+  },
   "auth": {
     "title": "Administrator login",
     "description": "Sign in to manage the store.",

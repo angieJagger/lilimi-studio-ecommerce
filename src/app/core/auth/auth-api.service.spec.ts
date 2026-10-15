@@ -365,4 +365,104 @@ describe('AuthApiService', () => {
 
       expect(completed).toBe(true);
     });
+    it('should initialize CSRF before requesting a password reset', () => {
+      let completed = false;
+
+      service.requestPasswordReset(' customer@example.com ', 'pl').subscribe(() => {
+        completed = true;
+      });
+
+      http.expectNone('/api/auth/request-password-reset');
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      const pending = http.expectOne('/api/auth/request-password-reset');
+
+      expect(pending.request.method).toBe('POST');
+      expect(pending.request.body).toEqual({
+        email: 'customer@example.com',
+        language: 'pl',
+      });
+
+      pending.flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      expect(completed).toBe(true);
+    });
+
+    it('should initialize CSRF before resetting a password without trimming it', () => {
+      const token = 'a'.repeat(43);
+      const password = ' Changed-password-2026! ';
+      let completed = false;
+
+      service.resetPassword(token, password).subscribe(() => {
+        completed = true;
+      });
+
+      http.expectNone('/api/auth/reset-password');
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      const pending = http.expectOne('/api/auth/reset-password');
+
+      expect(pending.request.method).toBe('POST');
+      expect(pending.request.body).toEqual({ token, password });
+
+      pending.flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      expect(completed).toBe(true);
+    });
+
+    it('should not request a password reset when CSRF initialization fails', () => {
+      let receivedError: HttpErrorResponse | undefined;
+
+      service.requestPasswordReset('customer@example.com', 'pl').subscribe({
+        next: () => {
+          throw new Error('Request should not proceed without CSRF');
+        },
+        error: (error: HttpErrorResponse) => {
+          receivedError = error;
+        },
+      });
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+      expect(receivedError?.status).toBe(503);
+      http.expectNone('/api/auth/request-password-reset');
+    });
+
+    it('should not reset a password when CSRF initialization fails', () => {
+      let receivedError: HttpErrorResponse | undefined;
+
+      service.resetPassword('a'.repeat(43), 'Changed-password-2026!').subscribe({
+        next: () => {
+          throw new Error('Reset should not proceed without CSRF');
+        },
+        error: (error: HttpErrorResponse) => {
+          receivedError = error;
+        },
+      });
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+      expect(receivedError?.status).toBe(503);
+      http.expectNone('/api/auth/reset-password');
+    });
 });

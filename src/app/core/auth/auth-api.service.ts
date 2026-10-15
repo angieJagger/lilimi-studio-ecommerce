@@ -68,4 +68,25 @@ export class AuthApiService {
       ),
     );
   }
+
+  requestPasswordReset(email: string, language: 'pl' | 'en'): Observable<void> {
+    return this.csrf.initialize().pipe(
+      switchMap(() =>
+        this.http.post<void>(`${this.baseUrl}/auth/request-password-reset`, {
+          email: email.trim(),
+          language,
+        }),
+      ),
+    );
+  }
+
+  resetPassword(token: string, password: string): Observable<void> {
+    return this.csrf
+      .initialize()
+      .pipe(
+        switchMap(() =>
+          this.http.post<void>(`${this.baseUrl}/auth/reset-password`, { token, password }),
+        ),
+      );
+  }
 }
