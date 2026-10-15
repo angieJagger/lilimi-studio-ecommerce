@@ -35,7 +35,17 @@ def main():
         ).decode('utf-8').split('\0')
         plan = classify([path for path in changed if path])
         # A diff failure aborts the planning job and blocks CI result.
-        subprocess.run(['git', 'diff', '--check', revision], check=True)
+        subprocess.run(
+    [
+        'git',
+        '-c',
+        'core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol',
+        'diff',
+        '--check',
+        revision,
+    ],
+    check=True,
+)
     else:
         # Every main push and manual run verifies both deployable images.
         plan = {
