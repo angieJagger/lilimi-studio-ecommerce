@@ -136,6 +136,97 @@ class AuthSessionTest {
       .andExpect(status().isUnauthorized());
   }
 
+  @Test
+  void shouldInvalidateExistingSessionsAfterPasswordChange() throws Exception {
+    String email = "password-change@example.com";
+    String oldPassword = "Original-password-2026!";
+    String newPassword = "Changed-password-2026!";
+
+    var account = accountRepository.saveAndFlush(new UserAccount(
+      email,
+      passwordEncoder.encode(oldPassword),
+      UserRole.CUSTOMER
+    ));
+
+    var firstCsrf = getCsrfCookie(null);
+
+    var firstLogin = mockMvc.perform(post("/api/auth/login")
+        .cookie(firstCsrf)
+        .header("X-XSRF-TOKEN", firstCsrf.getValue())
+        .param("email", email)
+        .param("password", oldPassword))
+      .andExpect(status().isNoContent())
+      .andReturn();
+
+    var firstSession = (MockHttpSession) firstLogin
+      .getRequest().getSession(false);
+
+    var secondCsrf = getCsrfCookie(null);
+
+    var secondLogin = mockMvc.perform(post("/api/auth/login")
+        .cookie(secondCsrf)
+        .header("X-XSRF-TOKEN", secondCsrf.getValue())
+        .param("email", email)
+        .param("password", oldPassword))
+      .andExpect(status().isNoContent())
+      .andReturn();
+
+    var secondSession = (MockHttpSession) secondLogin
+      .getRequest().getSession(false);
+
+    assertThat(firstSession).isNotNull();
+    assertThat(secondSession).isNotNull();
+
+    mockMvc.perform(get("/api/auth/me").session(firstSession))
+      .andExpect(status().isOk());
+
+    mockMvc.perform(get("/api/auth/me").session(secondSession))
+      .andExpect(status().isOk());
+
+    account.changePasswordHash(passwordEncoder.encode(newPassword));
+    accountRepository.saveAndFlush(account);
+
+    assertThat(account.getCredentialsVersion()).isEqualTo(1);
+
+    mockMvc.perform(get("/api/auth/me").session(firstSession))
+      .andExpect(status().isUnauthorized());
+
+    mockMvc.perform(get("/api/auth/me").session(secondSession))
+      .andExpect(status().isUnauthorized());
+
+    assertThat(firstSession.isInvalid()).isTrue();
+    assertThat(secondSession.isInvalid()).isTrue();
+
+    var oldLoginCsrf = getCsrfCookie(null);
+
+    mockMvc.perform(post("/api/auth/login")
+        .cookie(oldLoginCsrf)
+        .header("X-XSRF-TOKEN", oldLoginCsrf.getValue())
+        .param("email", email)
+        .param("password", oldPassword))
+      .andExpect(status().isUnauthorized());
+
+    var newLoginCsrf = getCsrfCookie(null);
+
+    var newLogin = mockMvc.perform(post("/api/auth/login")
+        .cookie(newLoginCsrf)
+        .header("X-XSRF-TOKEN", newLoginCsrf.getValue())
+        .param("email", email)
+        .param("password", newPassword))
+      .andExpect(status().isNoContent())
+      .andReturn();
+
+    var newSession = (MockHttpSession) newLogin
+      .getRequest().getSession(false);
+
+    assertThat(newSession).isNotNull();
+
+    mockMvc.perform(get("/api/auth/me").session(newSession))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.email").value(email))
+      .andExpect(jsonPath("$.roles[0]").value("CUSTOMER"));
+  }
+
   private Cookie getCsrfCookie(MockHttpSession session)
     throws Exception {
 

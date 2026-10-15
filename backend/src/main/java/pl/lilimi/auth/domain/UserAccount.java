@@ -35,6 +35,9 @@ public class UserAccount {
   @Column(name = "password_hash", length = 255, nullable = false)
   private String passwordHash;
 
+  @Column(name = "credentials_version", nullable = false)
+  private long credentialsVersion;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "role", length = 16, nullable = false)
   private UserRole role;
@@ -131,5 +134,22 @@ public class UserAccount {
 
   public void verifyEmail() {
     this.emailVerified = true;
+  }
+
+  public long getCredentialsVersion() {
+    return credentialsVersion;
+  }
+
+  public void changePasswordHash(String encodedPassword) {
+    Objects.requireNonNull(encodedPassword, "Password hash is required");
+
+    if (encodedPassword.isBlank() || encodedPassword.length() > 255) {
+      throw new IllegalArgumentException("Invalid password hash");
+    }
+
+    long nextVersion = Math.addExact(credentialsVersion, 1);
+
+    this.passwordHash = encodedPassword;
+    this.credentialsVersion = nextVersion;
   }
 }

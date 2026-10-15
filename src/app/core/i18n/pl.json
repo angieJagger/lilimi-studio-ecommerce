@@ -395,6 +395,36 @@
     "backToLogin": "Wróć do logowania",
     "link": "Nie otrzymano wiadomości potwierdzającej?"
   },
+  "forgotPassword": {
+    "title": "Nie pamiętasz hasła?",
+    "description": "Podaj adres e-mail swojego konta klienta. Jeśli nowe konto nie zostało jeszcze potwierdzone, najpierw potwierdź adres e-mail.",
+    "email": "Adres e-mail",
+    "invalidEmail": "Podaj poprawny adres e-mail.",
+    "submit": "Wyślij link do zmiany hasła",
+    "submitting": "Wysyłanie…",
+    "success": "Jeśli dla tego adresu można zresetować hasło i limit wysyłki nie został przekroczony, wyślemy wiadomość z linkiem ważnym przez 30 minut. Sprawdź również folder spam.",
+    "error": "Nie udało się obsłużyć żądania. Spróbuj ponownie później.",
+    "backToLogin": "Wróć do logowania",
+    "link": "Nie pamiętam hasła"
+  },
+  "resetPassword": {
+    "title": "Ustaw nowe hasło",
+    "description": "Wpisz nowe hasło do swojego konta. Po zmianie wcześniejsze sesje zostaną unieważnione.",
+    "password": "Nowe hasło",
+    "confirmPassword": "Powtórz nowe hasło",
+    "invalidPassword": "Hasło musi mieć od 12 do 72 znaków, nie może składać się wyłącznie z białych znaków ani przekraczać 72 bajtów UTF-8.",
+    "passwordMismatch": "Wpisz takie samo hasło w obu polach.",
+    "submit": "Zmień hasło",
+    "submitting": "Zmienianie hasła…",
+    "success": "Hasło zostało zmienione. Zaloguj się nowym hasłem.",
+    "signIn": "Zaloguj się",
+    "requestNewLink": "Poproś o nowy link",
+    "errors": {
+      "invalidLink": "Link jest nieprawidłowy lub niekompletny. Poproś o nowy.",
+      "invalidRequest": "Nie można zmienić hasła. Sprawdź wymagania hasła; link mógł również wygasnąć lub zostać już wykorzystany.",
+      "failed": "Nie udało się zmienić hasła. Spróbuj ponownie lub poproś o nowy link."
+    }
+  },
   "auth": {
     "title": "Logowanie administratora",
     "description": "Zaloguj się, aby zarządzać sklepem.",

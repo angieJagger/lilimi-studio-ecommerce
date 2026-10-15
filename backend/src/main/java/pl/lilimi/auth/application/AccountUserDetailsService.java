@@ -1,6 +1,5 @@
 package pl.lilimi.auth.application;
 
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,16 +34,6 @@ public class AccountUserDetailsService implements UserDetailsService {
         new UsernameNotFoundException("Account not found")
       );
 
-    return User.withUsername(account.getEmail())
-      .password(account.getPasswordHash())
-      .roles(account.getRole().name())
-      .disabled(
-        !account.isEnabled() ||
-          (
-            account.isEmailVerificationRequired() &&
-              !account.isEmailVerified()
-          )
-      )
-      .build();
+    return new AccountPrincipal(account);
   }
 }

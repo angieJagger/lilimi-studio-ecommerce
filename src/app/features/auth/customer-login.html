@@ -107,6 +107,17 @@
     </button>
   </form>
 
+  <p>
+    <a [routerLink]="[
+        '/',
+        transloco.getActiveLang(),
+        'account',
+        'forgot-password'
+      ]">
+      {{ 'forgotPassword.link' | transloco }}
+    </a>
+  </p>
+
   <p class="customer-login__register">
     {{ 'customerLogin.noAccount' | transloco }}
 

@@ -90,6 +90,16 @@ const shopRoutes: Routes = [
       ),
   },
   {
+    path: 'account/forgot-password',
+    loadComponent: () =>
+      import('./features/auth/customer-forgot-password').then((m) => m.CustomerForgotPassword),
+  },
+  {
+    path: 'account/reset-password',
+    loadComponent: () =>
+      import('./features/auth/customer-reset-password').then((m) => m.CustomerResetPassword),
+  },
+  {
     path: 'admin/login',
     loadComponent: () =>
       import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),
