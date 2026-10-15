@@ -25,6 +25,7 @@ export class AuthApiService {
     const body: RegisterCustomerRequest = {
       email: request.email.trim(),
       password: request.password,
+      ...(request.language ? { language: request.language } : {}),
     };
 
     return this.csrf
@@ -48,6 +49,23 @@ export class AuthApiService {
     return this.csrf.initialize().pipe(
       switchMap(() => this.http.post<void>(`${this.baseUrl}/auth/logout`, null)),
       switchMap(() => this.csrf.initialize()),
+    );
+  }
+
+  verifyEmail(token: string): Observable<void> {
+    return this.csrf
+      .initialize()
+      .pipe(switchMap(() => this.http.post<void>(`${this.baseUrl}/auth/verify-email`, { token })));
+  }
+
+  resendVerification(email: string, language: 'pl' | 'en'): Observable<void> {
+    return this.csrf.initialize().pipe(
+      switchMap(() =>
+        this.http.post<void>(`${this.baseUrl}/auth/resend-verification`, {
+          email: email.trim(),
+          language,
+        }),
+      ),
     );
   }
 }

@@ -1,0 +1,56 @@
+<section class="resend-verification container" aria-labelledby="resend-title">
+    <h1 id="resend-title">
+        {{ 'resendVerification.title' | transloco }}
+    </h1>
+
+    @if (submitted()) {
+    <output aria-live="polite">
+        {{ 'resendVerification.success' | transloco }}
+    </output>
+    } @else {
+    <p>{{ 'resendVerification.description' | transloco }}</p>
+
+    @if (failed()) {
+    <p class="resend-verification__error" role="alert">
+        {{ 'resendVerification.error' | transloco }}
+    </p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="isSubmitting()" novalidate>
+        <label for="resend-email">
+            {{ 'resendVerification.email' | transloco }}
+        </label>
+
+        <input id="resend-email" type="email" formControlName="email" autocomplete="email" maxlength="254" required
+            [attr.aria-invalid]="
+          form.controls.email.touched && form.controls.email.invalid
+            ? 'true'
+            : null
+        " [attr.aria-describedby]="
+          form.controls.email.touched && form.controls.email.invalid
+            ? 'resend-email-error'
+            : null
+        " />
+
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+        <p id="resend-email-error" class="resend-verification__error">
+            {{ 'resendVerification.invalidEmail' | transloco }}
+        </p>
+        }
+
+        <button class="button button--primary" type="submit" [disabled]="isSubmitting()">
+            {{
+            (isSubmitting()
+            ? 'resendVerification.submitting'
+            : 'resendVerification.submit') | transloco
+            }}
+        </button>
+    </form>
+    }
+
+    <p>
+        <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+            {{ 'resendVerification.backToLogin' | transloco }}
+        </a>
+    </p>
+</section>

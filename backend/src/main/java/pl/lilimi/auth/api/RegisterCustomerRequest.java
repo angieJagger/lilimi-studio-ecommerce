@@ -3,6 +3,7 @@ package pl.lilimi.auth.api;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.nio.charset.StandardCharsets;
@@ -15,8 +16,15 @@ public record RegisterCustomerRequest(
 
   @NotBlank
   @Size(min = 12, max = 72)
-  String password
+  String password,
+
+  @Pattern(regexp = "pl|en")
+  String language
 ) {
+
+  public String resolvedLanguage() {
+    return language == null ? "en" : language;
+  }
 
   @AssertTrue(message = "Password must not exceed 72 UTF-8 bytes")
   public boolean isPasswordWithinByteLimit() {

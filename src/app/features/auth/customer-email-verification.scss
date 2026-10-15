@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.email-verification {
+  max-width: 36rem;
+  padding-block: var(--spacing-48);
+
+  output {
+    display: block;
+    margin-block: var(--spacing-24);
+  }
+
+  a:not(.button) {
+    color: var(--brand-primary);
+    text-underline-offset: 0.2em;
+  }
+}
+
+.email-verification__error {
+  color: #b42318;
+}

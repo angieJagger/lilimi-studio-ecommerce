@@ -26,6 +26,12 @@ public class UserAccount {
   @Column(name = "email", length = 254, nullable = false, unique = true)
   private String email;
 
+  @Column(name = "email_verified", nullable = false)
+  private boolean emailVerified;
+
+  @Column(name = "email_verification_required", nullable = false)
+  private boolean emailVerificationRequired;
+
   @Column(name = "password_hash", length = 255, nullable = false)
   private String passwordHash;
 
@@ -101,5 +107,29 @@ public class UserAccount {
 
   public void disable() {
     this.enabled = false;
+  }
+
+
+  public boolean isEmailVerified() {
+    return emailVerified;
+  }
+
+  public boolean isEmailVerificationRequired() {
+    return emailVerificationRequired;
+  }
+
+  public void requireEmailVerification() {
+    if (role != UserRole.CUSTOMER) {
+      throw new IllegalStateException(
+        "Email verification is required only for customer registration"
+      );
+    }
+
+    this.emailVerificationRequired = true;
+    this.emailVerified = false;
+  }
+
+  public void verifyEmail() {
+    this.emailVerified = true;
   }
 }

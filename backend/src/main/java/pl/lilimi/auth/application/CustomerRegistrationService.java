@@ -18,13 +18,19 @@ public class CustomerRegistrationService {
 
   private final UserAccountRepository accounts;
   private final PasswordEncoder passwordEncoder;
+  private final EmailVerificationService verificationService;
+  private final EmailVerificationMailService mailService;
 
   public CustomerRegistrationService(
     UserAccountRepository accounts,
-    PasswordEncoder passwordEncoder
+    PasswordEncoder passwordEncoder,
+    EmailVerificationService verificationService,
+    EmailVerificationMailService mailService
   ) {
     this.accounts = accounts;
     this.passwordEncoder = passwordEncoder;
+    this.verificationService = verificationService;
+    this.mailService = mailService;
   }
 
   @Transactional
@@ -41,6 +47,8 @@ public class CustomerRegistrationService {
       UserRole.CUSTOMER
     );
 
+    account.requireEmailVerification();
+
     try {
       accounts.saveAndFlush(account);
     } catch (DataIntegrityViolationException exception) {
@@ -50,6 +58,14 @@ public class CustomerRegistrationService {
 
       throw exception;
     }
+
+    String token = verificationService.issueToken(account.getId());
+
+    mailService.send(
+      account.getEmail(),
+      token,
+      request.resolvedLanguage()
+    );
   }
 
   private ResponseStatusException emailAlreadyRegistered() {
@@ -63,8 +79,13 @@ public class CustomerRegistrationService {
     Throwable cause = exception;
 
     while (cause != null) {
-      if (cause instanceof org.hibernate.exception.ConstraintViolationException violation) {
-        return "uq_user_accounts_email".equals(violation.getConstraintName());
+      if (
+        cause instanceof
+          org.hibernate.exception.ConstraintViolationException violation
+      ) {
+        return "uq_user_accounts_email".equals(
+          violation.getConstraintName()
+        );
       }
 
       cause = cause.getCause();

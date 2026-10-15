@@ -13,4 +13,5 @@ export interface LoginRequest {
 export interface RegisterCustomerRequest {
   readonly email: string;
   readonly password: string;
+  readonly language?: 'pl' | 'en';
 }

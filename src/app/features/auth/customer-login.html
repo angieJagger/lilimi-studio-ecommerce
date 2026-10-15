@@ -22,7 +22,7 @@
   <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'account', 'orders']">
     {{ 'customerOrders.title' | transloco }}
   </a>
-  
+
   @if (session.isAdmin()) {
   <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']">
     {{ 'customerLogin.adminPanel' | transloco }}
@@ -112,6 +112,16 @@
 
     <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'register']">
       {{ 'customerLogin.createAccount' | transloco }}
+    </a>
+  </p>
+  <p>
+    <a [routerLink]="[
+        '/',
+        transloco.getActiveLang(),
+        'account',
+        'resend-verification'
+      ]">
+      {{ 'resendVerification.link' | transloco }}
     </a>
   </p>
   }

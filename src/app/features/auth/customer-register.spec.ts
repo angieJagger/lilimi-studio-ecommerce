@@ -94,6 +94,7 @@ describe('CustomerRegister', () => {
     expect(api.register).toHaveBeenCalledExactlyOnceWith({
       email: 'customer@example.com',
       password: 'Customer-password!',
+      language: 'pl',
     });
 
     expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
