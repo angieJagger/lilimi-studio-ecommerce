@@ -10,7 +10,7 @@ I develop both the Angular frontend and Spring Boot backend, including database 
 
 [Live demo](https://lilimistudio.com) · [Features](#what-works-today) · [Engineering decisions](#engineering-decisions) · [Run locally](#run-locally) · [Next milestones](#next-milestones)
 
-> **Demo application under active development.** Orders and project inquiries are stored in the database, but payments, order fulfilment, transactional emails, and digital file delivery are not implemented. Use fictional contact details when testing.
+> **Demo application under active development.** Orders and project inquiries are stored in the database. Account verification and password reset emails are delivered through Brevo. Payments, order fulfilment, order notification emails, and digital file delivery are not implemented. Use fictional delivery details when testing and an email address you control when creating an account.
 
 ![Lilimi Studio homepage](docs/screenshots/home-desktop.png)
 
@@ -40,6 +40,9 @@ I develop both the Angular frontend and Spring Boot backend, including database 
 ### Checkout and orders
 
 - Contact validation and delivery details for physical products.
+- Saved customer contact details and delivery address used to prefill checkout.
+- Manual entry preserved for guest checkout and when profile loading fails.
+- Late profile responses do not overwrite edited fields or change details already being reviewed.
 - Digital-only checkout without a delivery address.
 - Courier selection and order review.
 - Order submission and persistence in PostgreSQL.
@@ -65,19 +68,34 @@ Submitting an inquiry does not create an order or send an email.
 
 ### Customer accounts
 
+### Customer accounts
+
 - Customer registration with frontend and backend validation.
 - Password hashing with BCrypt and validation of its 72-byte input limit.
 - Email normalization and duplicate-account handling.
+- Email verification required for newly registered customers.
+- Polish and English verification and password reset emails delivered through Brevo.
+- Expiring, single-use verification and password reset tokens stored as hashes.
+- Per-account limits on verification resends and password reset emails.
+- Password recovery with invalidation of existing sessions and previously issued reset links after a password change.
 - Customer login and logout using server-side sessions.
 - Session restoration after a page reload.
 - Separate customer and administrator permissions enforced by the backend.
-- Polish and English registration and login forms.
-- Integration tests covering registration, authentication, validation, and access restrictions.
+- A profile page with a read-only summary, separate editing mode, cancellation, and confirmation before removing saved details.
+- Saved first name, last name, phone number, and an optional default delivery address.
+- Version checks to detect conflicting profile updates.
+- Checkout prefilled from the customer's profile without overwriting fields already edited by the customer.
+- Checkout details remain editable without changing the saved profile.
+- Profile changes do not modify previously placed orders.
 - New orders associated with the signed-in account, while preserving guest checkout.
 - Paginated order history and detailed views of purchased items, prices, and delivery information.
 - Backend ownership checks preventing access to another account's orders.
+- Polish and English account interfaces.
+- Backend and frontend tests covering account flows, access restrictions, validation, profile conflicts, and checkout prefill.
 
-Registration does not sign the customer in automatically. Order history includes orders placed while signed in; guest orders are not automatically linked by email. Email verification and password recovery are not implemented yet.
+Registration does not sign the customer in automatically. New customers verify their email before signing in. Verification links expire after 24 hours; password reset links expire after 30 minutes.
+
+Order history includes orders placed while signed in; guest orders are not automatically linked by email. Removing saved profile details keeps the account, sign-in email, and previous orders.
 
 ### Administrator tools
 
@@ -138,6 +156,10 @@ These files document the initial concept and planned journeys. Some designs and 
 | State-changing requests use CSRF protection | Session-based authentication is paired with CSRF token validation. |
 | Flyway owns schema changes | Database structure and seed data use versioned migrations. |
 | Integration tests use PostgreSQL containers | Database behaviour is tested against PostgreSQL rather than an in-memory substitute. |
+| Account action tokens are stored as hashes | Verification and password reset links use expiring, single-use tokens without storing their raw values in the database. |
+| Password changes increment a credentials version | Existing sessions and previously issued reset links become invalid after a password change. |
+| Customer profiles are separate from order details | Customers can change saved details without changing historical orders. |
+| Profile updates include a version | Stale edits are rejected instead of overwriting changes made in another tab. |
 
 ## Architecture
 
@@ -185,12 +207,13 @@ backend/
 ├── src/main/java/pl/lilimi/
 │   ├── auth/      # Customer registration, sessions and administrator account provisioning
 │   ├── catalog/   # Products and garment variants
+    │   ├── customer/  # Saved customer profiles and version-checked updates
 │   ├── inquiry/   # Public inquiries and administrator queries
 │   ├── order/     # Submission, pricing and administrator operations
 │   └── security/  # Access rules and CSRF configuration
 ├── src/main/resources/
 ├── src/test/java/
-├── compose.yaml   # Database-only local development stack
+├── compose.yaml   # PostgreSQL and Mailpit for local development
 └── pom.xml
 ```
 
@@ -200,7 +223,7 @@ Prerequisites: **Node.js 24, npm, JDK 21, and Docker with Linux containers**.
 
 Maven Wrapper is included. The commands below use Windows PowerShell and start from the repository root.
 
-### 1. Configure and start PostgreSQL
+### 1. Configure and start PostgreSQL and Mailpit
 
 ```powershell
 cd backend
@@ -215,6 +238,10 @@ docker compose up -d --wait
 ```
 
 PostgreSQL is exposed on `127.0.0.1:15432` and uses a persistent Docker volume. Changing the environment file does not reset the password in an existing database volume.
+
+Mailpit captures locally generated emails instead of delivering them to real inboxes. Its SMTP server listens on `127.0.0.1:1025`; open [localhost:8025](http://localhost:8025) to read verification and password reset messages.
+
+The example local backend configuration already points to Mailpit and generates account links for `http://localhost:4200`. No Brevo credentials are needed for this development setup.
 
 ### 2. Start the backend
 
@@ -270,8 +297,20 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | PATCH | `/api/admin/products/{id}/digital-price` | Update a digital product price |
 | GET | `/api/admin/products/{productId}/variants` | Paginated administrator garment variant list |
 | PATCH | `/api/admin/products/{productId}/variants/{variantId}` | Update a garment variant's price and availability |
+| POST | `/api/auth/verify-email` | Verify a customer email address |
+| POST | `/api/auth/resend-verification` | Request another verification email |
+| POST | `/api/auth/request-password-reset` | Request a password reset email |
+| POST | `/api/auth/reset-password` | Set a new password using a reset token |
+| GET | `/api/account/profile` | Read the signed-in customer's profile |
+| PUT | `/api/account/profile` | Save or clear profile details with a version check |
+| GET | `/api/account/orders` | Paginated history of the signed-in account's orders |
+| GET | `/api/account/orders/{id}` | Details of an order owned by the signed-in account |
 
 Administrator endpoints require the `ADMIN` role. State-changing requests require a valid CSRF token. Order submission also uses an `Idempotency-Key` header.
+
+Profile endpoints require an active customer account and any required email verification. Account identifiers are resolved from the authenticated session.
+
+Verification resend and password reset requests return neutral responses for unknown or ineligible accounts. Email requests are limited per account.
 
 Try `forest-dragon` for a digital pattern and `embroidered-sweatshirt` for a physical product.
 
@@ -309,7 +348,7 @@ Docker Compose runs:
 
 The backend and database are not directly exposed through public host ports.
 
-GitHub Actions runs frontend tests and builds, an npm dependency audit, and backend tests and builds with PostgreSQL Testcontainers. Docker images are built and scanned with Trivy before publication.
+GitHub Actions selects required checks for pull requests based on the changed files. Pushes to `main` run the full frontend and backend verification and image pipeline. Checks include frontend tests and builds, an npm dependency audit, and backend tests and builds with PostgreSQL Testcontainers. Required Docker image builds are scanned with Trivy before publication.
 
 CI reports HIGH and CRITICAL vulnerabilities and blocks images with fixable findings at these severity levels. Unfixed findings remain visible in the scan report.
 
@@ -339,11 +378,14 @@ Open [localhost:8088/en](http://localhost:8088/en).
 
 This stack uses a separate database volume from the database-only development stack in `backend`.
 
+The root Compose configuration does not currently configure SMTP. Use the backend development stack with Mailpit to test registration, email verification, and password recovery locally.
+
 ## Next milestones
 
-- Complete administrator inquiry details tests and update remaining demo copy.
-- Add email verification, password recovery, and transactional emails.
+- Add order confirmation and status notification emails.
 - Integrate payments and controlled delivery of purchased digital files.
-- Replace visual placeholders with original assets and portfolio work.
+- Store deployment backups outside the application server.
+- Complete remaining administrator inquiry details tests.
+- Update remaining demo copy, visual assets, and portfolio work.
 
-The current application is a working demonstration of the shop and administrator workflows, rather than a production-ready store.
+The current application is a working demonstration of customer, shop, and administrator workflows. Payment processing and fulfilment remain under development.
