@@ -10,7 +10,7 @@
     "passwordHint": "Użyj co najmniej 12 znaków. Maksymalna długość to 72 bajty UTF-8; polskie litery i emoji mogą zajmować więcej niż jeden bajt.",
     "submit": "Utwórz konto",
     "submitting": "Tworzenie konta…",
-    "success": "Konto zostało utworzone. Możesz teraz się zalogować.",
+    "success": "Konto zostało utworzone. Sprawdź pocztę i potwierdź adres e-mail przed zalogowaniem. Jeśli wiadomości nie ma, sprawdź folder spam.",
     "validation": {
       "email": "Podaj poprawny adres e-mail, nie dłuższy niż 254 znaki.",
       "password": "Hasło musi mieć co najmniej 12 znaków, zawierać znak inny niż spacja i mieścić się w limicie 72 bajtów UTF-8.",
@@ -367,8 +367,33 @@
       "save": "Zapisz wariant",
       "saving": "Trwa zapis…",
       "cancel": "Anuluj",
-      "reloadNotice": "Przed odświeżeniem skopiuj wpisaną cenę, jeśli chcesz ją zachować. Odświeżenie zamknie formularz." 
-    } 
+      "reloadNotice": "Przed odświeżeniem skopiuj wpisaną cenę, jeśli chcesz ją zachować. Odświeżenie zamknie formularz."
+    }
+  },
+  "emailVerification": {
+    "title": "Potwierdź adres e-mail",
+    "description": "Kliknij przycisk, aby potwierdzić adres e-mail swojego konta Lilimi Studio.",
+    "submit": "Potwierdź adres e-mail",
+    "submitting": "Potwierdzanie…",
+    "success": "Adres e-mail został potwierdzony. Możesz się teraz zalogować.",
+    "signIn": "Zaloguj się",
+    "backToAccount": "Wróć do mojego konta",
+    "errors": {
+      "invalidLink": "Link jest nieprawidłowy, wygasł lub został już wykorzystany.",
+      "failed": "Nie udało się potwierdzić adresu. Spróbuj ponownie."
+    }
+  },
+  "resendVerification": {
+    "title": "Wyślij ponownie link weryfikacyjny",
+    "description": "Podaj adres użyty podczas rejestracji. Wiadomości można wysyłać nie częściej niż raz na minutę, maksymalnie 5 razy w ciągu 24 godzin.",
+    "email": "Adres e-mail",
+    "invalidEmail": "Podaj poprawny adres e-mail.",
+    "submit": "Wyślij link",
+    "submitting": "Wysyłanie…",
+    "success": "Jeśli konto wymaga potwierdzenia i limit wysyłki nie został przekroczony, wyślemy wiadomość z linkiem. Sprawdź również folder spam.",
+    "error": "Nie udało się obsłużyć żądania. Spróbuj ponownie później.",
+    "backToLogin": "Wróć do logowania",
+    "link": "Nie otrzymano wiadomości potwierdzającej?"
   },
   "auth": {
     "title": "Logowanie administratora",

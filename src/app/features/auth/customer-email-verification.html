@@ -1,0 +1,49 @@
+<section class="email-verification container" aria-labelledby="verification-title">
+  <h1 id="verification-title">
+    {{ 'emailVerification.title' | transloco }}
+  </h1>
+
+  @if (verified()) {
+  <output aria-live="polite">
+    {{ 'emailVerification.success' | transloco }}
+  </output>
+
+  <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+    {{ 'emailVerification.signIn' | transloco }}
+  </a>
+  } @else {
+  @if (errorKey(); as error) {
+  <p class="email-verification__error" role="alert">
+    {{ error | transloco }}
+  </p>
+  }
+
+  @if (hasToken()) {
+  <p>{{ 'emailVerification.description' | transloco }}</p>
+
+  <button class="button button--primary" type="button" [disabled]="isSubmitting()" (click)="verify()">
+    {{
+    (isSubmitting()
+    ? 'emailVerification.submitting'
+    : 'emailVerification.submit') | transloco
+    }}
+  </button>
+  }
+
+  <p>
+    <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+      {{ 'emailVerification.backToAccount' | transloco }}
+    </a>
+  </p>
+  }
+  <p>
+    <a [routerLink]="[
+        '/',
+        transloco.getActiveLang(),
+        'account',
+        'resend-verification'
+      ]">
+      {{ 'resendVerification.link' | transloco }}
+    </a>
+  </p>
+</section>

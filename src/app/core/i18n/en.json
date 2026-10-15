@@ -10,7 +10,7 @@
         "passwordHint": "Use at least 12 characters. The maximum is 72 UTF-8 bytes; accented characters and emoji may use more than one byte.",
         "submit": "Create account",
         "submitting": "Creating account…",
-        "success": "Your account has been created. You can now sign in.",
+        "success": "Your account has been created. Check your inbox and verify your email address before signing in. If the message is missing, check your spam folder.",
         "validation": {
           "email": "Enter a valid email address of no more than 254 characters.",
           "password": "Use at least 12 characters, including a non-space character, within the 72 UTF-8 byte limit.",
@@ -368,6 +368,31 @@
       "cancel": "Cancel",
       "reloadNotice": "Copy the entered price before reloading if you want to keep it. Reloading will close the form."
     }
+  },
+  "emailVerification": {
+    "title": "Verify your email address",
+    "description": "Click the button to verify the email address of your Lilimi Studio account.",
+    "submit": "Verify email address",
+    "submitting": "Verifying…",
+    "success": "Your email address has been verified. You can now sign in.",
+    "signIn": "Sign in",
+    "backToAccount": "Back to my account",
+    "errors": {
+      "invalidLink": "This link is invalid, has expired or has already been used.",
+      "failed": "Could not verify your email address. Please try again."
+    }
+  },
+  "resendVerification": {
+    "title": "Resend verification link",
+    "description": "Enter the address used during registration. Messages can be sent once per minute, up to 5 times within 24 hours.",
+    "email": "Email address",
+    "invalidEmail": "Enter a valid email address.",
+    "submit": "Send link",
+    "submitting": "Sending…",
+    "success": "If your account requires verification and the sending limit has not been reached, we will send a verification link. Please also check your spam folder.",
+    "error": "Could not process your request. Please try again later.",
+    "backToLogin": "Back to sign in",
+    "link": "Didn't receive your verification email?"
   },
   "auth": {
     "title": "Administrator login",

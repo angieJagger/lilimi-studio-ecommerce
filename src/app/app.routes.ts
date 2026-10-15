@@ -76,6 +76,20 @@ const shopRoutes: Routes = [
       import('./features/account/customer-order-details').then((m) => m.CustomerOrderDetails),
   },
   {
+    path: 'account/verify-email',
+    loadComponent: () =>
+      import('./features/auth/customer-email-verification').then(
+        (m) => m.CustomerEmailVerification,
+      ),
+  },
+  {
+    path: 'account/resend-verification',
+    loadComponent: () =>
+      import('./features/auth/customer-resend-verification').then(
+        (m) => m.CustomerResendVerification,
+      ),
+  },
+  {
     path: 'admin/login',
     loadComponent: () =>
       import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),

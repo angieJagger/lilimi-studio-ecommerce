@@ -36,7 +36,9 @@ public class SecurityConfig {
           HttpMethod.POST,
           "/api/orders",
           "/api/project-inquiries",
-          "/api/auth/register"
+          "/api/auth/register",
+          "/api/auth/verify-email",
+          "/api/auth/resend-verification"
         ).permitAll()
         .requestMatchers(
           HttpMethod.GET,

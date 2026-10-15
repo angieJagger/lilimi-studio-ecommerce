@@ -84,7 +84,11 @@ export class CustomerRegister {
     this.registrationForm.disable({ emitEvent: false });
 
     this.api
-      .register({ email, password })
+      .register({
+        email,
+        password,
+        language: this.transloco.getActiveLang() === 'pl' ? 'pl' : 'en',
+      })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {

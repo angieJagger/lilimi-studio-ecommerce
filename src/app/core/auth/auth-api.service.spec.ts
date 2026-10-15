@@ -283,4 +283,86 @@ describe('AuthApiService', () => {
       expect(receivedError?.status).toBe(503);
       http.expectNone('/api/auth/register');
     });
+
+    it('should initialize CSRF before verifying an email', () => {
+      const token = 'a'.repeat(43);
+      let completed = false;
+
+      service.verifyEmail(token).subscribe(() => {
+        completed = true;
+      });
+
+      http.expectNone('/api/auth/verify-email');
+
+      const csrf = http.expectOne('/api/auth/csrf');
+      expect(csrf.request.method).toBe('GET');
+
+      csrf.flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      const pending = http.expectOne('/api/auth/verify-email');
+
+      expect(pending.request.method).toBe('POST');
+      expect(pending.request.body).toEqual({ token });
+
+      pending.flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      expect(completed).toBe(true);
+    });
+
+    it('should not verify an email when CSRF initialization fails', () => {
+      let receivedError: HttpErrorResponse | undefined;
+
+      service.verifyEmail('a'.repeat(43)).subscribe({
+        next: () => {
+          throw new Error('Verification should not proceed without CSRF');
+        },
+        error: (error: HttpErrorResponse) => {
+          receivedError = error;
+        },
+      });
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+      expect(receivedError?.status).toBe(503);
+      http.expectNone('/api/auth/verify-email');
+    });
+
+    it('should initialize CSRF before resending a verification email', () => {
+      let completed = false;
+
+      service.resendVerification(' customer@example.com ', 'pl').subscribe(() => {
+        completed = true;
+      });
+
+      http.expectNone('/api/auth/resend-verification');
+
+      http.expectOne('/api/auth/csrf').flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      const pending = http.expectOne('/api/auth/resend-verification');
+
+      expect(pending.request.method).toBe('POST');
+      expect(pending.request.body).toEqual({
+        email: 'customer@example.com',
+        language: 'pl',
+      });
+
+      pending.flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      expect(completed).toBe(true);
+    });
 });
