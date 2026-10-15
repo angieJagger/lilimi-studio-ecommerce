@@ -23,6 +23,12 @@
     {{ 'customerOrders.title' | transloco }}
   </a>
 
+  @if (!session.isAdmin()) {
+  <a class="button button--secondary" [routerLink]="['/', transloco.getActiveLang(), 'account', 'profile']">
+    {{ 'customerProfile.title' | transloco }}
+  </a>
+  }
+
   @if (session.isAdmin()) {
   <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']">
     {{ 'customerLogin.adminPanel' | transloco }}

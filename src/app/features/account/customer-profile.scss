@@ -1,0 +1,60 @@
+:host { display: block; }
+
+.customer-profile {
+  max-width: 54rem;
+  padding-block: var(--spacing-48);
+
+  &__header { margin-bottom: 2rem; }
+  &__account { margin-bottom: 2rem; overflow-wrap: anywhere; }
+  &__account h2, &__card h2 { font-size: 1.125rem; }
+  &__cards { display: grid; gap: 1.5rem; margin-bottom: 1.5rem; }
+  &__card, &__empty, &__confirmation {
+    padding: clamp(1rem, 3vw, 1.75rem);
+    background: var(--surface-default);
+    border: 1px solid var(--border-default);
+  }
+  &__empty { margin-bottom: 1.5rem; }
+  &__confirmation { margin-block: 1.5rem; }
+  &__card {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    dl { margin: 0; display: grid; gap: 1rem; }
+    dt { color: var(--text-secondary); font-size: 0.875rem; }
+    dd { margin: 0.25rem 0 0; }
+    address { display: grid; gap: 0.35rem; font-style: normal; }
+  }
+  &__actions, &__links { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  &__links { margin-top: 2rem; }
+  &__success {
+    display: block;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-left: 4px solid var(--brand-primary);
+    background: var(--surface-default);
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  &__error { color: #b42318; margin-block: 1rem; }
+  form, fieldset, &__field { display: flex; flex-direction: column; gap: 0.75rem; }
+  form { margin-block: 1.5rem; }
+  fieldset { min-width: 0; margin: 0 0 1.5rem; padding: 0; border: 0; }
+  legend { margin-bottom: 0.75rem; font-weight: 600; }
+  input:not([type='checkbox']) {
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-4);
+    background: var(--surface-default);
+    color: var(--text-primary);
+    font: inherit;
+  }
+  input:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+  &__checkbox { display: flex; align-items: center; gap: 0.75rem; }
+  a { color: var(--brand-primary); text-underline-offset: 0.2em; }
+
+  @media (min-width: 44rem) {
+    &__cards { grid-template-columns: 1fr 1fr; }
+  }
+}

@@ -2,6 +2,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Subject } from 'rxjs';
+import { AuthSessionService } from '../../core/auth/auth-session.service';
+import type { CurrentUser } from '../../core/auth/auth.model';
+import { CustomerProfileApiService } from '../../core/customer/customer-profile-api.service';
+import type { CustomerProfile } from '../../core/customer/customer-profile.model';
 import { vi } from 'vitest';
 
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
@@ -19,6 +23,31 @@ describe('Checkout', () => {
   let cart: CartService;
   let element: HTMLElement;
   let orderResult: Subject<CreateOrderResponse>;
+
+  let sessionResult: Subject<CurrentUser | null>;
+  let profileResult: Subject<CustomerProfile>;
+  let currentUser: CurrentUser | null;
+
+  const sessionMock = {
+    refresh: vi.fn(),
+    user: vi.fn(),
+  };
+  const profileApiMock = {
+    getProfile: vi.fn(),
+    updateProfile: vi.fn(),
+  };
+  const savedProfile: CustomerProfile = {
+    email: 'saved@example.com',
+    firstName: 'Ewa',
+    lastName: 'Nowak',
+    phone: '500600700',
+    addressLine1: 'Zapisana 12',
+    addressLine2: 'mieszkanie 3',
+    postalCode: '00-001',
+    city: 'Warszawa',
+    countryCode: 'PL',
+    version: 2,
+  };
 
   const orderApiMock = {
     createOrder: vi.fn(),
@@ -52,6 +81,14 @@ describe('Checkout', () => {
       setItem: vi.fn(),
     });
 
+    currentUser = null;
+    sessionResult = new Subject<CurrentUser | null>();
+    profileResult = new Subject<CustomerProfile>();
+    sessionMock.refresh.mockReset().mockReturnValue(sessionResult.asObservable());
+    sessionMock.user.mockReset().mockImplementation(() => currentUser);
+    profileApiMock.getProfile.mockReset().mockReturnValue(profileResult.asObservable());
+    profileApiMock.updateProfile.mockReset();
+
     orderResult = new Subject<CreateOrderResponse>();
     orderApiMock.createOrder.mockReset();
     orderApiMock.createOrder.mockReturnValue(orderResult.asObservable());
@@ -66,6 +103,8 @@ describe('Checkout', () => {
         provideSweatshirtVariantsTesting(),
         provideProductCatalogTesting(),
         { provide: OrderApiService, useValue: orderApiMock },
+        { provide: AuthSessionService, useValue: sessionMock },
+        { provide: CustomerProfileApiService, useValue: profileApiMock },
         {
           provide: OrderSubmissionKeyService,
           useValue: submissionKeysMock,
@@ -557,5 +596,142 @@ describe('Checkout', () => {
 
     retryResult.complete();
     await fixture.whenStable();
+  });
+
+  async function customerSession(): Promise<void> {
+    currentUser = { email: savedProfile.email, roles: ['CUSTOMER'] };
+    sessionResult.next(currentUser);
+    sessionResult.complete();
+    await fixture.whenStable();
+  }
+
+  async function deliverProfile(): Promise<void> {
+    profileResult.next(savedProfile);
+    profileResult.complete();
+    await fixture.whenStable();
+  }
+
+  it('should keep guest checkout without requesting a profile', async () => {
+    sessionResult.next(null);
+    sessionResult.complete();
+    await reviewDigitalOrder();
+    expect(profileApiMock.getProfile).not.toHaveBeenCalled();
+    expect(fixture.componentInstance['orderRequest']()?.contact.email).toBe('anna@example.com');
+  });
+
+  it('should not request a customer profile for an admin', async () => {
+    currentUser = { email: 'admin@example.com', roles: ['ADMIN'] };
+    sessionResult.next(currentUser);
+    sessionResult.complete();
+    await reviewDigitalOrder();
+    expect(profileApiMock.getProfile).not.toHaveBeenCalled();
+  });
+
+  it('should fill saved contact and address while leaving delivery selection to the customer', async () => {
+    await addSweatshirt();
+    await customerSession();
+    await deliverProfile();
+    expect(element.querySelector<HTMLInputElement>('#checkout-fullName')?.value).toBe('Ewa Nowak');
+    expect(element.querySelector<HTMLInputElement>('#checkout-email')?.value).toBe(
+      savedProfile.email,
+    );
+    expect(
+      element.querySelector<HTMLInputElement>('input[name="deliveryMethod"]:checked'),
+    ).toBeNull();
+
+    await selectCourier();
+    expect(element.querySelector<HTMLInputElement>('#checkout-addressLine1')?.value).toBe(
+      'Zapisana 12',
+    );
+    expect(element.querySelector<HTMLInputElement>('#checkout-city')?.value).toBe('Warszawa');
+    await continueToReview();
+    expect(fixture.componentInstance['orderRequest']()?.delivery).toMatchObject({
+      kind: 'courier',
+      address: { addressLine1: 'Zapisana 12', city: 'Warszawa', countryCode: 'PL' },
+    });
+  });
+
+  it('should preserve typed fields when the profile response arrives late', async () => {
+    await addSweatshirt();
+    await selectCourier();
+    await customerSession();
+    await fillField('fullName', 'Moje dane');
+    await fillField('city', 'Kraków');
+    await deliverProfile();
+
+    expect(element.querySelector<HTMLInputElement>('#checkout-fullName')?.value).toBe('Moje dane');
+    expect(element.querySelector<HTMLInputElement>('#checkout-city')?.value).toBe('Kraków');
+    expect(element.querySelector<HTMLInputElement>('#checkout-email')?.value).toBe(
+      savedProfile.email,
+    );
+    expect(element.querySelector<HTMLInputElement>('#checkout-addressLine1')?.value).toBe(
+      'Zapisana 12',
+    );
+  });
+
+  it('should not refill a field that the customer deliberately cleared', async () => {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+    await customerSession();
+    await fillField('fullName', 'Temporary name');
+    await fillField('fullName', '');
+    await deliverProfile();
+
+    expect(element.querySelector<HTMLInputElement>('#checkout-fullName')?.value).toBe('');
+    expect(element.querySelector<HTMLInputElement>('#checkout-email')?.value).toBe(
+      savedProfile.email,
+    );
+  });
+
+  it('should not change order details after the customer enters review', async () => {
+    await customerSession();
+    await reviewDigitalOrder();
+    await deliverProfile();
+
+    expect(fixture.componentInstance['orderRequest']()?.contact).toEqual({
+      fullName: 'Anna Kowalska',
+      email: 'anna@example.com',
+    });
+    expect(element.querySelector('.checkout__review')?.textContent).not.toContain('Ewa Nowak');
+  });
+
+  it('should allow manual checkout if the profile cannot be loaded', async () => {
+    await customerSession();
+    profileResult.error(new HttpErrorResponse({ status: 503 }));
+    await fixture.whenStable();
+    await reviewDigitalOrder();
+
+    expect(element.querySelector('.checkout__review')).not.toBeNull();
+    expect(fixture.componentInstance['orderRequest']()?.contact.email).toBe('anna@example.com');
+    expect(fixture.componentInstance['profileLoadFailed']()).toBe(true);
+  });
+
+  it('should discard a profile response if the signed-in account has changed', async () => {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+    await customerSession();
+    currentUser = { email: 'other@example.com', roles: ['CUSTOMER'] };
+    await deliverProfile();
+
+    expect(element.querySelector<HTMLInputElement>('#checkout-email')?.value).toBe('');
+    expect(element.querySelector<HTMLInputElement>('#checkout-fullName')?.value).toBe('');
+  });
+
+  it('should use edited details for a digital order without saving them to the profile', async () => {
+    cart.addPattern(pattern);
+    await fixture.whenStable();
+    await customerSession();
+    await deliverProfile();
+    await fillField('fullName', 'Odbiorca zamówienia');
+    await continueToReview();
+    await submitReviewedOrder();
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(1);
+    const request = orderApiMock.createOrder.mock.calls[0][0];
+    expect(request.contact.fullName).toBe('Odbiorca zamówienia');
+    expect(request.contact.email).toBe(savedProfile.email);
+    expect(request.delivery).toEqual({ kind: 'digital' });
+    expect(profileApiMock.updateProfile).not.toHaveBeenCalled();
+    expect(savedProfile.firstName).toBe('Ewa');
   });
 });

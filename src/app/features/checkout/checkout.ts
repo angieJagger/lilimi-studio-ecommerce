@@ -12,7 +12,10 @@ import type {
   OrderItem,
 } from './order.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize } from 'rxjs';
+import { catchError, finalize, of, switchMap } from 'rxjs';
+import { AuthSessionService } from '../../core/auth/auth-session.service';
+import { CustomerProfileApiService } from '../../core/customer/customer-profile-api.service';
+import type { CustomerProfile } from '../../core/customer/customer-profile.model';
 import { OrderApiService } from './order-api.service';
 import { OrderSubmissionKeyService } from './order-submission-key.service';
 
@@ -24,6 +27,11 @@ import { OrderSubmissionKeyService } from './order-submission-key.service';
 })
 export class Checkout {
   protected readonly cart = inject(CartService);
+
+  private readonly session = inject(AuthSessionService);
+  private readonly profileApi = inject(CustomerProfileApiService);
+  protected readonly isLoadingProfile = signal(false);
+  protected readonly profileLoadFailed = signal(false);
 
   private readonly orderApi = inject(OrderApiService);
   private readonly destroyRef = inject(DestroyRef);
@@ -285,6 +293,78 @@ export class Checkout {
       items,
     };
   });
+
+  constructor() {
+    this.isLoadingProfile.set(true);
+
+    this.session
+      .refresh()
+      .pipe(
+        switchMap((user) =>
+          user?.roles.includes('CUSTOMER') ? this.profileApi.getProfile() : of(null),
+        ),
+        catchError(() => {
+          this.profileLoadFailed.set(true);
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isLoadingProfile.set(false)),
+      )
+      .subscribe((profile) => {
+        if (
+          profile &&
+          this.session.user()?.email === profile.email &&
+          this.session.user()?.roles.includes('CUSTOMER') &&
+          this.checkoutStep() === 'details' &&
+          !this.isSubmitting() &&
+          this.createdOrder() === null
+        ) {
+          this.fillFromProfile(profile);
+        }
+      });
+  }
+
+  private fillFromProfile(profile: CustomerProfile): void {
+    const fullName = [profile.firstName, profile.lastName]
+      .filter((part): part is string => Boolean(part))
+      .join(' ');
+
+    this.contactModel.update((current) => ({
+      fullName:
+        !this.contactForm.fullName().dirty() && current.fullName === ''
+          ? fullName
+          : current.fullName,
+      email:
+        !this.contactForm.email().dirty() && current.email === '' ? profile.email : current.email,
+      phone:
+        !this.contactForm.phone().dirty() && current.phone === ''
+          ? (profile.phone ?? '')
+          : current.phone,
+    }));
+
+    if (profile.countryCode !== 'PL' || !profile.addressLine1) {
+      return;
+    }
+
+    this.addressModel.update((current) => ({
+      addressLine1:
+        !this.addressForm.addressLine1().dirty() && current.addressLine1 === ''
+          ? (profile.addressLine1 ?? '')
+          : current.addressLine1,
+      addressLine2:
+        !this.addressForm.addressLine2().dirty() && current.addressLine2 === ''
+          ? (profile.addressLine2 ?? '')
+          : current.addressLine2,
+      postalCode:
+        !this.addressForm.postalCode().dirty() && current.postalCode === ''
+          ? (profile.postalCode ?? '')
+          : current.postalCode,
+      city:
+        !this.addressForm.city().dirty() && current.city === ''
+          ? (profile.city ?? '')
+          : current.city,
+    }));
+  }
 
   protected continueToReview(event: Event): void {
     event.preventDefault();

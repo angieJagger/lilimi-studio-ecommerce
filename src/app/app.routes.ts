@@ -100,6 +100,11 @@ const shopRoutes: Routes = [
       import('./features/auth/customer-reset-password').then((m) => m.CustomerResetPassword),
   },
   {
+    path: 'account/profile',
+    loadComponent: () =>
+      import('./features/account/customer-profile').then((m) => m.CustomerProfile),
+  },
+  {
     path: 'admin/login',
     loadComponent: () =>
       import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),
