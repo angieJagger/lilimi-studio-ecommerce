@@ -10,7 +10,7 @@ I develop both the Angular frontend and Spring Boot backend, including database 
 
 [Live demo](https://lilimistudio.com) · [Features](#what-works-today) · [Engineering decisions](#engineering-decisions) · [Run locally](#run-locally) · [Next milestones](#next-milestones)
 
-> **Demo application under active development.** Orders and project inquiries are stored in the database. Account verification and password reset emails are delivered through Brevo. Payments, order fulfilment, order notification emails, and digital file delivery are not implemented. Use fictional delivery details when testing and an email address you control when creating an account.
+> **Demo application under active development.** Orders and project inquiries are stored in the database. Account verification, password reset and order confirmation emails are delivered through Brevo. Payments, order fulfilment and digital file delivery are not implemented. Use fictional delivery details when testing and an email address you control when creating an account.
 
 ![Lilimi Studio homepage](docs/screenshots/home-desktop.png)
 
@@ -51,6 +51,10 @@ I develop both the Angular frontend and Spring Boot backend, including database 
 - Idempotency keys to prevent duplicate orders when the same submission is retried.
 - Server confirmation with an order reference.
 - Cart cleared after a successful submission and preserved when submission fails.
+- Polish and English order confirmation emails generated from saved order details.
+- Email queue entries committed in the same transaction as new orders.
+- Background email processing with PostgreSQL row locking, delayed retries and a five-attempt limit.
+- SMTP failures do not roll back submitted orders.
 
 Delivery currently uses fixed demonstration rates for Poland. No payment is collected.
 
@@ -382,7 +386,7 @@ The root Compose configuration does not currently configure SMTP. Use the backen
 
 ## Next milestones
 
-- Add order confirmation and status notification emails.
+- Add order status notification emails.
 - Integrate payments and controlled delivery of purchased digital files.
 - Store deployment backups outside the application server.
 - Complete remaining administrator inquiry details tests.
