@@ -13,3 +13,6 @@ spring.mail.properties[mail.smtp.writetimeout]=5000
 
 lilimi.mail.from=contact@lilimistudio.com
 lilimi.public-base-url=http://localhost:4200
+
+# Process order confirmation emails locally through Mailpit
+lilimi.mail.order-confirmation.enabled=true

@@ -78,6 +78,15 @@ class OrderSubmissionConcurrencyTest {
       var secondId = second.get(30, TimeUnit.SECONDS);
 
       assertThat(secondId).isEqualTo(firstId);
+      var confirmationCount = jdbcTemplate.queryForObject("""
+      SELECT COUNT(*)
+      FROM order_confirmation_emails
+      WHERE order_id = ?
+      """,
+          Long.class,
+          firstId
+        );
+      assertThat(confirmationCount).isEqualTo(1L);
       assertThat(count("orders")).isEqualTo(ordersBefore + 1);
       assertThat(count("order_items")).isEqualTo(itemsBefore + 1);
 
