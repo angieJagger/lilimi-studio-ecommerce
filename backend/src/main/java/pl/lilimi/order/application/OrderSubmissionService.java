@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import pl.lilimi.order.api.CreateOrderRequest;
 import pl.lilimi.order.domain.Order;
+import pl.lilimi.order.persistence.OrderConfirmationEmailRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.order.persistence.OrderSubmissionRepository;
 import tools.jackson.databind.json.JsonMapper;
@@ -14,8 +15,8 @@ import tools.jackson.databind.json.JsonMapper;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
-import java.util.UUID;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Validated
@@ -24,17 +25,20 @@ public class OrderSubmissionService {
   private final OrderService orderService;
   private final OrderRepository orderRepository;
   private final OrderSubmissionRepository submissionRepository;
+  private final OrderConfirmationEmailRepository confirmationEmails;
 
   private final JsonMapper mapper = JsonMapper.builder().build();
 
   public OrderSubmissionService(
     OrderService orderService,
     OrderRepository orderRepository,
-    OrderSubmissionRepository submissionRepository
+    OrderSubmissionRepository submissionRepository,
+    OrderConfirmationEmailRepository confirmationEmails
   ) {
     this.orderService = orderService;
     this.orderRepository = orderRepository;
     this.submissionRepository = submissionRepository;
+    this.confirmationEmails = confirmationEmails;
   }
 
   @Transactional
@@ -62,7 +66,9 @@ public class OrderSubmissionService {
     }
 
     if (submission.orderId() != null) {
-      var existingOrder = orderRepository.findById(submission.orderId())
+      var existingOrder = orderRepository.findById(
+          submission.orderId()
+        )
         .orElseThrow(() -> new IllegalStateException(
           "Order referenced by submission does not exist"
         ));
@@ -77,11 +83,19 @@ public class OrderSubmissionService {
       return existingOrder;
     }
 
-    var order = orderService.createOrder(request, customerAccountId);
+    var order = orderService.createOrder(
+      request,
+      customerAccountId
+    );
 
     orderRepository.flush();
 
-    submissionRepository.attachOrder(idempotencyKey, order.getId());
+    submissionRepository.attachOrder(
+      idempotencyKey,
+      order.getId()
+    );
+
+    confirmationEmails.enqueue(order.getId());
 
     return order;
   }
