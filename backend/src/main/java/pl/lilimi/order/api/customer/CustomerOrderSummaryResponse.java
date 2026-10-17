@@ -1,7 +1,7 @@
 package pl.lilimi.order.api.customer;
 
 import pl.lilimi.order.domain.Order;
-import pl.lilimi.payment.application.OrderPaymentSummary;
+import pl.lilimi.payment.status.OrderPaymentSummary;
 
 import java.time.Instant;
 import java.util.UUID;

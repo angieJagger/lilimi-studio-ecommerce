@@ -1,6 +1,6 @@
 package pl.lilimi.order.api.customer;
 
-import pl.lilimi.payment.application.OrderPaymentSummary;
+import pl.lilimi.payment.status.OrderPaymentSummary;
 
 import java.time.Instant;
 import java.util.List;
