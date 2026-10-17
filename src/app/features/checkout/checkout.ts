@@ -18,6 +18,7 @@ import { CustomerProfileApiService } from '../../core/customer/customer-profile-
 import type { CustomerProfile } from '../../core/customer/customer-profile.model';
 import { OrderApiService } from './order-api.service';
 import { OrderSubmissionKeyService } from './order-submission-key.service';
+import { PaymentApiService } from './payment-api.service';
 
 @Component({
   selector: 'app-checkout',
@@ -40,6 +41,13 @@ export class Checkout {
   private readonly submissionKeys = inject(OrderSubmissionKeyService);
   protected readonly createdOrder = signal<CreateOrderResponse | null>(null);
   protected readonly orderErrorKey = signal<string | null>(null);
+
+  private readonly paymentApi = inject(PaymentApiService);
+  private paymentKey: string | null = null;
+
+  protected readonly isStartingPayment = signal(false);
+  protected readonly paymentErrorKey = signal<string | null>(null);
+  protected readonly paymentStatusKey = signal<string | null>(null);
 
   protected readonly requiresShipping = computed(() => this.cart.sweatshirts().length > 0);
 
@@ -430,6 +438,76 @@ export class Checkout {
         this.orderErrorKey.set(this.getOrderErrorKey(error));
       }
     }
+  }
+
+  protected startPayment(): void {
+    const order = this.createdOrder();
+
+    if (!order || this.isStartingPayment()) {
+      return;
+    }
+
+    this.paymentErrorKey.set(null);
+    this.paymentStatusKey.set(null);
+    this.isStartingPayment.set(true);
+
+    try {
+      this.paymentKey ??= crypto.randomUUID();
+    } catch {
+      this.isStartingPayment.set(false);
+      this.paymentErrorKey.set('checkoutPayment.error');
+      return;
+    }
+
+    this.paymentApi
+      .startCheckout(order.id, this.paymentKey)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isStartingPayment.set(false)),
+      )
+      .subscribe({
+        next: (result) => {
+          if (result.status === 'succeeded') {
+            this.paymentStatusKey.set('checkoutPayment.alreadyPaid');
+            return;
+          }
+
+          if (result.status === 'expired' || result.status === 'failed') {
+            this.paymentStatusKey.set('checkoutPayment.closed');
+            return;
+          }
+
+          if (result.status !== 'pending' || !result.checkoutUrl) {
+            this.paymentStatusKey.set('checkoutPayment.waiting');
+            return;
+          }
+
+          try {
+            const url = new URL(result.checkoutUrl);
+
+            if (
+              url.protocol !== 'https:' ||
+              url.hostname !== 'checkout.stripe.com' ||
+              url.username !== '' ||
+              url.password !== '' ||
+              (url.port !== '' && url.port !== '443')
+            ) {
+              throw new Error('Invalid checkout URL');
+            }
+
+            window.location.assign(url.href);
+          } catch {
+            this.paymentErrorKey.set('checkoutPayment.error');
+          }
+        },
+        error: (error: unknown) => {
+          this.paymentErrorKey.set(
+            error instanceof HttpErrorResponse && error.status === 0
+              ? 'checkoutPayment.connectionError'
+              : 'checkoutPayment.error',
+          );
+        },
+      });
   }
 
   private getOrderErrorKey(error: unknown): string {

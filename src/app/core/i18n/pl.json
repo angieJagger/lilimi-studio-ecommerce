@@ -700,7 +700,34 @@
     "profileLoading": "Pobieranie zapisanych danych…",
     "profileLoadFailed": "Nie udało się pobrać zapisanych danych. Możesz wpisać je ręcznie."
   },
+  "checkoutPayment": {
+    "orderCreated": "Zamówienie zostało zapisane. Płatność nie została jeszcze potwierdzona.",
+    "sandboxNotice": "Płatność testowa Stripe — użyj wyłącznie danych testowych. Prawdziwe pieniądze nie zostaną pobrane.",
+    "pay": "Przejdź do płatności testowej",
+    "starting": "Przygotowujemy płatność…",
+    "error": "Nie udało się otworzyć płatności. Spróbuj ponownie. Twoje zamówienie zostało zachowane.",
+    "connectionError": "Nie udało się połączyć z serwerem. Sprawdź połączenie i spróbuj ponownie.",
+    "alreadyPaid": "Płatność za to zamówienie została już potwierdzona.",
+    "closed": "Ta próba płatności została zakończona lub wygasła.",
+    "waiting": "Oczekujemy na potwierdzenie statusu płatności. Nie składaj ponownie zamówienia."
+  },
 
+  "paymentResult": {
+    "title": "Status płatności",
+    "checking": "Sprawdzamy status płatności…",
+    "pending": "Płatność nie została jeszcze potwierdzona. Potwierdzenie może dotrzeć z opóźnieniem.",
+    "succeeded": "Płatność testowa została potwierdzona. Prawdziwe pieniądze nie zostały pobrane.",
+    "failed": "Ta próba płatności zakończyła się niepowodzeniem.",
+    "expired": "Sesja tej płatności wygasła.",
+    "cancelled": "Wrócono ze strony Stripe bez zakończenia procesu. Sam powrót nie anuluje zamówienia ani sesji płatności.",
+    "refresh": "Sprawdź ponownie",
+    "invalidLink": "Link nie zawiera prawidłowego identyfikatora płatności.",
+    "accessError": "Nie można odczytać tej płatności. Zaloguj się na konto, na którym złożono zamówienie, lub użyj przeglądarki z aktywną sesją gościa.",
+    "connectionError": "Nie udało się sprawdzić statusu płatności. Spróbuj ponownie. Ten komunikat nie oznacza, że płatność się nie powiodła.",
+    "notice": "Nie składaj ponownie tego samego zamówienia. Historię zamówień przypisanych do konta znajdziesz w panelu klienta.",
+    "orders": "Moje zamówienia",
+    "products": "Przeglądaj produkty"
+  },
   "cart": {
     "remove": "Usuń",
     "removeProduct": "Usuń z koszyka: {{ name }}",

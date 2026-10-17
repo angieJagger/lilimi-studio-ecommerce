@@ -12,10 +12,14 @@ public record CreateOrderResponse(
   String currency,
   long subtotalInGrosz,
   long deliveryPriceInGrosz,
-  long totalInGrosz
+  long totalInGrosz,
+  boolean paymentsEnabled
 ) {
 
-  public static CreateOrderResponse from(Order order) {
+  public static CreateOrderResponse from(
+    Order order,
+    boolean paymentsEnabled
+  ) {
     return new CreateOrderResponse(
       order.getId(),
       order.getCreatedAt(),
@@ -23,7 +27,8 @@ public record CreateOrderResponse(
       order.getCurrency(),
       order.getSubtotalInGrosz(),
       order.getDeliveryPriceInGrosz(),
-      order.getTotalInGrosz()
+      order.getTotalInGrosz(),
+      paymentsEnabled
     );
   }
 }

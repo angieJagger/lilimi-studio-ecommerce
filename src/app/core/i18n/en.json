@@ -700,7 +700,34 @@
     "profileLoading": "Loading your saved details…",
     "profileLoadFailed": "Your saved details could not be loaded. You can enter them manually."
   },
+  "checkoutPayment": {
+    "orderCreated": "Your order has been saved. Payment has not been confirmed yet.",
+    "sandboxNotice": "Stripe test payment — use test payment details only. No real money will be charged.",
+    "pay": "Continue to test payment",
+    "starting": "Preparing your payment…",
+    "error": "We could not open the payment page. Please try again. Your order has been saved.",
+    "connectionError": "We could not connect to the server. Check your connection and try again.",
+    "alreadyPaid": "Payment for this order has already been confirmed.",
+    "closed": "This payment attempt has ended or expired.",
+    "waiting": "We are waiting for the payment status to be confirmed. Please do not place the order again."
+  },
 
+  "paymentResult": {
+    "title": "Payment status",
+    "checking": "Checking your payment status…",
+    "pending": "Payment has not been confirmed yet. Confirmation may take a little longer to arrive.",
+    "succeeded": "Your test payment has been confirmed. No real money was charged.",
+    "failed": "This payment attempt was unsuccessful.",
+    "expired": "This payment session has expired.",
+    "cancelled": "You returned from Stripe without completing the process. Returning alone does not cancel your order or payment session.",
+    "refresh": "Check again",
+    "invalidLink": "This link does not contain a valid payment identifier.",
+    "accessError": "We cannot access this payment. Sign in to the account used to place the order, or use the browser with your active guest session.",
+    "connectionError": "We could not check your payment status. Please try again. This message does not mean your payment failed.",
+    "notice": "Please do not place the same order again. Orders linked to your account are available in your customer panel.",
+    "orders": "My orders",
+    "products": "Browse products"
+  },
   "cart": {
     "remove": "Remove",
     "removeProduct": "Remove from cart: {{ name }}",

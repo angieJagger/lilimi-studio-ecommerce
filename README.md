@@ -6,11 +6,11 @@ I am building Lilimi Studio for my own planned business. The studio offers UX/UI
 
 I develop both the Angular frontend and Spring Boot backend, including database migrations, integration tests, administrator tools, and deployment on AWS.
 
-**Angular 22 · Java 21 · Spring Boot 4 · PostgreSQL 17**
+Angular 22 · Java 21 · Spring Boot 4 · PostgreSQL 17
 
 [Live demo](https://lilimistudio.com) · [Features](#what-works-today) · [Engineering decisions](#engineering-decisions) · [Run locally](#run-locally) · [Next milestones](#next-milestones)
 
-> **Demo application under active development.** Orders and project inquiries are stored in the database. Account verification, password reset and order confirmation emails are delivered through Brevo. Payments, order fulfilment and digital file delivery are not implemented. Use fictional delivery details when testing and an email address you control when creating an account.
+> **Demo application under active development.** Orders and project inquiries are stored in the database. Account verification, password reset and order confirmation emails are delivered through Brevo. Stripe Checkout is implemented and tested in a sandbox; payments are disabled by default and real payments are not supported by the current configuration. Order fulfilment and digital file delivery are not implemented. Use fictional delivery details, an email address you control and Stripe test payment details only.
 
 ![Lilimi Studio homepage](docs/screenshots/home-desktop.png)
 
@@ -56,7 +56,29 @@ I develop both the Angular frontend and Spring Boot backend, including database 
 - Background email processing with PostgreSQL row locking, delayed retries and a five-attempt limit.
 - SMTP failures do not roll back submitted orders.
 
-Delivery currently uses fixed demonstration rates for Poland. No payment is collected.
+Delivery currently uses fixed demonstration rates for Poland. No real money is collected.
+
+### Payments — Stripe sandbox
+
+- Hosted Stripe Checkout for guest and signed-in customer orders.
+- Digital-only and mixed orders, including the saved courier delivery charge.
+- Payment amounts and currency taken from the stored order, not supplied by the browser.
+- Persisted payment attempts with idempotency keys and protection against multiple active attempts for the same order.
+- Payment attempts committed before calling Stripe; network requests run outside database transactions.
+- Payment access restricted to the owning account or the guest session that submitted the order.
+- Webhook signature verification using the original request body.
+- Transactional webhook processing and event ID deduplication.
+- Handling for completed, asynchronous success, asynchronous failure and expired Checkout sessions.
+- Payment confirmation requires matching order metadata, session, amount, currency and test mode.
+- Return page reads payment status from the backend and polls briefly while confirmation is pending.
+- Redirect parameters alone never mark an order as paid.
+- Checkout payment actions are shown only when payments are enabled by the backend.
+
+The integration currently accepts sandbox API keys and test-mode events only. Payment status is separate from order fulfilment status. Returning from Stripe without paying does not cancel the order or automatically expire the Checkout session.
+
+Manual sandbox checks cover guest payments, signed-in customer payments with delivery, returning without payment, a declined card followed by a successful retry in the same Checkout session, and 3D Secure authentication.
+
+Remaining work includes resuming payment after leaving the checkout flow, operational recovery and reconciliation, refunds, and preparation for real payments. Automatic fulfilment and digital file delivery remain outside the current implementation.
 
 ### Project inquiries
 
@@ -69,8 +91,6 @@ Delivery currently uses fixed demonstration rates for Poland. No payment is coll
 - Loading, submission, and error states.
 
 Submitting an inquiry does not create an order or send an email.
-
-### Customer accounts
 
 ### Customer accounts
 
@@ -124,7 +144,7 @@ Order history includes orders placed while signed in; guest orders are not autom
 
 The shop flow is:
 
-**Catalogue → product configuration → cart → checkout → stored order → administrator review**
+Catalogue → product configuration → cart → checkout → stored order → administrator review
 
 ![Sweatshirt configurator](docs/screenshots/configurator-desktop.png)
 
@@ -157,7 +177,11 @@ These files document the initial concept and planned journeys. Some designs and 
 | Order submission uses idempotency keys | Retrying an identical submission can return the existing order instead of creating another. |
 | Order updates use optimistic locking | Concurrent administrator updates are detected rather than silently overwriting each other. |
 | Authentication uses server-side sessions | Authentication tokens are not stored in browser local storage. |
-| State-changing requests use CSRF protection | Session-based authentication is paired with CSRF token validation. |
+| Browser state-changing requests use CSRF protection | Session-based requests require CSRF validation; the Stripe webhook POST uses signature verification instead. |
+| Payment attempts are stored before contacting Stripe | Provider failures leave an attempt available for retry, without keeping a database transaction open during the network request. |
+| Stripe requests use stable idempotency keys | Retrying session creation for the same attempt can reuse the provider operation. |
+| Payment confirmation comes from verified webhooks | Browser redirects and query parameters are not evidence of payment. |
+| Webhook IDs and payment updates share a transaction | Duplicate events are ignored, while failed processing rolls back both records and permits another delivery attempt. |
 | Flyway owns schema changes | Database structure and seed data use versioned migrations. |
 | Integration tests use PostgreSQL containers | Database behaviour is tested against PostgreSQL rather than an in-memory substitute. |
 | Account action tokens are stored as hashes | Verification and password reset links use expiring, single-use tokens without storing their raw values in the database. |
@@ -211,9 +235,10 @@ backend/
 ├── src/main/java/pl/lilimi/
 │   ├── auth/      # Customer registration, sessions and administrator account provisioning
 │   ├── catalog/   # Products and garment variants
-    │   ├── customer/  # Saved customer profiles and version-checked updates
+│   ├── customer/  # Saved customer profiles and version-checked updates
 │   ├── inquiry/   # Public inquiries and administrator queries
 │   ├── order/     # Submission, pricing and administrator operations
+│   ├── payment/   # Stripe sandbox Checkout, payment attempts and verified webhooks
 │   └── security/  # Access rules and CSRF configuration
 ├── src/main/resources/
 ├── src/test/java/
@@ -273,6 +298,81 @@ Open [localhost:4200/en](http://localhost:4200/en) or [localhost:4200/pl](http:/
 
 The development proxy forwards browser `/api` requests to the backend. Server-rendered requests use `BACKEND_API_URL`, defaulting to `http://127.0.0.1:8080/api`.
 
+### 4. Optional: test Stripe payments locally
+
+The normal development setup works with payments disabled. To test payments, use Stripe CLI and API keys from the same Stripe sandbox.
+
+Install Stripe CLI on Windows:
+
+```powershell
+winget install --id Stripe.StripeCli --exact --source winget
+```
+
+Open a new terminal, then authenticate:
+
+```powershell
+stripe --version
+stripe login
+```
+
+Select the intended sandbox during authorisation. In this project, local testing uses the Lilimi Studio sandbox.
+
+Start webhook forwarding and leave this terminal running:
+
+```powershell
+stripe listen --events checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed,checkout.session.expired --forward-to http://localhost:8080/api/payments/stripe/webhook
+```
+
+The command displays a webhook signing secret beginning with `whsec_`. Use this CLI secret for local forwarding; it is separate from the API key and from secrets for Dashboard-configured webhook endpoints.
+
+In the backend terminal, stop the application and set secrets without placing their literal values in command history:
+
+```powershell
+function Read-StripeSecret {
+    param([string]$Prompt)
+
+    $secureValue = Read-Host $Prompt -AsSecureString
+    $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureValue)
+
+    try {
+        [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
+    }
+    finally {
+        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
+    }
+}
+
+$env:STRIPE_API_KEY = Read-StripeSecret "Paste the sandbox sk_test_ API key"
+$env:STRIPE_WEBHOOK_SECRET = Read-StripeSecret "Paste the whsec_ secret from stripe listen"
+$env:STRIPE_ENABLED = "true"
+```
+
+From `backend`, start the application in the same terminal:
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--lilimi.public-base-url=http://localhost:4200"
+```
+
+Keep the frontend, backend and Stripe CLI running. Place an order at `http://localhost:4200` and select the test payment action.
+
+Use Stripe test cards only:
+
+| Scenario | Card number |
+| --- | --- |
+| Successful payment | `4242 4242 4242 4242` |
+| Insufficient funds | `4000 0000 0000 9995` |
+| 3D Secure authentication | `4000 0000 0000 3220` |
+
+Use a future expiry date and any three-digit CVC. Official reference: [Stripe testing documentation](https://docs.stripe.com/testing).
+
+After a successful payment, the return page should display confirmation and Stripe CLI should show HTTP `204` for the processed webhook.
+
+The current Stripe Java SDK uses API version `2026-09-30.endive`. Check the version printed by Stripe CLI: webhook deserialisation requires a compatible event schema.
+
+Do not commit API keys, webhook secrets or screenshots containing them. These environment variables apply only to the current terminal and its child processes.
+
+Automated payment tests use mocked Stripe calls or locally signed fixtures. They do not require Stripe credentials and do not contact Stripe.
+
 ## API
 
 | Method | Endpoint | Purpose |
@@ -286,6 +386,9 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | POST | `/api/auth/logout` | Sign out |
 | GET | `/api/auth/me` | Current authenticated user |
 | POST | `/api/orders` | Submit an order |
+| POST | `/api/orders/{orderId}/payment-session` | Create or retrieve a sandbox Checkout session for an authorised order |
+| GET | `/api/payments/attempts/{attemptId}` | Read payment status after checking access to the associated order |
+| POST | `/api/payments/stripe/webhook` | Receive and verify Stripe payment events |
 | POST | `/api/project-inquiries` | Submit a project inquiry |
 | GET | `/api/admin/orders` | Paginated order list |
 | GET | `/api/admin/orders/{id}` | Order details |
@@ -310,7 +413,11 @@ The development proxy forwards browser `/api` requests to the backend. Server-re
 | GET | `/api/account/orders` | Paginated history of the signed-in account's orders |
 | GET | `/api/account/orders/{id}` | Details of an order owned by the signed-in account |
 
-Administrator endpoints require the `ADMIN` role. State-changing requests require a valid CSRF token. Order submission also uses an `Idempotency-Key` header.
+Administrator endpoints require the `ADMIN` role. Browser state-changing requests require a valid CSRF token. The Stripe webhook POST endpoint is the explicit exception: it verifies the `Stripe-Signature` header instead.
+
+Order submission and Checkout session creation require an `Idempotency-Key` header. The order response includes `paymentsEnabled`, which controls whether checkout displays the payment action.
+
+Payment session creation and status reads check order ownership. Signed-in orders belong to the owning account; guest orders require the session that submitted them.
 
 Profile endpoints require an active customer account and any required email verification. Account identifiers are resolved from the authenticated session.
 
@@ -386,10 +493,12 @@ The root Compose configuration does not currently configure SMTP. Use the backen
 
 ## Next milestones
 
+- Add payment resumption, reconciliation and operational recovery.
+- Prepare real payment configuration and refund handling.
+- Implement controlled delivery of purchased digital files and order fulfilment.
 - Add order status notification emails.
-- Integrate payments and controlled delivery of purchased digital files.
 - Store deployment backups outside the application server.
 - Complete remaining administrator inquiry details tests.
 - Update remaining demo copy, visual assets, and portfolio work.
 
-The current application is a working demonstration of customer, shop, and administrator workflows. Payment processing and fulfilment remain under development.
+The application demonstrates customer, shop and administrator workflows, including locally verified Stripe sandbox payments. Real payments, automatic fulfilment and digital file delivery are not available.
