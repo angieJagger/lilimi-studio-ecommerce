@@ -728,6 +728,24 @@
     "orders": "My orders",
     "products": "Browse products"
   },
+  "orderPayment": {
+    "title": "Payment",
+    "resume": "Complete test payment",
+    "resuming": "Preparing your payment…",
+    "sandboxNotice": "Stripe test mode. No real money will be charged.",
+    "error": "We could not open the payment page. Please try again. Do not place a new order.",
+    "connectionError": "We could not connect to the server. Please retry payment for this same order.",
+    "sessionClosed": "The previous attempt ended or expired. Click again to start a new payment for this order.",
+    "stateChanged": "The order or payment state changed. We refreshed the order details.",
+    "statuses": {
+      "unpaid": "Payment not started",
+      "pending": "Awaiting confirmation",
+      "succeeded": "Payment confirmed",
+      "failed": "Last attempt unsuccessful",
+      "expired": "Payment session expired",
+      "unknown": "Status unavailable"
+    }
+  },
   "cart": {
     "remove": "Remove",
     "removeProduct": "Remove from cart: {{ name }}",

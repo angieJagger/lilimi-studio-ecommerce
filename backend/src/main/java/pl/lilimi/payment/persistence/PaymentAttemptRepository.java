@@ -11,6 +11,7 @@ import pl.lilimi.payment.domain.PaymentAttemptStatus;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 public interface PaymentAttemptRepository
   extends JpaRepository<PaymentAttempt, UUID> {
@@ -40,5 +41,23 @@ public interface PaymentAttemptRepository
     """)
   Optional<PaymentAttempt> findByIdForUpdate(
     @Param("id") UUID id
+  );
+
+  @Query(value = """
+  SELECT DISTINCT ON (order_id) *
+  FROM order_payment_attempts
+  WHERE order_id IN (:orderIds)
+  ORDER BY
+    order_id,
+    CASE
+      WHEN status = 'succeeded' THEN 0
+      WHEN status IN ('created', 'pending') THEN 1
+      ELSE 2
+    END,
+    created_at DESC,
+    id DESC
+  """, nativeQuery = true)
+  List<PaymentAttempt> findPaymentSummaries(
+    @Param("orderIds") Collection<UUID> orderIds
   );
 }

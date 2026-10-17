@@ -55,4 +55,28 @@ public class OrderPaymentController {
 
     return checkout.start(orderId, idempotencyKey);
   }
+  @PostMapping("/resume")
+  public CheckoutSessionResult resumePayment(
+    @PathVariable UUID orderId,
+    @RequestHeader("Idempotency-Key") UUID idempotencyKey,
+    Authentication authentication,
+    HttpServletRequest servletRequest
+  ) {
+    access.requireAccess(
+      orderId,
+      authentication,
+      servletRequest.getSession(false)
+    );
+
+    var checkout = checkoutServices.getIfAvailable();
+
+    if (checkout == null) {
+      throw new ResponseStatusException(
+        HttpStatus.SERVICE_UNAVAILABLE,
+        "PAYMENTS_DISABLED"
+      );
+    }
+
+    return checkout.resume(orderId, idempotencyKey);
+  }
 }

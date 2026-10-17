@@ -1,11 +1,17 @@
 export type CustomerOrderStatus = 'new' | 'processing' | 'completed' | 'cancelled';
 
+export interface CustomerOrderPayment {
+  readonly status: 'unpaid' | 'pending' | 'succeeded' | 'failed' | 'expired';
+  readonly canPay: boolean;
+}
+
 export interface CustomerOrderSummary {
   readonly id: string;
   readonly createdAt: string;
   readonly status: CustomerOrderStatus;
   readonly currency: 'PLN';
   readonly totalInGrosz: number;
+  readonly payment?: CustomerOrderPayment;
 }
 
 export interface CustomerOrderPage {
@@ -59,4 +65,5 @@ export interface CustomerOrderDetails {
   readonly subtotalInGrosz: number;
   readonly deliveryPriceInGrosz: number;
   readonly totalInGrosz: number;
+  readonly payment?: CustomerOrderPayment;
 }

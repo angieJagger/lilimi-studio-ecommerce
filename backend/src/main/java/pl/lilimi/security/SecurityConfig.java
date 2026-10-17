@@ -49,6 +49,7 @@ public class SecurityConfig {
           HttpMethod.POST,
           "/api/orders",
           "/api/orders/*/payment-session",
+          "/api/orders/*/payment-session/resume",
           "/api/payments/stripe/webhook",
           "/api/project-inquiries",
           "/api/auth/register",

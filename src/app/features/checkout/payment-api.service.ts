@@ -28,14 +28,27 @@ export class PaymentApiService {
   private readonly baseUrl = inject(API_BASE_URL);
   private readonly csrf = inject(CsrfService);
 
-  startCheckout(
-    orderId: string,
-    idempotencyKey: string,
-  ): Observable<CheckoutSessionResult> {
+  startCheckout(orderId: string, idempotencyKey: string): Observable<CheckoutSessionResult> {
     return this.csrf.initialize().pipe(
       switchMap(() =>
         this.http.post<CheckoutSessionResult>(
           `${this.baseUrl}/orders/${encodeURIComponent(orderId)}/payment-session`,
+          null,
+          {
+            headers: {
+              'Idempotency-Key': idempotencyKey,
+            },
+          },
+        ),
+      ),
+    );
+  }
+
+  resumeCheckout(orderId: string, idempotencyKey: string): Observable<CheckoutSessionResult> {
+    return this.csrf.initialize().pipe(
+      switchMap(() =>
+        this.http.post<CheckoutSessionResult>(
+          `${this.baseUrl}/orders/${encodeURIComponent(orderId)}/payment-session/resume`,
           null,
           {
             headers: {

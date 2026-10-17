@@ -1,7 +1,6 @@
 package pl.lilimi.order.api.customer;
 
 import org.springframework.data.domain.Page;
-import pl.lilimi.order.domain.Order;
 
 import java.util.List;
 
@@ -13,11 +12,11 @@ public record CustomerOrderPageResponse(
   int totalPages
 ) {
 
-  public static CustomerOrderPageResponse from(Page<Order> orders) {
+  public static CustomerOrderPageResponse from(
+    Page<CustomerOrderSummaryResponse> orders
+  ) {
     return new CustomerOrderPageResponse(
-      orders.getContent().stream()
-        .map(CustomerOrderSummaryResponse::from)
-        .toList(),
+      orders.getContent(),
       orders.getNumber(),
       orders.getSize(),
       orders.getTotalElements(),

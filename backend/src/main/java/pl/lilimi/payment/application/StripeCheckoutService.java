@@ -45,6 +45,24 @@ public class StripeCheckoutService {
     UUID idempotencyKey
   ) {
     var attempt = attempts.prepare(orderId, idempotencyKey);
+    return openCheckout(attempt);
+  }
+
+  public CheckoutSessionResult resume(
+    UUID orderId,
+    UUID idempotencyKey
+  ) {
+    var attempt = attempts.prepareForResumption(
+      orderId,
+      idempotencyKey
+    );
+
+    return openCheckout(attempt);
+  }
+
+  private CheckoutSessionResult openCheckout(
+    PaymentAttempt attempt
+  ) {
     var prepared = persistence.load(attempt.getId());
     var current = prepared.attempt();
 

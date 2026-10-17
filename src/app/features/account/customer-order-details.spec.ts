@@ -5,6 +5,8 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
 import { CustomerOrderApiService } from './customer-order-api.service';
+import { PaymentApiService, type CheckoutSessionResult } from '../checkout/payment-api.service';
+import { PaymentRedirectService } from '../checkout/payment-redirect.service';
 import type { CustomerOrderDetails as OrderDetails } from './customer-order.model';
 import { CustomerOrderDetails } from './customer-order-details';
 
@@ -13,6 +15,15 @@ describe('CustomerOrderDetails', () => {
   let element: HTMLElement;
   let result: Subject<OrderDetails>;
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
+  let paymentResult: Subject<CheckoutSessionResult>;
+
+  const payments = {
+    resumeCheckout: vi.fn(),
+  };
+
+  const paymentRedirect = {
+    redirect: vi.fn(),
+  };
 
   const api = {
     getOrder: vi.fn(),
@@ -66,6 +77,13 @@ describe('CustomerOrderDetails', () => {
     api.getOrder.mockReset();
     api.getOrder.mockReturnValue(result.asObservable());
 
+    paymentResult = new Subject<CheckoutSessionResult>();
+
+    payments.resumeCheckout.mockReset();
+    payments.resumeCheckout.mockReturnValue(paymentResult.asObservable());
+
+    paymentRedirect.redirect.mockReset();
+
     await TestBed.configureTestingModule({
       imports: [CustomerOrderDetails, getTranslocoTestingModule()],
       providers: [
@@ -77,6 +95,8 @@ describe('CustomerOrderDetails', () => {
           },
         },
         { provide: CustomerOrderApiService, useValue: api },
+        { provide: PaymentApiService, useValue: payments },
+        { provide: PaymentRedirectService, useValue: paymentRedirect },
       ],
     }).compileComponents();
 
@@ -231,5 +251,152 @@ describe('CustomerOrderDetails', () => {
     await respond({ ...order, id: 'second-order' });
     expect(element.textContent).toContain('second-order');
     expect(element.textContent).not.toContain(order.id);
+  });
+  function paymentButton(): HTMLButtonElement | null {
+    return element.querySelector('.order-details__actions button');
+  }
+
+  async function showPayableOrder(): Promise<void> {
+    await respond({
+      ...order,
+      payment: {
+        status: 'pending',
+        canPay: true,
+      },
+    });
+  }
+
+  it('should hide payment action for a confirmed payment', async () => {
+    await respond({
+      ...order,
+      payment: {
+        status: 'succeeded',
+        canPay: false,
+      },
+    });
+
+    expect(element.textContent).toContain('Zapłata potwierdzona');
+    expect(paymentButton()).toBeNull();
+    expect(payments.resumeCheckout).not.toHaveBeenCalled();
+  });
+
+  it('should prevent duplicate clicks and redirect to the returned session', async () => {
+    await showPayableOrder();
+
+    const button = paymentButton()!;
+
+    button.click();
+    button.click();
+
+    await fixture.whenStable();
+
+    expect(payments.resumeCheckout).toHaveBeenCalledTimes(1);
+    expect(payments.resumeCheckout).toHaveBeenCalledWith(order.id, expect.any(String));
+    expect(paymentButton()?.disabled).toBe(true);
+
+    paymentResult.next({
+      paymentAttemptId: '38e96ac8-89e7-40f1-a856-086992226bdf',
+      status: 'pending',
+      checkoutUrl: 'https://checkout.stripe.com/c/pay/test',
+    });
+    paymentResult.complete();
+
+    await fixture.whenStable();
+
+    expect(paymentRedirect.redirect).toHaveBeenCalledExactlyOnceWith(
+      'https://checkout.stripe.com/c/pay/test',
+    );
+  });
+
+  it('should preserve the request key after a connection failure', async () => {
+    await showPayableOrder();
+
+    paymentButton()!.click();
+    await fixture.whenStable();
+
+    const firstKey = payments.resumeCheckout.mock.calls[0][1];
+
+    paymentResult.error(new HttpErrorResponse({ status: 0 }));
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Nie udało się połączyć z serwerem',
+    );
+    expect(paymentButton()?.disabled).toBe(false);
+
+    paymentResult = new Subject<CheckoutSessionResult>();
+    payments.resumeCheckout.mockReturnValue(paymentResult.asObservable());
+
+    paymentButton()!.click();
+    await fixture.whenStable();
+
+    expect(payments.resumeCheckout).toHaveBeenCalledTimes(2);
+    expect(payments.resumeCheckout.mock.calls[1][1]).toBe(firstKey);
+    expect(paymentRedirect.redirect).not.toHaveBeenCalled();
+  });
+
+  it('should use a new key after the previous session expires', async () => {
+    await showPayableOrder();
+
+    paymentButton()!.click();
+    await fixture.whenStable();
+
+    const firstKey = payments.resumeCheckout.mock.calls[0][1];
+
+    paymentResult.next({
+      paymentAttemptId: '38e96ac8-89e7-40f1-a856-086992226bdf',
+      status: 'expired',
+      checkoutUrl: null,
+    });
+    paymentResult.complete();
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Poprzednia próba zakończyła się lub wygasła',
+    );
+    expect(paymentButton()?.disabled).toBe(false);
+
+    paymentResult = new Subject<CheckoutSessionResult>();
+    payments.resumeCheckout.mockReturnValue(paymentResult.asObservable());
+
+    paymentButton()!.click();
+    await fixture.whenStable();
+
+    expect(payments.resumeCheckout).toHaveBeenCalledTimes(2);
+    expect(payments.resumeCheckout.mock.calls[1][1]).not.toBe(firstKey);
+    expect(paymentRedirect.redirect).not.toHaveBeenCalled();
+  });
+
+  it('should ignore a payment response after navigating to another order', async () => {
+    await showPayableOrder();
+
+    paymentButton()!.click();
+    await fixture.whenStable();
+
+    prepareNextRequest();
+    params.next(convertToParamMap({ id: 'second-order' }));
+    await fixture.whenStable();
+
+    await respond({
+      ...order,
+      id: 'second-order',
+      payment: {
+        status: 'unpaid',
+        canPay: true,
+      },
+    });
+
+    paymentResult.next({
+      paymentAttemptId: '38e96ac8-89e7-40f1-a856-086992226bdf',
+      status: 'pending',
+      checkoutUrl: 'https://checkout.stripe.com/c/pay/test',
+    });
+    paymentResult.complete();
+
+    await fixture.whenStable();
+
+    expect(paymentRedirect.redirect).not.toHaveBeenCalled();
+    expect(element.textContent).toContain('second-order');
   });
 });

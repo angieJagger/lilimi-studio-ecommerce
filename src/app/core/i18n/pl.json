@@ -728,6 +728,24 @@
     "orders": "Moje zamówienia",
     "products": "Przeglądaj produkty"
   },
+  "orderPayment": {
+    "title": "Płatność",
+    "resume": "Dokończ płatność testową",
+    "resuming": "Przygotowujemy płatność…",
+    "sandboxNotice": "Tryb testowy Stripe. Prawdziwe pieniądze nie zostaną pobrane.",
+    "error": "Nie udało się otworzyć płatności. Spróbuj ponownie. Nie składaj nowego zamówienia.",
+    "connectionError": "Nie udało się połączyć z serwerem. Spróbuj ponownie dla tego samego zamówienia.",
+    "sessionClosed": "Poprzednia próba zakończyła się lub wygasła. Kliknij ponownie, aby rozpocząć nową płatność dla tego zamówienia.",
+    "stateChanged": "Stan zamówienia lub płatności uległ zmianie. Odświeżyliśmy szczegóły zamówienia.",
+    "statuses": {
+      "unpaid": "Nie rozpoczęto płatności",
+      "pending": "Oczekuje na potwierdzenie",
+      "succeeded": "Zapłata potwierdzona",
+      "failed": "Ostatnia próba nieudana",
+      "expired": "Sesja płatności wygasła",
+      "unknown": "Status niedostępny"
+    }
+  },
   "cart": {
     "remove": "Usuń",
     "removeProduct": "Usuń z koszyka: {{ name }}",

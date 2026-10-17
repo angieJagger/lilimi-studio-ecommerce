@@ -12,6 +12,10 @@ import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
 import pl.lilimi.auth.persistence.UserAccountRepository;
+import pl.lilimi.payment.domain.PaymentAttempt;
+import pl.lilimi.payment.persistence.PaymentAttemptRepository;
+
+import java.time.Instant;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.HashSet;
@@ -25,7 +29,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+  "lilimi.payments.stripe.enabled=false",
+  "lilimi.mail.order-confirmation.enabled=false"
+})
 @AutoConfigureMockMvc
 @Import(PostgresTestConfiguration.class)
 @Transactional
@@ -36,6 +43,9 @@ class CustomerOrderControllerTest {
 
   @Autowired
   private UserAccountRepository accountRepository;
+
+  @Autowired
+  private PaymentAttemptRepository paymentAttempts;
 
   @Test
   void shouldRejectHistoryWithoutAuthentication() throws Exception {
@@ -291,5 +301,120 @@ class CustomerOrderControllerTest {
     mockMvc.perform(get("/api/account/orders/not-a-uuid")
         .with(user(account.getEmail()).roles("CUSTOMER")))
       .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void shouldReturnUnpaidSummaryInHistoryAndDetails()
+    throws Exception {
+
+    var account = createAccount(
+      "unpaid-summary@example.com"
+    );
+    var orderId = createOrder(account, account.getEmail());
+
+    mockMvc.perform(get("/api/account/orders")
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[0].id").value(orderId))
+      .andExpect(jsonPath("$.items[0].payment.status")
+        .value("unpaid"))
+      .andExpect(jsonPath("$.items[0].payment.canPay")
+        .value(false));
+
+    mockMvc.perform(get("/api/account/orders/{id}", orderId)
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.payment.status").value("unpaid"))
+      .andExpect(jsonPath("$.payment.canPay").value(false));
+  }
+
+  @Test
+  void shouldReturnPendingSummaryInHistoryAndDetails()
+    throws Exception {
+
+    var account = createAccount(
+      "pending-summary@example.com"
+    );
+    var orderId = createOrder(account, account.getEmail());
+
+    createPendingPayment(orderId);
+
+    mockMvc.perform(get("/api/account/orders")
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[0].payment.status")
+        .value("pending"))
+      .andExpect(jsonPath("$.items[0].payment.canPay")
+        .value(false));
+
+    mockMvc.perform(get("/api/account/orders/{id}", orderId)
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.payment.status").value("pending"))
+      .andExpect(jsonPath("$.payment.canPay").value(false));
+  }
+
+  @Test
+  void shouldShowConfirmedPaymentWithoutChangingOrderStatus()
+    throws Exception {
+
+    var account = createAccount(
+      "paid-summary@example.com"
+    );
+    var orderId = createOrder(account, account.getEmail());
+
+    var attempt = createPendingPayment(orderId);
+
+    attempt.confirmPayment(
+      attempt.getStripeCheckoutSessionId(),
+      "pi_test_" + UUID.randomUUID(),
+      2900,
+      "PLN",
+      false,
+      Instant.now()
+    );
+
+    paymentAttempts.saveAndFlush(attempt);
+
+    mockMvc.perform(get("/api/account/orders")
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[0].status").value("new"))
+      .andExpect(jsonPath("$.items[0].payment.status")
+        .value("succeeded"))
+      .andExpect(jsonPath("$.items[0].payment.canPay")
+        .value(false));
+
+    mockMvc.perform(get("/api/account/orders/{id}", orderId)
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("new"))
+      .andExpect(jsonPath("$.payment.status")
+        .value("succeeded"))
+      .andExpect(jsonPath("$.payment.canPay").value(false))
+      .andExpect(jsonPath("$.payment.idempotencyKey")
+        .doesNotExist())
+      .andExpect(jsonPath("$.payment.checkoutUrl")
+        .doesNotExist());
+  }
+
+  private PaymentAttempt createPendingPayment(String orderId) {
+    Instant createdAt = Instant.now().minusSeconds(60);
+
+    var attempt = new PaymentAttempt(
+      UUID.fromString(orderId),
+      UUID.randomUUID(),
+      2900,
+      "PLN",
+      false,
+      createdAt
+    );
+
+    attempt.attachCheckoutSession(
+      "cs_test_" + UUID.randomUUID(),
+      createdAt.plusSeconds(1800)
+    );
+
+    return paymentAttempts.saveAndFlush(attempt);
   }
 }

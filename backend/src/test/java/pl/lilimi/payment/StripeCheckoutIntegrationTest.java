@@ -320,4 +320,59 @@ class StripeCheckoutIntegrationTest {
       orderId
     );
   }
+
+  @Test
+  void shouldResumeSavedStripeSessionWithDifferentRequestKey()
+    throws StripeException {
+
+    var createdSession = new AtomicReference<Session>();
+
+    when(sessions.create(
+      any(SessionCreateParams.class),
+      any(RequestOptions.class)
+    )).thenAnswer(invocation -> {
+      SessionCreateParams params = invocation.getArgument(0);
+      RequestOptions options = invocation.getArgument(1);
+
+      assertCommittedAttempt(params, options);
+
+      var session = openSession(params);
+      createdSession.set(session);
+      return session;
+    });
+
+    when(sessions.retrieve("cs_test_integration"))
+      .thenAnswer(invocation -> {
+        assertThat(
+          TransactionSynchronizationManager
+            .isActualTransactionActive()
+        ).isFalse();
+
+        return createdSession.get();
+      });
+
+    var first = checkout.start(
+      orderId,
+      UUID.randomUUID()
+    );
+
+    var resumed = checkout.resume(
+      orderId,
+      UUID.randomUUID()
+    );
+
+    assertThat(resumed.paymentAttemptId())
+      .isEqualTo(first.paymentAttemptId());
+    assertThat(resumed.status()).isEqualTo("pending");
+    assertThat(resumed.checkoutUrl())
+      .isEqualTo(first.checkoutUrl());
+    assertThat(attemptCount()).isEqualTo(1L);
+
+    verify(sessions, times(1)).create(
+      any(SessionCreateParams.class),
+      any(RequestOptions.class)
+    );
+    verify(sessions, times(1))
+      .retrieve("cs_test_integration");
+  }
 }
