@@ -218,6 +218,8 @@ flowchart LR
 | Tests | Vitest, Angular TestBed, JUnit, MockMvc, Testcontainers |
 | Deployment | AWS Lightsail, Docker Compose, Caddy, HTTPS |
 
+Payment code is grouped by workflow: `checkout` starts and resumes payments, `webhook` verifies and processes provider events, `status` serves payment reads, and `access` checks account or guest permissions. Stripe client configuration and API calls live in `stripe`; payment entities and their repository remain in `domain` and `persistence`. Payment tests follow the same package structure. Database transactions remain separate from Stripe network calls.
+
 ## Code tour
 
 - [Product API mapping](src/app/features/products/product-api.mapper.ts) — mapping backend responses to frontend product models.
@@ -245,7 +247,7 @@ backend/
 │   ├── customer/  # Saved customer profiles and version-checked updates
 │   ├── inquiry/   # Public inquiries and administrator queries
 │   ├── order/     # Submission, pricing and administrator operations
-│   ├── payment/   # Stripe sandbox Checkout, payment attempts and verified webhooks
+│   ├── payment/   # Checkout, webhooks, payment status, access rules and Stripe integration
 │   └── security/  # Access rules and CSRF configuration
 ├── src/main/resources/
 ├── src/test/java/

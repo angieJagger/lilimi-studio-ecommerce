@@ -14,7 +14,7 @@ import pl.lilimi.order.api.customer.CustomerOrderItemResponse;
 import pl.lilimi.order.api.customer.CustomerOrderSummaryResponse;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
-import pl.lilimi.payment.application.OrderPaymentSummaryService;
+import pl.lilimi.payment.status.OrderPaymentSummaryService;
 
 import java.util.List;
 import java.util.Objects;

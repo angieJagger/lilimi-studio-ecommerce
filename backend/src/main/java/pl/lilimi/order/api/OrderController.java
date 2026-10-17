@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import pl.lilimi.auth.application.CurrentAccountService;
 import pl.lilimi.order.application.OrderSubmissionService;
-import pl.lilimi.payment.application.GuestOrderAccessService;
+import pl.lilimi.payment.access.GuestOrderAccessService;
 
 import java.util.UUID;
 
