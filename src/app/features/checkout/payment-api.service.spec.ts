@@ -137,4 +137,36 @@ describe('PaymentApiService', () => {
 
     expect(receivedStatus).toBe('succeeded');
   });
+  it('should initialize CSRF before resuming an existing order payment', () => {
+    let received: CheckoutSessionResult | undefined;
+
+    service.resumeCheckout(orderId, key).subscribe((response) => {
+      received = response;
+    });
+
+    const resumeUrl = `${url}/resume`;
+
+    http.expectNone(resumeUrl);
+
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const request = http.expectOne(resumeUrl);
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toBeNull();
+    expect(request.request.headers.get('Idempotency-Key')).toBe(key);
+
+    const response: CheckoutSessionResult = {
+      paymentAttemptId: '38e96ac8-89e7-40f1-a856-086992226bdf',
+      status: 'pending',
+      checkoutUrl: 'https://checkout.stripe.com/c/pay/test',
+    };
+
+    request.flush(response);
+
+    expect(received).toEqual(response);
+  });
 });

@@ -1,5 +1,7 @@
 package pl.lilimi.order.api.customer;
 
+import pl.lilimi.payment.application.OrderPaymentSummary;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,7 @@ public record CustomerOrderDetailsResponse(
   List<CustomerOrderItemResponse> items,
   long subtotalInGrosz,
   long deliveryPriceInGrosz,
-  long totalInGrosz
+  long totalInGrosz,
+  OrderPaymentSummary payment
 ) {
 }

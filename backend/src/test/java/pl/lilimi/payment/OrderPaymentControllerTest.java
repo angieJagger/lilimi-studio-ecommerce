@@ -264,4 +264,107 @@ class OrderPaymentControllerTest {
   private String paymentUrl(UUID orderId) {
     return "/api/orders/" + orderId + "/payment-session";
   }
+
+  @Test
+  void shouldResumePaymentForAuthorizedGuest()
+    throws Exception {
+
+    var session = new MockHttpSession();
+    UUID orderId = submitGuestOrder(session);
+    UUID key = UUID.randomUUID();
+    UUID attemptId = UUID.randomUUID();
+
+    when(checkout.resume(orderId, key))
+      .thenReturn(new CheckoutSessionResult(
+        attemptId,
+        "pending",
+        CHECKOUT_URL
+      ));
+
+    mockMvc.perform(post(paymentUrl(orderId) + "/resume")
+        .session(session)
+        .with(csrf())
+        .header("Idempotency-Key", key))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.paymentAttemptId")
+        .value(attemptId.toString()))
+      .andExpect(jsonPath("$.status").value("pending"))
+      .andExpect(jsonPath("$.checkoutUrl").value(CHECKOUT_URL));
+
+    verify(checkout).resume(orderId, key);
+  }
+
+  @Test
+  void shouldResumePaymentForAccountOwner()
+    throws Exception {
+
+    var account = createAccount();
+    var order = createOwnedOrder(account);
+    UUID key = UUID.randomUUID();
+
+    when(checkout.resume(order.getId(), key))
+      .thenReturn(new CheckoutSessionResult(
+        UUID.randomUUID(),
+        "pending",
+        CHECKOUT_URL
+      ));
+
+    mockMvc.perform(post(paymentUrl(order.getId()) + "/resume")
+        .with(user(account.getEmail()).roles("CUSTOMER"))
+        .with(csrf())
+        .header("Idempotency-Key", key))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.checkoutUrl").value(CHECKOUT_URL));
+
+    verify(checkout).resume(order.getId(), key);
+  }
+
+  @Test
+  void shouldRejectResumptionFromDifferentGuestSession()
+    throws Exception {
+
+    UUID orderId = submitGuestOrder(
+      new MockHttpSession()
+    );
+
+    mockMvc.perform(post(paymentUrl(orderId) + "/resume")
+        .session(new MockHttpSession())
+        .with(csrf())
+        .header("Idempotency-Key", UUID.randomUUID()))
+      .andExpect(status().isNotFound());
+
+    verifyNoInteractions(checkout);
+  }
+
+  @Test
+  void shouldRejectResumptionByDifferentAccount()
+    throws Exception {
+
+    var owner = createAccount();
+    var other = createAccount();
+    var order = createOwnedOrder(owner);
+
+    mockMvc.perform(post(paymentUrl(order.getId()) + "/resume")
+        .with(user(other.getEmail()).roles("CUSTOMER"))
+        .with(csrf())
+        .header("Idempotency-Key", UUID.randomUUID()))
+      .andExpect(status().isNotFound());
+
+    verifyNoInteractions(checkout);
+  }
+
+  @Test
+  void shouldRequireCsrfForPaymentResumption()
+    throws Exception {
+
+    var session = new MockHttpSession();
+    UUID orderId = submitGuestOrder(session);
+
+    mockMvc.perform(post(paymentUrl(orderId) + "/resume")
+        .session(session)
+        .header("Idempotency-Key", UUID.randomUUID()))
+      .andExpect(status().isForbidden());
+
+    verifyNoInteractions(checkout);
+  }
 }

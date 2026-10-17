@@ -73,12 +73,19 @@ Delivery currently uses fixed demonstration rates for Poland. No real money is c
 - Return page reads payment status from the backend and polls briefly while confirmation is pending.
 - Redirect parameters alone never mark an order as paid.
 - Checkout payment actions are shown only when payments are enabled by the backend.
+- Payment status displayed separately from fulfilment status in customer order history and details.
+- Customer order details include a test payment action when the backend allows payment.
+- Resuming payment reuses an active attempt and its Stripe Checkout session.
+- A new attempt can be started after the previous attempt has failed or expired.
+- Concurrent resumption requests share the same active payment attempt.
+- Confirmed payment takes precedence over other attempts in order payment summaries.
+- Payment summaries for an order history page are fetched in one database query.
 
 The integration currently accepts sandbox API keys and test-mode events only. Payment status is separate from order fulfilment status. Returning from Stripe without paying does not cancel the order or automatically expire the Checkout session.
 
 Manual sandbox checks cover guest payments, signed-in customer payments with delivery, returning without payment, a declined card followed by a successful retry in the same Checkout session, and 3D Secure authentication.
 
-Remaining work includes resuming payment after leaving the checkout flow, operational recovery and reconciliation, refunds, and preparation for real payments. Automatic fulfilment and digital file delivery remain outside the current implementation.
+Remaining work includes guest payment recovery flows, operational recovery and reconciliation, refunds, and preparation for real payments. Automatic fulfilment and digital file delivery remain outside the current implementation.
 
 ### Project inquiries
 
@@ -387,6 +394,7 @@ Automated payment tests use mocked Stripe calls or locally signed fixtures. They
 | GET | `/api/auth/me` | Current authenticated user |
 | POST | `/api/orders` | Submit an order |
 | POST | `/api/orders/{orderId}/payment-session` | Create or retrieve a sandbox Checkout session for an authorised order |
+| POST | `/api/orders/{orderId}/payment-session/resume` | Resume an active sandbox payment or prepare a new attempt after a failed or expired attempt |
 | GET | `/api/payments/attempts/{attemptId}` | Read payment status after checking access to the associated order |
 | POST | `/api/payments/stripe/webhook` | Receive and verify Stripe payment events |
 | POST | `/api/project-inquiries` | Submit a project inquiry |
@@ -415,7 +423,9 @@ Automated payment tests use mocked Stripe calls or locally signed fixtures. They
 
 Administrator endpoints require the `ADMIN` role. Browser state-changing requests require a valid CSRF token. The Stripe webhook POST endpoint is the explicit exception: it verifies the `Stripe-Signature` header instead.
 
-Order submission and Checkout session creation require an `Idempotency-Key` header. The order response includes `paymentsEnabled`, which controls whether checkout displays the payment action.
+Order submission, Checkout session creation and payment resumption require an `Idempotency-Key` header. The order submission response includes `paymentsEnabled`, which controls whether checkout displays the payment action.
+
+Customer order history and details include a `payment` summary with `status` and `canPay`. Payment status is independent of fulfilment status. The frontend uses `canPay` to display the payment action; the payment endpoint still validates access and current order state independently.
 
 Payment session creation and status reads check order ownership. Signed-in orders belong to the owning account; guest orders require the session that submitted them.
 
@@ -493,7 +503,7 @@ The root Compose configuration does not currently configure SMTP. Use the backen
 
 ## Next milestones
 
-- Add payment resumption, reconciliation and operational recovery.
+- Extend guest payment recovery, reconciliation and operational recovery.
 - Prepare real payment configuration and refund handling.
 - Implement controlled delivery of purchased digital files and order fulfilment.
 - Add order status notification emails.

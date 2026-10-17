@@ -43,6 +43,22 @@ public class PaymentAttemptService {
     UUID orderId,
     UUID idempotencyKey
   ) {
+    return prepareInternal(orderId, idempotencyKey, false);
+  }
+
+  @Transactional
+  public PaymentAttempt prepareForResumption(
+    UUID orderId,
+    UUID idempotencyKey
+  ) {
+    return prepareInternal(orderId, idempotencyKey, true);
+  }
+
+  private PaymentAttempt prepareInternal(
+    UUID orderId,
+    UUID idempotencyKey,
+    boolean resumeActive
+  ) {
     Objects.requireNonNull(orderId, "Order ID is required");
     Objects.requireNonNull(
       idempotencyKey,
@@ -92,10 +108,25 @@ public class PaymentAttemptService {
       );
     }
 
-    if (payments.findByOrderIdAndStatusIn(
+    var active = payments.findByOrderIdAndStatusIn(
       orderId,
       ACTIVE_STATUSES
-    ).isPresent()) {
+    );
+
+    if (active.isPresent()) {
+      var attempt = active.orElseThrow();
+
+      if (attempt.isLivemode()) {
+        throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "LIVE_PAYMENTS_NOT_ENABLED"
+        );
+      }
+
+      if (resumeActive) {
+        return attempt;
+      }
+
       throw new ResponseStatusException(
         HttpStatus.CONFLICT,
         "PAYMENT_ALREADY_IN_PROGRESS"

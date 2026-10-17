@@ -127,3 +127,28 @@
   border-radius: 0.5rem;
   color: #b42318;
 }
+
+.order-details__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-block: 1.5rem;
+
+  button {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  p {
+    flex-basis: 100%;
+    margin: 0;
+  }
+}
+
+@media (max-width: 479px) {
+  .order-details__actions button {
+    width: 100%;
+  }
+}

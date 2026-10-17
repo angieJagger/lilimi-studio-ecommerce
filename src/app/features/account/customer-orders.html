@@ -73,6 +73,16 @@
         </div>
 
         <div>
+          <dt>{{ 'orderPayment.title' | transloco }}</dt>
+          <dd>
+            {{
+            ('orderPayment.statuses.' + (order.payment?.status ?? 'unknown'))
+            | transloco
+            }}
+          </dd>
+        </div>
+
+        <div>
           <dt>{{ 'customerOrders.total' | transloco }}</dt>
           <dd>{{ formatPrice(order.totalInGrosz) }}</dd>
         </div>

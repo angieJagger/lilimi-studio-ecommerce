@@ -49,7 +49,34 @@
         {{ ('customerOrders.statuses.' + details.status) | transloco }}
       </dd>
     </div>
+    <div>
+  <dt>{{ 'orderPayment.title' | transloco }}</dt>
+  <dd>
+    {{
+      ('orderPayment.statuses.' + (details.payment?.status ?? 'unknown'))
+        | transloco
+    }}
+  </dd>
+</div>
   </dl>
+
+  @if (paymentErrorKey(); as paymentError) {
+  <p role="alert">{{ paymentError | transloco }}</p>
+  }
+  @if (details.payment?.canPay) {
+  <div class="order-details__actions">
+    <button type="button" [disabled]="isResumingPayment() || isLoading()" [attr.aria-busy]="isResumingPayment()"
+      (click)="resumePayment()">
+      {{
+      (isResumingPayment()
+      ? 'orderPayment.resuming'
+      : 'orderPayment.resume'
+      ) | transloco
+      }}
+    </button>
+    <p>{{ 'orderPayment.sandboxNotice' | transloco }}</p>
+  </div>
+  }
 
   <h2>{{ 'customerOrderDetails.items' | transloco }}</h2>
 

@@ -136,17 +136,25 @@ class PaymentAttemptConcurrencyTest {
     UUID firstKey,
     UUID secondKey
   ) throws Exception {
+    return race(firstKey, secondKey, false);
+  }
+
+  private List<Outcome> race(
+    UUID firstKey,
+    UUID secondKey,
+    boolean resume
+  ) throws Exception {
     var ready = new CountDownLatch(2);
     var start = new CountDownLatch(1);
     var executor = Executors.newFixedThreadPool(2);
 
     try {
       var first = executor.submit(
-        () -> prepare(firstKey, ready, start)
+        () -> prepare(firstKey, ready, start, resume)
       );
 
       var second = executor.submit(
-        () -> prepare(secondKey, ready, start)
+        () -> prepare(secondKey, ready, start, resume)
       );
 
       assertThat(
@@ -174,7 +182,8 @@ class PaymentAttemptConcurrencyTest {
   private Outcome prepare(
     UUID key,
     CountDownLatch ready,
-    CountDownLatch start
+    CountDownLatch start,
+    boolean resume
   ) throws Exception {
     ready.countDown();
 
@@ -185,7 +194,9 @@ class PaymentAttemptConcurrencyTest {
     }
 
     try {
-      var attempt = service.prepare(orderId, key);
+      var attempt = resume
+        ? service.prepareForResumption(orderId, key)
+        : service.prepare(orderId, key);
       return new Outcome(attempt.getId(), null);
     } catch (ResponseStatusException exception) {
       if (!HttpStatus.CONFLICT.equals(
@@ -213,5 +224,49 @@ class PaymentAttemptConcurrencyTest {
     UUID attemptId,
     String error
   ) {
+  }
+  @Test
+  void shouldShareNewAttemptBetweenConcurrentResumptions()
+    throws Exception {
+
+    var outcomes = race(
+      UUID.randomUUID(),
+      UUID.randomUUID(),
+      true
+    );
+
+    assertThat(outcomes).allSatisfy(outcome -> {
+      assertThat(outcome.error()).isNull();
+      assertThat(outcome.attemptId()).isNotNull();
+    });
+
+    assertThat(outcomes.get(0).attemptId())
+      .isEqualTo(outcomes.get(1).attemptId());
+
+    assertThat(attemptCount()).isEqualTo(1L);
+  }
+
+  @Test
+  void shouldReuseExistingAttemptForConcurrentResumptions()
+    throws Exception {
+
+    var original = service.prepare(
+      orderId,
+      UUID.randomUUID()
+    );
+
+    var outcomes = race(
+      UUID.randomUUID(),
+      UUID.randomUUID(),
+      true
+    );
+
+    assertThat(outcomes).allSatisfy(outcome -> {
+      assertThat(outcome.error()).isNull();
+      assertThat(outcome.attemptId())
+        .isEqualTo(original.getId());
+    });
+
+    assertThat(attemptCount()).isEqualTo(1L);
   }
 }
