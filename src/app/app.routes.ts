@@ -147,6 +147,11 @@ const shopRoutes: Routes = [
   },
 
   {
+    path: 'checkout/payment-result',
+    loadComponent: () => import('./features/checkout/payment-result').then((m) => m.PaymentResult),
+  },
+
+  {
     path: 'checkout',
     loadComponent: () => import('./features/checkout/checkout').then((m) => m.Checkout),
   },

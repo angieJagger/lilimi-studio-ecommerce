@@ -11,6 +11,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+
 
 import pl.lilimi.auth.persistence.UserAccountRepository;
 
@@ -40,11 +42,14 @@ public class SecurityConfig {
           "/api/products",
           "/api/products/**",
           "/actuator/health",
-          "/api/auth/csrf"
+          "/api/auth/csrf",
+          "/api/payments/attempts/*"
         ).permitAll()
         .requestMatchers(
           HttpMethod.POST,
           "/api/orders",
+          "/api/orders/*/payment-session",
+          "/api/payments/stripe/webhook",
           "/api/project-inquiries",
           "/api/auth/register",
           "/api/auth/verify-email",
@@ -72,7 +77,15 @@ public class SecurityConfig {
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
         .anyRequest().denyAll()
       )
-      .csrf(csrf -> csrf.spa())
+      .csrf(csrf -> csrf
+        .spa()
+        .ignoringRequestMatchers(
+          PathPatternRequestMatcher.withDefaults().matcher(
+            HttpMethod.POST,
+            "/api/payments/stripe/webhook"
+          )
+        )
+      )
       .sessionManagement(session -> session
         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
       )

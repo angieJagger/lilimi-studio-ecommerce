@@ -10,7 +10,7 @@
         {{ 'checkout.order.successTitle' | transloco }}
       </h2>
 
-      <p>{{ 'checkout.order.successDescription' | transloco }}</p>
+      <p>{{ 'checkoutPayment.orderCreated' | transloco }}</p>
 
       <p>
         <strong>{{ 'checkout.order.reference' | transloco }}:</strong>
@@ -34,9 +34,39 @@
         </div>
       </dl>
 
-      <a class="button button--primary" [routerLink]="['/', language(), 'products']">
-        {{ 'cart.browseProducts' | transloco }}
-      </a>
+      @if (order.paymentsEnabled) {
+      <p>{{ 'checkoutPayment.sandboxNotice' | transloco }}</p>
+      }
+
+      @if (paymentErrorKey(); as errorKey) {
+      <p role="alert">{{ errorKey | transloco }}</p>
+      }
+
+      @if (paymentStatusKey(); as statusKey) {
+      <output>{{ statusKey | transloco }}</output>
+      }
+
+      <div class="checkout__actions">
+        @if (
+        order.paymentsEnabled &&
+        paymentStatusKey() !== 'checkoutPayment.alreadyPaid' &&
+        paymentStatusKey() !== 'checkoutPayment.closed'
+        ) {
+        <button class="button button--primary" type="button" [disabled]="isStartingPayment()"
+          [attr.aria-busy]="isStartingPayment()" (click)="startPayment()">
+          {{
+          (isStartingPayment()
+          ? 'checkoutPayment.starting'
+          : 'checkoutPayment.pay'
+          ) | transloco
+          }}
+        </button>
+        }
+
+        <a class="button button--secondary" [routerLink]="['/', language(), 'products']">
+          {{ 'cart.browseProducts' | transloco }}
+        </a>
+      </div>
     </section>
     } @else if (!cart.isReady()) {
     <p>{{ 'checkout.loading' | transloco }}</p>

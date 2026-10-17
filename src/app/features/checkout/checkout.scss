@@ -186,3 +186,25 @@
     margin: var(--spacing-8) 0 0;
   }
 }
+
+.checkout__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-12, 12px);
+  margin-top: var(--spacing-24, 24px);
+
+  > .button {
+    min-height: 44px;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 479px) {
+  .checkout__actions > .button {
+    width: 100%;
+  }
+}

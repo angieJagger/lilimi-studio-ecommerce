@@ -58,4 +58,5 @@ export interface CreateOrderResponse {
   readonly subtotalInGrosz: number;
   readonly deliveryPriceInGrosz: number;
   readonly totalInGrosz: number;
+  readonly paymentsEnabled?: boolean;
 }

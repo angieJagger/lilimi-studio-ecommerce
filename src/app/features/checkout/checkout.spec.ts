@@ -458,6 +458,7 @@ describe('Checkout', () => {
       subtotalInGrosz: 3100,
       deliveryPriceInGrosz: 0,
       totalInGrosz: 3100,
+      paymentsEnabled: true,
     });
     orderResult.complete();
 
@@ -470,7 +471,13 @@ describe('Checkout', () => {
 
     expect(element.querySelector('.checkout__total--final dd')?.textContent).toContain('31,00');
 
-    expect(element.querySelector('button[aria-busy]')).toBeNull();
+    expect(element.querySelector('#checkout-form')).toBeNull();
+
+    const paymentButton = element.querySelector<HTMLButtonElement>('.checkout__actions button');
+
+    expect(paymentButton?.textContent).toContain('Przejdź do płatności testowej');
+    expect(paymentButton?.disabled).toBe(false);
+    expect(paymentButton?.getAttribute('aria-busy')).toBe('false');
 
     expect(submissionKeysMock.markCompleted).toHaveBeenCalledWith(
       '7c82dd0f-9289-4a9e-bf58-05b415d6da48',
@@ -733,5 +740,27 @@ describe('Checkout', () => {
     expect(request.delivery).toEqual({ kind: 'digital' });
     expect(profileApiMock.updateProfile).not.toHaveBeenCalled();
     expect(savedProfile.firstName).toBe('Ewa');
+  });
+  it('should hide payment actions when payments are disabled', async () => {
+    await reviewDigitalOrder();
+    await submitReviewedOrder();
+
+    orderResult.next({
+      id: '7c82dd0f-9289-4a9e-bf58-05b415d6da48',
+      createdAt: '2026-10-05T12:00:00Z',
+      status: 'new',
+      currency: 'PLN',
+      subtotalInGrosz: 3100,
+      deliveryPriceInGrosz: 0,
+      totalInGrosz: 3100,
+      paymentsEnabled: false,
+    });
+    orderResult.complete();
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('#checkout-success-title')).not.toBeNull();
+    expect(element.querySelector('.checkout__actions button')).toBeNull();
+    expect(element.textContent).not.toContain('Płatność testowa Stripe');
   });
 });
