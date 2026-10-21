@@ -24,8 +24,6 @@ import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 import pl.lilimi.payment.persistence.PaymentAttemptRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 
-
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
