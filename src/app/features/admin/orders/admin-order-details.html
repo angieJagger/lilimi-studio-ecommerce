@@ -52,17 +52,17 @@
     <h2 id="payment-cancellation-title">
       {{ 'adminPaymentCancellation.title' | transloco }}
     </h2>
-  
+
     <p>
       <strong>
         {{ ('adminPaymentCancellation.statuses.' + cancellation.status) | transloco }}
       </strong>
     </p>
-  
+
     <p>
       {{ ('adminPaymentCancellation.descriptions.' + cancellation.status) | transloco }}
     </p>
-  
+
     <button type="button" class="button button--secondary" [disabled]="isLoading() || isSaving()" (click)="retry()">
       {{ 'adminPaymentCancellation.refresh' | transloco }}
     </button>
@@ -74,10 +74,10 @@
     <h2 id="status-change-title">
       {{ 'adminOrderDetails.changeStatus' | transloco }}
     </h2>
-  
+
     @if (statusErrorKey(); as message) {
     <p role="alert">{{ message | transloco }}</p>
-  
+
     @if (
     message === 'adminOrders.errors.sessionExpired' ||
     message === 'adminOrders.errors.accessDenied'
@@ -99,7 +99,7 @@
       }
       }}
     </p>
-  
+
     <div class="status-actions">
       <button class="button button--primary" type="button" data-testid="confirm-status" [disabled]="isSaving()"
         [attr.aria-busy]="isSaving()" (click)="confirmStatusChange()">
@@ -108,7 +108,7 @@
         | transloco
         }}
       </button>
-  
+
       <button class="button button--secondary" type="button" data-testid="cancel-status" [disabled]="isSaving()"
         (click)="cancelStatusChange()">
         {{ 'adminOrderDetails.keepStatus' | transloco }}

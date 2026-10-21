@@ -58,7 +58,7 @@ message === 'adminOrders.errors.accessDenied'
           </td>
           <td>
             {{ ('adminOrders.statuses.' + order.status) | transloco }}
-          
+
             @if (order.paymentCancellation; as cancellation) {
             @if (cancellation.status !== 'none') {
             <span class="payment-cancellation-status"
