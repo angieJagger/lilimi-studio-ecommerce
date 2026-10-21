@@ -18,6 +18,14 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server,
   },
   {
+    path: 'pl/admin',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'en/admin',
+    renderMode: RenderMode.Client,
+  },
+  {
     path: 'pl/admin/login',
     renderMode: RenderMode.Client,
   },
@@ -74,13 +82,13 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
-  path: 'pl/account/**',
-  renderMode: RenderMode.Client,
-},
-{
-  path: 'en/account/**',
-  renderMode: RenderMode.Client,
-},
+    path: 'pl/account/**',
+    renderMode: RenderMode.Client,
+  },
+  {
+    path: 'en/account/**',
+    renderMode: RenderMode.Client,
+  },
   {
     path: '**',
     renderMode: RenderMode.Prerender,

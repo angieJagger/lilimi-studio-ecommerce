@@ -375,6 +375,106 @@ describe('AdminOrderDetails', () => {
     expect(element.textContent).toContain('Zamówienie ma status końcowy.');
   });
 
+  it('should explain why a paid order cannot be cancelled', async () => {
+    const saveResult = new Subject<OrderDetails>();
+    api.changeStatus.mockReturnValue(saveResult.asObservable());
+
+    await respond(order);
+    await clickButton('[data-status="cancelled"]');
+    await clickButton('[data-testid="confirm-status"]');
+
+    saveResult.error(
+      new HttpErrorResponse({
+        status: 409,
+        statusText: 'Conflict',
+        error: { code: 'ORDER_PAYMENT_REFUND_REQUIRED' },
+      }),
+    );
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Zamówienie zostało opłacone',
+    );
+    expect(element.querySelector('[role="alert"]')?.textContent).not.toContain(
+      'Zamówienie zostało zmienione.',
+    );
+    expect(api.changeStatus).toHaveBeenCalledExactlyOnceWith(order.id, {
+      status: 'cancelled',
+      expectedVersion: order.version,
+    });
+    expect(element.querySelector('[data-testid="confirm-status"]')).toBeNull();
+  });
+
+  it('should hide payment cancellation when no task exists', async () => {
+    await respond({
+      ...order,
+      paymentCancellation: {
+        status: 'none',
+        reasonCode: null,
+      },
+    });
+
+    expect(element.querySelector('.payment-cancellation')).toBeNull();
+  });
+
+  it('should refresh pending cancellation and display completion', async () => {
+    await respond({
+      ...order,
+      status: 'cancelled',
+      paymentCancellation: {
+        status: 'pending',
+        reasonCode: null,
+      },
+    });
+
+    expect(element.querySelector('.payment-cancellation')?.textContent).toContain(
+      'Wygaszanie w toku',
+    );
+
+    result = new Subject<OrderDetails>();
+    api.getOrder.mockReturnValue(result.asObservable());
+
+    await clickButton('.payment-cancellation button');
+
+    expect(api.getOrder).toHaveBeenCalledTimes(2);
+    expect(api.getOrder).toHaveBeenLastCalledWith(order.id);
+
+    await respond({
+      ...order,
+      status: 'cancelled',
+      paymentCancellation: {
+        status: 'completed',
+        reasonCode: null,
+      },
+    });
+
+    const card = element.querySelector('.payment-cancellation');
+
+    expect(card?.textContent).toContain('Sesja zamknięta');
+    expect(card?.textContent).not.toContain('Wygaszanie w toku');
+    expect(card?.textContent).toContain('nie wykonuje zwrotu pieniędzy');
+    expect(element.querySelector('[data-status]')).toBeNull();
+  });
+
+  it('should display a review warning without exposing technical codes', async () => {
+    await respond({
+      ...order,
+      status: 'cancelled',
+      paymentCancellation: {
+        status: 'needs_review',
+        reasonCode: 'PAYMENT_AFTER_CANCELLATION',
+      },
+    });
+
+    const card = element.querySelector('.payment-cancellation');
+
+    expect(card?.classList.contains('payment-cancellation--review')).toBe(true);
+    expect(card?.textContent).toContain('Wymaga sprawdzenia');
+    expect(card?.textContent).toContain('Sprawdź płatność i sesję w Stripe');
+    expect(card?.textContent).not.toContain('PAYMENT_AFTER_CANCELLATION');
+  });
+
   it('should require reloading after a version conflict', async () => {
     const saveResult = new Subject<OrderDetails>();
 

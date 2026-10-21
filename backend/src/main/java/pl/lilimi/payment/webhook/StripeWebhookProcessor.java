@@ -6,10 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.order.domain.OrderStatus;
 import pl.lilimi.payment.domain.PaymentAttempt;
 import pl.lilimi.payment.domain.PaymentAttemptStatus;
 import pl.lilimi.payment.persistence.PaymentAttemptRepository;
+import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 
 import java.time.Instant;
 import java.util.Set;
@@ -28,15 +31,18 @@ public class StripeWebhookProcessor {
   private final OrderRepository orders;
   private final PaymentAttemptRepository attempts;
   private final StripeWebhookEventRepository events;
+  private final CheckoutExpirationQueue expirationQueue;
 
   public StripeWebhookProcessor(
     OrderRepository orders,
     PaymentAttemptRepository attempts,
-    StripeWebhookEventRepository events
+    StripeWebhookEventRepository events,
+    CheckoutExpirationQueue expirationQueue
   ) {
     this.orders = orders;
     this.attempts = attempts;
     this.events = events;
+    this.expirationQueue = expirationQueue;
   }
 
   @Transactional
@@ -81,7 +87,7 @@ public class StripeWebhookProcessor {
 
     // Keep the same lock order as checkout creation:
     // order first, payment attempt second.
-    orders.findByIdForUpdate(orderId)
+    var order = orders.findByIdForUpdate(orderId)
       .orElseThrow(StripeWebhookProcessor::invalidEvent);
 
     var attempt = attempts.findByIdForUpdate(attemptId)
@@ -128,6 +134,15 @@ public class StripeWebhookProcessor {
     }
 
     attempts.saveAndFlush(attempt);
+
+    if (
+      order.getStatus() == OrderStatus.CANCELLED
+        && attempt.getStatus() == PaymentAttemptStatus.SUCCEEDED
+    ) {
+      expirationQueue.flagPaymentAfterCancellation(
+        attempt.getId()
+      );
+    }
   }
 
   private static void validateSession(

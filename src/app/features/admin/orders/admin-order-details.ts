@@ -167,9 +167,14 @@ export class AdminOrderDetails {
       }
 
       if (error.status === 409) {
-        return error.error?.code === 'ORDER_STATUS_TRANSITION_INVALID'
-          ? 'adminOrderDetails.errors.transitionInvalid'
-          : 'adminOrderDetails.errors.versionConflict';
+        switch (error.error?.code) {
+          case 'ORDER_STATUS_TRANSITION_INVALID':
+            return 'adminOrderDetails.errors.transitionInvalid';
+          case 'ORDER_PAYMENT_REFUND_REQUIRED':
+            return 'adminPaymentCancellation.refundRequired';
+          default:
+            return 'adminOrderDetails.errors.versionConflict';
+        }
       }
     }
 

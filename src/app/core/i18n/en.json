@@ -110,6 +110,12 @@
       "loadFailed": "Could not load your order. Please try again."
     }
   },
+  "adminNavigation": {
+    "label": "Administration",
+    "orders": "Orders",
+    "products": "Products",
+    "inquiries": "Inquiries"
+  },
   "adminInquiries": {
     "title": "Project inquiries",
     "loading": "Loading inquiries…",
@@ -218,6 +224,21 @@
     "saving": "Saving…",
     "reload": "Reload order details",
     "finalStatus": "This order has a final status. Further changes are unavailable."
+  },
+  "adminPaymentCancellation": {
+    "title": "Payment session closure",
+    "refresh": "Refresh status",
+    "statuses": {
+      "pending": "Closure pending",
+      "completed": "Session closed",
+      "needs_review": "Review required"
+    },
+    "descriptions": {
+      "pending": "Payment session closure has been requested for the cancelled order. Refresh the status to check the result.",
+      "completed": "Payment session closure handling is complete. This operation does not issue a refund.",
+      "needs_review": "Check the payment and session in Stripe. A payment, ongoing payment processing or a session closure problem may have been detected. Any refund must be handled separately."
+    },
+    "refundRequired": "This order has been paid and cannot be cancelled using this action. First check the payment and handle any necessary refund in Stripe. Refunds are not issued automatically."
   },
   "adminOrders": {
     "title": "Orders",

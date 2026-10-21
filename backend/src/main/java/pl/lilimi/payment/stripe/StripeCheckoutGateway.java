@@ -115,6 +115,52 @@ public class StripeCheckoutGateway {
     return session;
   }
 
+  public Session expire(
+    PaymentAttempt attempt
+  ) throws StripeException {
+    Objects.requireNonNull(
+      attempt,
+      "Payment attempt is required"
+    );
+
+    requireTestAttempt(attempt);
+
+    if (attempt.getStatus() != PaymentAttemptStatus.PENDING) {
+      throw new IllegalStateException(
+        "Only a pending attempt can expire its session"
+      );
+    }
+
+    String sessionId = attempt.getStripeCheckoutSessionId();
+
+    if (sessionId == null || !sessionId.startsWith("cs_test_")) {
+      throw new IllegalArgumentException(
+        "A saved sandbox session is required"
+      );
+    }
+
+    var options = RequestOptions.builder()
+      .setIdempotencyKey(
+        "lilimi-expire-checkout-" + attempt.getId()
+      )
+      .build();
+
+    var session = sessions.expire(sessionId, options);
+
+    validateSession(attempt, session);
+
+    if (
+      !"expired".equals(session.getStatus())
+        || !"unpaid".equals(session.getPaymentStatus())
+    ) {
+      throw new IllegalStateException(
+        "STRIPE_SESSION_NOT_EXPIRED"
+      );
+    }
+
+    return session;
+  }
+
   private static void requireTestAttempt(
     PaymentAttempt attempt
   ) {

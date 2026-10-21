@@ -97,3 +97,14 @@ address {
   opacity: 0.65;
   cursor: wait;
 }
+
+.payment-cancellation {
+  border-color: var(--border-brand);
+  background: var(--surface-brand-soft);
+
+  &--review {
+    border-color: #b45309;
+    background: #fffbeb;
+    color: #1f2937;
+  }
+}

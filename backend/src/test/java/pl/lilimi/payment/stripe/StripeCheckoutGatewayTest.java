@@ -281,6 +281,127 @@ class StripeCheckoutGatewayTest {
       .hasMessage("STRIPE_SESSION_MISMATCH");
   }
 
+  @Test
+  void shouldExpireSessionWithStableIdempotencyKey()
+    throws StripeException {
+
+    attempt.attachCheckoutSession(
+      SESSION_ID,
+      NOW.plusSeconds(1800)
+    );
+
+    var expired = session(attempt);
+    expired.setStatus("expired");
+
+    when(sessions.expire(
+      eq(SESSION_ID),
+      any(RequestOptions.class)
+    )).thenReturn(expired);
+
+    assertThat(gateway.expire(attempt)).isSameAs(expired);
+
+    var options = ArgumentCaptor.forClass(
+      RequestOptions.class
+    );
+
+    verify(sessions).expire(
+      eq(SESSION_ID),
+      options.capture()
+    );
+
+    assertThat(options.getValue().getIdempotencyKey())
+      .isEqualTo(
+        "lilimi-expire-checkout-" + attempt.getId()
+      );
+
+    // Persistence belongs to the calling application service.
+    assertThat(attempt.getStatus())
+      .isEqualTo(PaymentAttemptStatus.PENDING);
+  }
+
+  @Test
+  void shouldRejectCompletedSessionReturnedByExpiration()
+    throws StripeException {
+
+    attempt.attachCheckoutSession(
+      SESSION_ID,
+      NOW.plusSeconds(1800)
+    );
+
+    var completed = session(attempt);
+    completed.setStatus("complete");
+    completed.setPaymentStatus("paid");
+
+    when(sessions.expire(
+      eq(SESSION_ID),
+      any(RequestOptions.class)
+    )).thenReturn(completed);
+
+    assertThatThrownBy(() -> gateway.expire(attempt))
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage("STRIPE_SESSION_NOT_EXPIRED");
+
+    assertThat(attempt.getStatus())
+      .isEqualTo(PaymentAttemptStatus.PENDING);
+  }
+
+  @Test
+  void shouldRejectExpirationResponseForAnotherSession()
+    throws StripeException {
+
+    attempt.attachCheckoutSession(
+      SESSION_ID,
+      NOW.plusSeconds(1800)
+    );
+
+    var different = session(attempt);
+    different.setStatus("expired");
+    different.setId("cs_test_different");
+
+    when(sessions.expire(
+      eq(SESSION_ID),
+      any(RequestOptions.class)
+    )).thenReturn(different);
+
+    assertThatThrownBy(() -> gateway.expire(attempt))
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage("STRIPE_SESSION_MISMATCH");
+  }
+
+  @Test
+  void shouldPreserveAttemptWhenExpirationRequestFails()
+    throws StripeException {
+
+    attempt.attachCheckoutSession(
+      SESSION_ID,
+      NOW.plusSeconds(1800)
+    );
+
+    var failure = mock(StripeException.class);
+
+    when(sessions.expire(
+      eq(SESSION_ID),
+      any(RequestOptions.class)
+    )).thenThrow(failure);
+
+    assertThatThrownBy(() -> gateway.expire(attempt))
+      .isSameAs(failure);
+
+    assertThat(attempt.getStatus())
+      .isEqualTo(PaymentAttemptStatus.PENDING);
+  }
+
+  @Test
+  void shouldRejectExpirationWithoutAnAttachedSession() {
+    assertThatThrownBy(() -> gateway.expire(attempt))
+      .isInstanceOf(IllegalStateException.class)
+      .hasMessage(
+        "Only a pending attempt can expire its session"
+      );
+
+    verifyNoInteractions(sessions);
+  }
+
   private SessionCreateParams params(
     PaymentAttempt payment
   ) {
