@@ -38,6 +38,18 @@ public class CheckoutSessionPersistenceService {
 
   @Transactional(readOnly = true)
   public PreparedCheckout load(UUID attemptId) {
+    return load(attemptId, false);
+  }
+
+  @Transactional(readOnly = true)
+  public PreparedCheckout loadForCancellation(UUID attemptId) {
+    return load(attemptId, true);
+  }
+
+  private PreparedCheckout load(
+    UUID attemptId,
+    boolean cancellation
+  ) {
     var attempt = payments.findById(attemptId)
       .orElseThrow(() -> new ResponseStatusException(
         HttpStatus.NOT_FOUND,
@@ -54,24 +66,33 @@ public class CheckoutSessionPersistenceService {
       attempt.getStatus() == PaymentAttemptStatus.CREATED
         || attempt.getStatus() == PaymentAttemptStatus.PENDING;
 
-    if (active && order.getStatus() != OrderStatus.NEW) {
-      throw new ResponseStatusException(
-        HttpStatus.CONFLICT,
-        "ORDER_NOT_PAYABLE"
-      );
-    }
+    if (cancellation) {
+      if (order.getStatus() != OrderStatus.CANCELLED) {
+        throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "ORDER_NOT_CANCELLED"
+        );
+      }
+    } else {
+      if (active && order.getStatus() != OrderStatus.NEW) {
+        throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "ORDER_NOT_PAYABLE"
+        );
+      }
 
-    if (
-      active
-        && payments.existsByOrderIdAndStatus(
-        order.getId(),
-        PaymentAttemptStatus.SUCCEEDED
-      )
-    ) {
-      throw new ResponseStatusException(
-        HttpStatus.CONFLICT,
-        "ORDER_ALREADY_PAID"
-      );
+      if (
+        active
+          && payments.existsByOrderIdAndStatus(
+          order.getId(),
+          PaymentAttemptStatus.SUCCEEDED
+        )
+      ) {
+        throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "ORDER_ALREADY_PAID"
+        );
+      }
     }
 
     if (attempt.isLivemode()) {

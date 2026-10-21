@@ -110,42 +110,50 @@ const shopRoutes: Routes = [
       import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),
   },
   {
-    path: 'admin/orders',
+    path: 'admin',
     canActivate: [adminGuard],
-    loadComponent: () => import('./features/admin/orders/admin-orders').then((m) => m.AdminOrders),
+    canActivateChild: [adminGuard],
+    loadComponent: () => import('./features/admin/layout/admin-layout').then((m) => m.AdminLayout),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'orders',
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./features/admin/orders/admin-orders').then((m) => m.AdminOrders),
+      },
+      {
+        path: 'orders/:id',
+        loadComponent: () =>
+          import('./features/admin/orders/admin-order-details').then((m) => m.AdminOrderDetails),
+      },
+      {
+        path: 'inquiries',
+        loadComponent: () =>
+          import('./features/admin/inquiries/admin-inquiries').then((m) => m.AdminInquiries),
+      },
+      {
+        path: 'inquiries/:id',
+        loadComponent: () =>
+          import('./features/admin/inquiries/admin-inquiry-details').then(
+            (m) => m.AdminInquiryDetails,
+          ),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./features/admin/products/admin-products').then((m) => m.AdminProducts),
+      },
+      {
+        path: 'products/:id/edit',
+        loadComponent: () =>
+          import('./features/admin/products/admin-product-edit').then((m) => m.AdminProductEdit),
+      },
+    ],
   },
-  {
-    path: 'admin/orders/:id',
-    canActivate: [adminGuard],
-    loadComponent: () =>
-      import('./features/admin/orders/admin-order-details').then((m) => m.AdminOrderDetails),
-  },
-  {
-    path: 'admin/inquiries',
-    canActivate: [adminGuard],
-    loadComponent: () =>
-      import('./features/admin/inquiries/admin-inquiries').then((m) => m.AdminInquiries),
-  },
-  {
-    path: 'admin/inquiries/:id',
-    canActivate: [adminGuard],
-    loadComponent: () =>
-      import('./features/admin/inquiries/admin-inquiry-details').then((m) => m.AdminInquiryDetails),
-  },
-  {
-    path: 'admin/products',
-    canActivate: [adminGuard],
-    loadComponent: () =>
-      import('./features/admin/products/admin-products').then((m) => m.AdminProducts),
-  },
-
-  {
-    path: 'admin/products/:id/edit',
-    canActivate: [adminGuard],
-    loadComponent: () =>
-      import('./features/admin/products/admin-product-edit').then((m) => m.AdminProductEdit),
-  },
-
   {
     path: 'checkout/payment-result',
     loadComponent: () => import('./features/checkout/payment-result').then((m) => m.PaymentResult),

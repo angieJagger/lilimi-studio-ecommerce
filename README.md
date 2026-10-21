@@ -80,10 +80,17 @@ Delivery currently uses fixed demonstration rates for Poland. No real money is c
 - Concurrent resumption requests share the same active payment attempt.
 - Confirmed payment takes precedence over other attempts in order payment summaries.
 - Payment summaries for an order history page are fetched in one database query.
+- Cancelling an unpaid order queues closure of its active Checkout attempt in the same database transaction.
+- Background session expiration uses database leases, delayed retries and a five-attempt limit.
+- Stripe network requests run outside database transactions during session expiration.
+- Paid orders cannot be cancelled through the ordinary order status update.
+- Payments confirmed after cancellation are retained and flagged for administrator review.
+- Session closure progress and cases requiring review are visible in administrator order lists and details.
+- Session expiration does not issue refunds.
 
 The integration currently accepts sandbox API keys and test-mode events only. Payment status is separate from order fulfilment status. Returning from Stripe without paying does not cancel the order or automatically expire the Checkout session.
 
-Manual sandbox checks cover guest payments, signed-in customer payments with delivery, returning without payment, a declined card followed by a successful retry in the same Checkout session, and 3D Secure authentication.
+Manual sandbox checks cover guest payments, signed-in customer payments with delivery, returning without payment, a declined card followed by a successful retry in the same Checkout session, and 3D Secure authentication. Additional checks cover automatic session expiration after administrator cancellation and rejection of cancellation for a paid order.
 
 Remaining work includes guest payment recovery flows, operational recovery and reconciliation, refunds, and preparation for real payments. Automatic fulfilment and digital file delivery remain outside the current implementation.
 
@@ -133,6 +140,9 @@ Order history includes orders placed while signed in; guest orders are not autom
 - Administrator login and logout using server-side sessions.
 - Role-based access enforced by the backend.
 - Protected Angular routes.
+- Shared navigation between orders, products and project inquiries, including detail and edit pages.
+- Administrator root URLs redirect to the order list.
+- Order references link directly to order details.
 - Paginated order list and detailed order views.
 - Order status updates with validated transitions.
 - Optimistic locking to detect conflicting order updates.
@@ -334,29 +344,27 @@ stripe listen --events checkout.session.completed,checkout.session.async_payment
 
 The command displays a webhook signing secret beginning with `whsec_`. Use this CLI secret for local forwarding; it is separate from the API key and from secrets for Dashboard-configured webhook endpoints.
 
-In the backend terminal, stop the application and set secrets without placing their literal values in command history:
+Stop the backend. Store sandbox credentials in the Git-ignored file `backend/src/main/resources/application-local.properties`.
+
+Before adding secrets, verify that Git ignores the file:
 
 ```powershell
-function Read-StripeSecret {
-    param([string]$Prompt)
-
-    $secureValue = Read-Host $Prompt -AsSecureString
-    $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureValue)
-
-    try {
-        [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
-    }
-    finally {
-        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
-    }
-}
-
-$env:STRIPE_API_KEY = Read-StripeSecret "Paste the sandbox sk_test_ API key"
-$env:STRIPE_WEBHOOK_SECRET = Read-StripeSecret "Paste the whsec_ secret from stripe listen"
-$env:STRIPE_ENABLED = "true"
+git check-ignore backend/src/main/resources/application-local.properties
 ```
 
-From `backend`, start the application in the same terminal:
+Run this command from the repository root. It should print the configuration file path.
+
+Add or update the following properties in the local file, replacing the placeholders with your sandbox values:
+
+```properties
+lilimi.payments.stripe.enabled=true
+lilimi.payments.stripe.api-key=REPLACE_WITH_SANDBOX_API_KEY
+lilimi.payments.stripe.webhook-secret=REPLACE_WITH_STRIPE_CLI_SIGNING_SECRET
+```
+
+Keep real values out of tracked files and example configuration files. When restarting Stripe CLI, check whether its `whsec_` secret matches the local configuration. Restart the backend after changing properties.
+
+From `backend`, start the application:
 
 ```powershell
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--lilimi.public-base-url=http://localhost:4200"
@@ -378,7 +386,7 @@ After a successful payment, the return page should display confirmation and Stri
 
 The current Stripe Java SDK uses API version `2026-09-30.endive`. Check the version printed by Stripe CLI: webhook deserialisation requires a compatible event schema.
 
-Do not commit API keys, webhook secrets or screenshots containing them. These environment variables apply only to the current terminal and its child processes.
+Do not commit API keys, webhook secrets or screenshots containing them. The local properties file retains sandbox credentials between application runs. The application also supports `STRIPE_ENABLED`, `STRIPE_API_KEY` and `STRIPE_WEBHOOK_SECRET` environment variables through its default configuration.
 
 Automated payment tests use mocked Stripe calls or locally signed fixtures. They do not require Stripe credentials and do not contact Stripe.
 
@@ -505,6 +513,7 @@ The root Compose configuration does not currently configure SMTP. Use the backen
 
 ## Next milestones
 
+- Add administrator work queues and archive views for orders and inquiries, with status and date filters. Keep payment cases requiring review visible even for cancelled orders.
 - Extend guest payment recovery, reconciliation and operational recovery.
 - Prepare real payment configuration and refund handling.
 - Implement controlled delivery of purchased digital files and order fulfilment.

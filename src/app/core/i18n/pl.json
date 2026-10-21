@@ -111,6 +111,13 @@
     }
   },
 
+  "adminNavigation": {
+    "label": "Panel administratora",
+    "orders": "Zamówienia",
+    "products": "Produkty",
+    "inquiries": "Zapytania"
+  },
+
   "adminInquiries": {
     "title": "Zapytania projektowe",
     "loading": "Ładowanie zapytań…",
@@ -219,6 +226,22 @@
     "saving": "Zapisywanie…",
     "reload": "Odśwież dane zamówienia",
     "finalStatus": "Zamówienie ma status końcowy. Dalsze zmiany są niedostępne."
+  },
+
+  "adminPaymentCancellation": {
+    "title": "Zamykanie sesji płatności",
+    "refresh": "Odśwież status",
+    "statuses": {
+      "pending": "Wygaszanie w toku",
+      "completed": "Sesja zamknięta",
+      "needs_review": "Wymaga sprawdzenia"
+    },
+    "descriptions": {
+      "pending": "Zlecono zamknięcie sesji płatności dla anulowanego zamówienia. Odśwież status, aby sprawdzić wynik.",
+      "completed": "Zakończono obsługę zamknięcia sesji płatności. Ta operacja nie wykonuje zwrotu pieniędzy.",
+      "needs_review": "Sprawdź płatność i sesję w Stripe. Mogła zostać wykryta płatność, jej przetwarzanie albo problem z zamknięciem sesji. Ewentualny zwrot wymaga osobnej obsługi."
+    },
+    "refundRequired": "Zamówienie zostało opłacone i nie można go anulować tą operacją. Najpierw sprawdź płatność i obsłuż ewentualny zwrot w Stripe. Zwroty nie są wykonywane automatycznie."
   },
   "adminOrders": {
     "title": "Zamówienia",

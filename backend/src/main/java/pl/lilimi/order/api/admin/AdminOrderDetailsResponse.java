@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import pl.lilimi.payment.cancellation.CheckoutExpirationSummary;
+
 public record AdminOrderDetailsResponse(
   UUID id,
   long version,
@@ -16,6 +18,7 @@ public record AdminOrderDetailsResponse(
   List<AdminOrderItemResponse> items,
   long subtotalInGrosz,
   long deliveryPriceInGrosz,
-  long totalInGrosz
+  long totalInGrosz,
+  CheckoutExpirationSummary paymentCancellation
 ) {
 }

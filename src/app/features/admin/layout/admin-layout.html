@@ -1,0 +1,18 @@
+<nav class="admin-navigation" [attr.aria-label]="'adminNavigation.label' | transloco">
+  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']" routerLinkActive="is-active"
+    ariaCurrentWhenActive="page">
+    {{ 'adminNavigation.orders' | transloco }}
+  </a>
+
+  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'products']" routerLinkActive="is-active"
+    ariaCurrentWhenActive="page">
+    {{ 'adminNavigation.products' | transloco }}
+  </a>
+
+  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'inquiries']" routerLinkActive="is-active"
+    ariaCurrentWhenActive="page">
+    {{ 'adminNavigation.inquiries' | transloco }}
+  </a>
+</nav>
+
+<router-outlet />

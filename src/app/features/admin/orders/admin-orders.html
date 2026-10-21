@@ -48,7 +48,9 @@ message === 'adminOrders.errors.accessDenied'
             <time [attr.datetime]="order.createdAt">
               {{ formatDate(order.createdAt) }}
             </time>
-            <small class="order-id">{{ order.id }}</small>
+            <a class="order-id" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders', order.id]">
+              {{ order.id }}
+            </a>
           </td>
           <td>
             <span>{{ order.customerFullName }}</span>
@@ -56,6 +58,15 @@ message === 'adminOrders.errors.accessDenied'
           </td>
           <td>
             {{ ('adminOrders.statuses.' + order.status) | transloco }}
+          
+            @if (order.paymentCancellation; as cancellation) {
+            @if (cancellation.status !== 'none') {
+            <span class="payment-cancellation-status"
+              [class.payment-cancellation-status--review]="cancellation.status === 'needs_review'">
+              {{ ('adminPaymentCancellation.statuses.' + cancellation.status) | transloco }}
+            </span>
+            }
+            }
           </td>
           <td class="order-amount">
             {{ formatPrice(order.totalInGrosz) }}

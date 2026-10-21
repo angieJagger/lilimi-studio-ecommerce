@@ -1,9 +1,15 @@
 export type AdminOrderStatus = 'new' | 'processing' | 'completed' | 'cancelled';
 
+export interface AdminPaymentCancellation {
+  readonly status: 'none' | 'pending' | 'completed' | 'needs_review';
+  readonly reasonCode: string | null;
+}
+
 export interface AdminOrderSummary {
   readonly id: string;
   readonly createdAt: string;
   readonly status: AdminOrderStatus;
+  readonly paymentCancellation?: AdminPaymentCancellation;
   readonly customerFullName: string;
   readonly customerEmail: string;
   readonly currency: 'PLN';
@@ -54,6 +60,7 @@ export interface AdminOrderDetails {
   readonly version: number;
   readonly createdAt: string;
   readonly status: AdminOrderStatus;
+  readonly paymentCancellation?: AdminPaymentCancellation;
   readonly language: 'pl' | 'en';
   readonly currency: 'PLN';
   readonly contact: AdminOrderContact;

@@ -10,14 +10,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderDelivery;
-import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.order.domain.OrderStatus;
+import pl.lilimi.order.api.admin.ChangeOrderStatusRequest;
+import pl.lilimi.order.application.admin.AdminOrderStatusService;
 import pl.lilimi.payment.domain.PaymentAttempt;
 import pl.lilimi.payment.domain.PaymentAttemptStatus;
+import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 import pl.lilimi.payment.persistence.PaymentAttemptRepository;
+import pl.lilimi.order.persistence.OrderRepository;
+
+
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -52,6 +59,10 @@ class StripeWebhookProcessorIntegrationTest {
 
   @Autowired
   private JdbcTemplate jdbc;
+  @Autowired
+  private AdminOrderStatusService orderStatus;
+  @Autowired
+  private CheckoutExpirationQueue expirationQueue;
 
   private final List<String> eventIds = new ArrayList<>();
 
@@ -104,6 +115,18 @@ class StripeWebhookProcessorIntegrationTest {
     }
 
     if (orderId != null) {
+      jdbc.update(
+        """
+        DELETE FROM checkout_expiration_tasks
+        WHERE payment_attempt_id IN (
+          SELECT id
+          FROM order_payment_attempts
+          WHERE order_id = ?
+        )
+        """,
+        orderId
+      );
+
       jdbc.update(
         "DELETE FROM order_payment_attempts WHERE order_id = ?",
         orderId
@@ -262,6 +285,122 @@ class StripeWebhookProcessorIntegrationTest {
     // The failed event must not be treated as processed.
     assertInvalid(event);
     assertThat(eventCount(event.getId())).isZero();
+  }
+
+  @Test
+  void shouldFlagPaymentConfirmedAfterOrderCancellation()
+    throws Exception {
+
+    var order = orders.findById(orderId).orElseThrow();
+
+    orderStatus.changeStatus(
+      orderId,
+      new ChangeOrderStatusRequest(
+        "cancelled",
+        order.getVersion()
+      )
+    );
+
+    var paidEvent = event(
+      "checkout.session.completed",
+      "complete",
+      "paid",
+      2900,
+      "pi_test_after_cancellation"
+    );
+
+    processor.process(paidEvent);
+    processor.process(paidEvent);
+
+    assertThat(savedAttempt().getStatus())
+      .isEqualTo(PaymentAttemptStatus.SUCCEEDED);
+
+    assertThat(orders.findById(orderId).orElseThrow()
+      .getStatus()).isEqualTo(OrderStatus.CANCELLED);
+
+    assertThat(jdbc.queryForObject(
+      """
+      SELECT status
+      FROM checkout_expiration_tasks
+      WHERE payment_attempt_id = ?
+      """,
+      String.class,
+      attemptId
+    )).isEqualTo("needs_review");
+
+    assertThat(jdbc.queryForObject(
+      """
+      SELECT last_error_code
+      FROM checkout_expiration_tasks
+      WHERE payment_attempt_id = ?
+      """,
+      String.class,
+      attemptId
+    )).isEqualTo("PAYMENT_AFTER_CANCELLATION");
+
+    assertThat(eventCount(paidEvent.getId())).isEqualTo(1L);
+  }
+
+  @Test
+  void shouldReopenCompletedExpirationTaskForLatePayment()
+    throws Exception {
+
+    var order = orders.findById(orderId).orElseThrow();
+
+    orderStatus.changeStatus(
+      orderId,
+      new ChangeOrderStatusRequest(
+        "cancelled",
+        order.getVersion()
+      )
+    );
+
+    processor.process(event(
+      "checkout.session.expired",
+      "expired",
+      "unpaid",
+      2900,
+      null
+    ));
+
+    var claim = expirationQueue.claimNext(Instant.now())
+      .orElseThrow();
+
+    assertThat(expirationQueue.complete(
+      claim,
+      Instant.now()
+    )).isTrue();
+
+    processor.process(event(
+      "checkout.session.async_payment_succeeded",
+      "complete",
+      "paid",
+      2900,
+      "pi_test_late_after_cancellation"
+    ));
+
+    assertThat(savedAttempt().getStatus())
+      .isEqualTo(PaymentAttemptStatus.SUCCEEDED);
+
+    assertThat(jdbc.queryForObject(
+      """
+      SELECT status
+      FROM checkout_expiration_tasks
+      WHERE payment_attempt_id = ?
+      """,
+      String.class,
+      attemptId
+    )).isEqualTo("needs_review");
+
+    assertThat(jdbc.queryForObject(
+      """
+      SELECT last_error_code
+      FROM checkout_expiration_tasks
+      WHERE payment_attempt_id = ?
+      """,
+      String.class,
+      attemptId
+    )).isEqualTo("PAYMENT_AFTER_CANCELLATION");
   }
 
   private void assertInvalid(Event event) {

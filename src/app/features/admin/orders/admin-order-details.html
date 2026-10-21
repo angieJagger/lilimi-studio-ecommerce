@@ -44,6 +44,32 @@
     </dl>
   </div>
 
+  @if (details.paymentCancellation; as cancellation) {
+  @if (cancellation.status !== 'none') {
+  <section class="order-card payment-cancellation"
+    [class.payment-cancellation--review]="cancellation.status === 'needs_review'"
+    aria-labelledby="payment-cancellation-title">
+    <h2 id="payment-cancellation-title">
+      {{ 'adminPaymentCancellation.title' | transloco }}
+    </h2>
+  
+    <p>
+      <strong>
+        {{ ('adminPaymentCancellation.statuses.' + cancellation.status) | transloco }}
+      </strong>
+    </p>
+  
+    <p>
+      {{ ('adminPaymentCancellation.descriptions.' + cancellation.status) | transloco }}
+    </p>
+  
+    <button type="button" class="button button--secondary" [disabled]="isLoading() || isSaving()" (click)="retry()">
+      {{ 'adminPaymentCancellation.refresh' | transloco }}
+    </button>
+  </section>
+  }
+  }
+
   <section class="order-card" aria-labelledby="status-change-title">
     <h2 id="status-change-title">
       {{ 'adminOrderDetails.changeStatus' | transloco }}

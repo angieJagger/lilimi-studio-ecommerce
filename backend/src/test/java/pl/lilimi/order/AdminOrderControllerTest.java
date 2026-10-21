@@ -7,12 +7,18 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderDelivery;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.payment.domain.PaymentAttempt;
+import pl.lilimi.payment.domain.PaymentAttemptStatus;
+import pl.lilimi.payment.persistence.PaymentAttemptRepository;
+import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -25,9 +31,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.ResultActions;
 
-@SpringBootTest
+import static org.assertj.core.api.Assertions.assertThat;
+
+
+@SpringBootTest(properties = {
+  "lilimi.payments.stripe.enabled=false",
+  "lilimi.mail.order-confirmation.enabled=false"
+})
 @AutoConfigureMockMvc
 @Import(PostgresTestConfiguration.class)
 @Transactional
@@ -38,6 +49,11 @@ class AdminOrderControllerTest {
 
   @Autowired
   private OrderRepository orders;
+
+  @Autowired
+  private PaymentAttemptRepository payments;
+  @Autowired
+  private CheckoutExpirationQueue expirationQueue;
 
   @Autowired
   private JdbcTemplate jdbc;
@@ -64,6 +80,37 @@ class AdminOrderControllerTest {
     );
 
     return order;
+  }
+
+  private PaymentAttempt savePaidPayment(Order order) {
+    Instant createdAt = Instant.now().minusSeconds(60);
+
+    var attempt = new PaymentAttempt(
+      order.getId(),
+      UUID.randomUUID(),
+      order.getTotalInGrosz(),
+      order.getCurrency(),
+      false,
+      createdAt
+    );
+
+    String sessionId = "cs_test_" + UUID.randomUUID();
+
+    attempt.attachCheckoutSession(
+      sessionId,
+      createdAt.plusSeconds(1800)
+    );
+
+    attempt.confirmPayment(
+      sessionId,
+      "pi_test_" + UUID.randomUUID(),
+      order.getTotalInGrosz(),
+      order.getCurrency(),
+      false,
+      Instant.now()
+    );
+
+    return payments.saveAndFlush(attempt);
   }
 
   private ResultActions changeStatus(
@@ -375,6 +422,252 @@ class AdminOrderControllerTest {
       .andExpect(jsonPath("$.version").value(1));
   }
 
+  @Test
+  void shouldRejectCancellationOfPaidOrderWithoutChangingData()
+    throws Exception {
+
+    var order = saveOrder(
+      "paid-cancellation@example.com",
+      2900,
+      Instant.now()
+    );
+    var payment = savePaidPayment(order);
+
+    changeStatus(order.getId(), order.getVersion(), "cancelled")
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value(
+        "ORDER_PAYMENT_REFUND_REQUIRED"
+      ));
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("new"))
+      .andExpect(jsonPath("$.version").value(0));
+
+    var savedPayment = payments.findById(payment.getId())
+      .orElseThrow();
+
+    assertThat(savedPayment.getStatus())
+      .isEqualTo(PaymentAttemptStatus.SUCCEEDED);
+    assertThat(savedPayment.getStripePaymentIntentId())
+      .isEqualTo(payment.getStripePaymentIntentId());
+  }
+
+  @Test
+  void shouldAllowProcessingPaidOrderButStillRejectCancellation()
+    throws Exception {
+
+    var order = saveOrder(
+      "paid-processing@example.com",
+      2900,
+      Instant.now()
+    );
+    savePaidPayment(order);
+
+    changeStatus(order.getId(), 0, "processing")
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("processing"))
+      .andExpect(jsonPath("$.version").value(1));
+
+    changeStatus(order.getId(), 1, "cancelled")
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value(
+        "ORDER_PAYMENT_REFUND_REQUIRED"
+      ));
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("processing"))
+      .andExpect(jsonPath("$.version").value(1));
+  }
+
+  @Test
+  void shouldAllowCancellationAfterPaymentCreationFailed()
+    throws Exception {
+
+    var order = saveOrder(
+      "failed-payment-cancellation@example.com",
+      2900,
+      Instant.now()
+    );
+
+    var attempt = new PaymentAttempt(
+      order.getId(),
+      UUID.randomUUID(),
+      order.getTotalInGrosz(),
+      order.getCurrency(),
+      false,
+      Instant.now()
+    );
+
+    attempt.markCreationFailed();
+    payments.saveAndFlush(attempt);
+
+    changeStatus(order.getId(), order.getVersion(), "cancelled")
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("cancelled"))
+      .andExpect(jsonPath("$.version").value(1));
+  }
+
+  @Test
+  void shouldReturnNoCancellationTaskForRegularOrder()
+    throws Exception {
+
+    var order = saveOrder(
+      "no-expiration-task@example.com",
+      2900,
+      Instant.now()
+    );
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.paymentCancellation.status")
+        .value("none"))
+      .andExpect(jsonPath("$.paymentCancellation.reasonCode")
+        .doesNotExist());
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[0].id")
+        .value(order.getId().toString()))
+      .andExpect(jsonPath("$.items[0].paymentCancellation.status")
+        .value("none"));
+  }
+
+  @Test
+  void shouldReturnPendingExpirationInDetailsAndHistory()
+    throws Exception {
+
+    var order = saveOrder(
+      "pending-expiration@example.com",
+      2900,
+      Instant.now()
+    );
+
+    Instant createdAt = Instant.now().minusSeconds(60);
+
+    var attempt = new PaymentAttempt(
+      order.getId(),
+      UUID.randomUUID(),
+      2900,
+      "PLN",
+      false,
+      createdAt
+    );
+
+    attempt.attachCheckoutSession(
+      "cs_test_" + UUID.randomUUID(),
+      createdAt.plusSeconds(1800)
+    );
+
+    payments.saveAndFlush(attempt);
+
+    changeStatus(order.getId(), 0, "cancelled")
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.paymentCancellation.status")
+        .value("pending"));
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("cancelled"))
+      .andExpect(jsonPath("$.paymentCancellation.status")
+        .value("pending"))
+      .andExpect(jsonPath("$.paymentCancellation.leaseToken")
+        .doesNotExist());
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[0].id")
+        .value(order.getId().toString()))
+      .andExpect(jsonPath("$.items[0].paymentCancellation.status")
+        .value("pending"));
+  }
+
+  @Test
+  void shouldKeepReviewVisibleDespiteAnotherCompletedTask()
+    throws Exception {
+
+    var order = saveOrder(
+      "review-expiration@example.com",
+      2900,
+      Instant.now()
+    );
+
+    changeStatus(order.getId(), 0, "cancelled")
+      .andExpect(status().isOk());
+
+    // Simulate payment confirmed after cancellation.
+    var paid = savePaidPayment(order);
+
+    expirationQueue.flagPaymentAfterCancellation(
+      paid.getId()
+    );
+
+    var another = new PaymentAttempt(
+      order.getId(),
+      UUID.randomUUID(),
+      2900,
+      "PLN",
+      false,
+      Instant.now()
+    );
+
+    another.markCreationFailed();
+    payments.saveAndFlush(another);
+
+    jdbc.update(
+      """
+      INSERT INTO checkout_expiration_tasks (
+        payment_attempt_id,
+        status,
+        finished_at
+      )
+      VALUES (?, 'completed', CURRENT_TIMESTAMP)
+      """,
+      another.getId()
+    );
+
+    mockMvc.perform(
+        get("/api/admin/orders/" + order.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").value("cancelled"))
+      .andExpect(jsonPath("$.paymentCancellation.status")
+        .value("needs_review"))
+      .andExpect(jsonPath("$.paymentCancellation.reasonCode")
+        .value("PAYMENT_AFTER_CANCELLATION"));
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[0].id")
+        .value(order.getId().toString()))
+      .andExpect(jsonPath("$.items[0].paymentCancellation.status")
+        .value("needs_review"))
+      .andExpect(jsonPath("$.items[0].paymentCancellation.reasonCode")
+        .value("PAYMENT_AFTER_CANCELLATION"));
+  }
   @Test
   void shouldRejectAnOutdatedVersionWithoutChangingStatus() throws Exception {
     var order = saveOrder(

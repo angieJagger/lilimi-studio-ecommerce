@@ -87,6 +87,36 @@ describe('AdminOrders', () => {
     expect(element.textContent).toContain('Strona 1 z 2');
   });
 
+  it('should link the order reference to its details', async () => {
+    await respond(firstPage);
+
+    expect(element.querySelector<HTMLAnchorElement>('a.order-id')?.getAttribute('href')).toBe(
+      `/pl/admin/orders/${firstPage.items[0].id}`,
+    );
+  });
+
+  it('should show a payment cancellation warning in the order list', async () => {
+    await respond({
+      ...firstPage,
+      items: [
+        {
+          ...firstPage.items[0],
+          status: 'cancelled',
+          paymentCancellation: {
+            status: 'needs_review',
+            reasonCode: 'PAYMENT_AFTER_CANCELLATION',
+          },
+        },
+      ],
+    });
+
+    const warning = element.querySelector('.payment-cancellation-status');
+
+    expect(warning?.textContent).toContain('Wymaga sprawdzenia');
+    expect(warning?.classList.contains('payment-cancellation-status--review')).toBe(true);
+    expect(element.textContent).not.toContain('PAYMENT_AFTER_CANCELLATION');
+  });
+
   it('should show an empty state without a table or pagination', async () => {
     await respond({
       items: [],

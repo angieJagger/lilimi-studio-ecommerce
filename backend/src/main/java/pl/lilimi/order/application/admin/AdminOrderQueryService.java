@@ -7,14 +7,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import pl.lilimi.order.api.admin.AdminOrderContactResponse;
 import pl.lilimi.order.api.admin.AdminOrderDeliveryResponse;
 import pl.lilimi.order.api.admin.AdminOrderDetailsResponse;
 import pl.lilimi.order.api.admin.AdminOrderItemResponse;
-import pl.lilimi.order.domain.Order;
+import pl.lilimi.order.api.admin.AdminOrderSummaryResponse;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,17 +25,23 @@ public class AdminOrderQueryService {
 
   private final OrderRepository orders;
   private final OrderItemRepository items;
+  private final CheckoutExpirationQueue expirationQueue;
 
   public AdminOrderQueryService(
     OrderRepository orders,
-    OrderItemRepository items
+    OrderItemRepository items,
+    CheckoutExpirationQueue expirationQueue
   ) {
     this.orders = orders;
     this.items = items;
+    this.expirationQueue = expirationQueue;
   }
 
   @Transactional(readOnly = true)
-  public Page<Order> findOrders(int page, int size) {
+  public Page<AdminOrderSummaryResponse> findOrders(
+    int page,
+    int size
+  ) {
     if (page < 0 || size < 1 || size > 100) {
       throw new IllegalArgumentException("Invalid pagination");
     }
@@ -42,7 +51,22 @@ public class AdminOrderQueryService {
       Sort.Order.desc("id")
     );
 
-    return orders.findAll(PageRequest.of(page, size, sorting));
+    var result = orders.findAll(
+      PageRequest.of(page, size, sorting)
+    );
+
+    var orderIds = result.getContent().stream()
+      .map(order -> order.getId())
+      .toList();
+
+    var cancellations = expirationQueue.findSummaries(orderIds);
+
+    return result.map(order ->
+      AdminOrderSummaryResponse.from(
+        order,
+        cancellations.get(order.getId())
+      )
+    );
   }
 
   @Transactional(readOnly = true)
@@ -70,6 +94,10 @@ public class AdminOrderQueryService {
       .map(AdminOrderItemResponse::from)
       .toList();
 
+    var cancellation = expirationQueue.findSummaries(
+      List.of(order.getId())
+    ).get(order.getId());
+
     return new AdminOrderDetailsResponse(
       order.getId(),
       order.getVersion(),
@@ -82,7 +110,8 @@ public class AdminOrderQueryService {
       itemResponses,
       order.getSubtotalInGrosz(),
       order.getDeliveryPriceInGrosz(),
-      order.getTotalInGrosz()
+      order.getTotalInGrosz(),
+      cancellation
     );
   }
 }

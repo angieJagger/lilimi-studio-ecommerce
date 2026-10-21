@@ -62,6 +62,17 @@ small {
   outline-offset: 3px;
 }
 
+.payment-cancellation-status {
+  display: block;
+  margin-top: var(--spacing-8);
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &--review {
+    color: #92400e;
+  }
+}
+
 .order-amount {
   white-space: nowrap;
 }
