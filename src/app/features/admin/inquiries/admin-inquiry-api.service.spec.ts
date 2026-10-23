@@ -90,6 +90,67 @@ describe('AdminInquiryApiService', () => {
     });
   });
 
+  it('should send filters together with pagination', () => {
+    service
+      .getInquiries(1, 10, {
+        view: 'answered',
+        status: 'answered',
+        projectType: 'website',
+        dateFrom: '2026-10-01',
+        dateTo: '2026-10-22',
+        search: '  anna+studio@example.com  ',
+      })
+      .subscribe();
+
+    const pending = http.expectOne((request) => request.url === '/api/admin/project-inquiries');
+
+    expect(pending.request.method).toBe('GET');
+    expect(pending.request.params.get('page')).toBe('1');
+    expect(pending.request.params.get('size')).toBe('10');
+    expect(pending.request.params.get('view')).toBe('answered');
+    expect(pending.request.params.get('status')).toBe('answered');
+    expect(pending.request.params.get('projectType')).toBe('website');
+    expect(pending.request.params.get('dateFrom')).toBe('2026-10-01');
+    expect(pending.request.params.get('dateTo')).toBe('2026-10-22');
+    expect(pending.request.params.get('search')).toBe('anna+studio@example.com');
+
+    pending.flush({
+      items: [],
+      page: 1,
+      size: 10,
+      totalElements: 0,
+      totalPages: 0,
+    });
+  });
+
+  it('should omit empty optional filters', () => {
+    service
+      .getInquiries(0, 20, {
+        view: 'active',
+        dateFrom: '',
+        dateTo: '',
+        search: '   ',
+      })
+      .subscribe();
+
+    const pending = http.expectOne((request) => request.url === '/api/admin/project-inquiries');
+
+    expect(pending.request.params.get('view')).toBe('active');
+    expect(pending.request.params.has('status')).toBe(false);
+    expect(pending.request.params.has('projectType')).toBe(false);
+    expect(pending.request.params.has('dateFrom')).toBe(false);
+    expect(pending.request.params.has('dateTo')).toBe(false);
+    expect(pending.request.params.has('search')).toBe(false);
+
+    pending.flush({
+      items: [],
+      page: 0,
+      size: 20,
+      totalElements: 0,
+      totalPages: 0,
+    });
+  });
+
   it('should request inquiry details by id', () => {
     let result: AdminInquiryDetails | undefined;
 

@@ -213,6 +213,500 @@ class AdminOrderControllerTest {
   }
 
   @Test
+  void shouldCombineStatusAndDateFiltersBeforePagination()
+    throws Exception {
+
+    var older = saveOrder(
+      "filtered-older@example.com",
+      2900,
+      Instant.parse("2090-01-10T09:00:00Z")
+    );
+
+    var newer = saveOrder(
+      "filtered-newer@example.com",
+      3900,
+      Instant.parse("2090-01-10T12:00:00Z")
+    );
+
+    var processing = saveOrder(
+      "filtered-processing@example.com",
+      4900,
+      Instant.parse("2090-01-10T15:00:00Z")
+    );
+
+    changeStatus(processing.getId(), 0, "processing")
+      .andExpect(status().isOk());
+
+    saveOrder(
+      "filtered-outside@example.com",
+      5900,
+      Instant.parse("2090-01-11T12:00:00Z")
+    );
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("status", "new")
+          .param("dateFrom", "2090-01-10")
+          .param("dateTo", "2090-01-10")
+          .param("size", "1")
+          .param("page", "0")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items.length()").value(1))
+      .andExpect(jsonPath("$.items[0].id").value(
+        newer.getId().toString()
+      ))
+      .andExpect(jsonPath("$.totalElements").value(2))
+      .andExpect(jsonPath("$.totalPages").value(2));
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("status", "new")
+          .param("dateFrom", "2090-01-10")
+          .param("dateTo", "2090-01-10")
+          .param("size", "1")
+          .param("page", "1")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items.length()").value(1))
+      .andExpect(jsonPath("$.items[0].id").value(
+        older.getId().toString()
+      ))
+      .andExpect(jsonPath("$.totalElements").value(2));
+  }
+
+  @Test
+  void shouldRespectWarsawDayBoundariesDuringTimeChange()
+    throws Exception {
+
+    // Warsaw changes from UTC+1 to UTC+2 on this day.
+    saveOrder(
+      "before-day@example.com",
+      2900,
+      Instant.parse("2026-03-28T22:59:59.999999Z")
+    );
+
+    var first = saveOrder(
+      "day-start@example.com",
+      2900,
+      Instant.parse("2026-03-28T23:00:00Z")
+    );
+
+    var last = saveOrder(
+      "day-end@example.com",
+      2900,
+      Instant.parse("2026-03-29T21:59:59.999999Z")
+    );
+
+    saveOrder(
+      "after-day@example.com",
+      2900,
+      Instant.parse("2026-03-29T22:00:00Z")
+    );
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("dateFrom", "2026-03-29")
+          .param("dateTo", "2026-03-29")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.totalElements").value(2))
+      .andExpect(jsonPath("$.items.length()").value(2))
+      .andExpect(jsonPath("$.items[0].id").value(
+        last.getId().toString()
+      ))
+      .andExpect(jsonPath("$.items[1].id").value(
+        first.getId().toString()
+      ));
+  }
+
+  @Test
+  void shouldFilterByStatusWithoutDateLimits()
+    throws Exception {
+
+    var cancelled = saveOrder(
+      "cancelled-filter@example.com",
+      2900,
+      Instant.parse("2090-02-01T12:00:00Z")
+    );
+
+    changeStatus(cancelled.getId(), 0, "cancelled")
+      .andExpect(status().isOk());
+
+    saveOrder(
+      "new-filter@example.com",
+      2900,
+      Instant.parse("2090-02-02T12:00:00Z")
+    );
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("status", "cancelled")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[0].id").value(
+        cancelled.getId().toString()
+      ))
+      .andExpect(jsonPath(
+        "$.items[?(@.status != 'cancelled')]"
+      ).isEmpty());
+  }
+
+  @Test
+  void shouldReturnEmptyPageWhenNoOrdersMatch()
+    throws Exception {
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("dateFrom", "2089-06-01")
+          .param("dateTo", "2089-06-01")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items").isEmpty())
+      .andExpect(jsonPath("$.totalElements").value(0))
+      .andExpect(jsonPath("$.totalPages").value(0));
+  }
+  @Test
+  void shouldSeparateActiveAndArchivedOrders() throws Exception {
+    Instant createdAt = Instant.parse("2091-01-10T12:00:00Z");
+
+    var fresh = saveOrder(
+      "view-new@example.com", 2900, createdAt
+    );
+    var processing = saveOrder(
+      "view-processing@example.com", 2900, createdAt
+    );
+    var completed = saveOrder(
+      "view-completed@example.com", 2900, createdAt
+    );
+    var cancelled = saveOrder(
+      "view-cancelled@example.com", 2900, createdAt
+    );
+
+    changeStatus(processing.getId(), 0, "processing")
+      .andExpect(status().isOk());
+
+    changeStatus(completed.getId(), 0, "processing")
+      .andExpect(status().isOk());
+    changeStatus(completed.getId(), 1, "completed")
+      .andExpect(status().isOk());
+
+    changeStatus(cancelled.getId(), 0, "cancelled")
+      .andExpect(status().isOk());
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("view", "active")
+          .param("dateFrom", "2091-01-10")
+          .param("dateTo", "2091-01-10")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.totalElements").value(2))
+      .andExpect(jsonPath(
+        "$.items[?(@.id == '" + fresh.getId() + "')]"
+      ).isNotEmpty())
+      .andExpect(jsonPath(
+        "$.items[?(@.id == '" + processing.getId() + "')]"
+      ).isNotEmpty());
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("view", "archive")
+          .param("dateFrom", "2091-01-10")
+          .param("dateTo", "2091-01-10")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.totalElements").value(2))
+      .andExpect(jsonPath(
+        "$.items[?(@.id == '" + completed.getId() + "')]"
+      ).isNotEmpty())
+      .andExpect(jsonPath(
+        "$.items[?(@.id == '" + cancelled.getId() + "')]"
+      ).isNotEmpty());
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("view", "all")
+          .param("dateFrom", "2091-01-10")
+          .param("dateTo", "2091-01-10")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.totalElements").value(4));
+  }
+
+  @Test
+  void shouldKeepCancelledOrderRequiringReviewInActiveView()
+    throws Exception {
+
+    var order = saveOrder(
+      "active-review@example.com",
+      2900,
+      Instant.parse("2091-02-10T12:00:00Z")
+    );
+
+    changeStatus(order.getId(), 0, "cancelled")
+      .andExpect(status().isOk());
+
+    var payment = savePaidPayment(order);
+    expirationQueue.flagPaymentAfterCancellation(payment.getId());
+
+    for (String view : new String[] { "active", "archive", "all" }) {
+      mockMvc.perform(
+          get("/api/admin/orders")
+            .param("view", view)
+            .param("dateFrom", "2091-02-10")
+            .param("dateTo", "2091-02-10")
+            .with(user("admin@example.com").roles("ADMIN"))
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.items[0].id").value(
+          order.getId().toString()
+        ))
+        .andExpect(jsonPath("$.items[0].status").value("cancelled"))
+        .andExpect(jsonPath("$.items[0].paymentCancellation.status")
+          .value("needs_review"));
+    }
+
+    // Explicit filters still narrow the selected view.
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("view", "active")
+          .param("status", "new")
+          .param("dateFrom", "2091-02-10")
+          .param("dateTo", "2091-02-10")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.totalElements").value(0));
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("view", "active")
+          .param("dateFrom", "2091-02-11")
+          .param("dateTo", "2091-02-11")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  void shouldSearchByOrderNumberEmailAndCustomerName()
+    throws Exception {
+
+    var order = saveOrder(
+      "search-customer@example.com",
+      2900,
+      Instant.parse("2092-01-10T12:00:00Z")
+    );
+
+    String[] phrases = {
+      order.getId().toString(),
+      order.getId().toString().substring(0, 8),
+      "SEARCH-CUSTOMER@EXAMPLE.COM",
+      "customer@",
+      "KOWALSKA",
+      "  Anna Kowalska  "
+    };
+
+    for (String phrase : phrases) {
+      mockMvc.perform(
+          get("/api/admin/orders")
+            .param("view", "all")
+            .param("search", phrase)
+            .param("dateFrom", "2092-01-10")
+            .param("dateTo", "2092-01-10")
+            .with(user("admin@example.com").roles("ADMIN"))
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.items[0].id").value(
+          order.getId().toString()
+        ));
+    }
+  }
+
+  @Test
+  void shouldApplySearchBeforePaginationAndRespectOtherFilters()
+    throws Exception {
+
+    var older = saveOrder(
+      "phone-search-older@example.com",
+      2900,
+      Instant.parse("2092-02-10T09:00:00Z")
+    );
+
+    var newer = saveOrder(
+      "phone-search-newer@example.com",
+      3900,
+      Instant.parse("2092-02-10T12:00:00Z")
+    );
+
+    var cancelled = saveOrder(
+      "phone-search-cancelled@example.com",
+      4900,
+      Instant.parse("2092-02-10T15:00:00Z")
+    );
+
+    changeStatus(cancelled.getId(), 0, "cancelled")
+      .andExpect(status().isOk());
+
+    saveOrder(
+      "unrelated@example.com",
+      5900,
+      Instant.parse("2092-02-10T16:00:00Z")
+    );
+
+    saveOrder(
+      "phone-search-outside@example.com",
+      6900,
+      Instant.parse("2092-02-11T12:00:00Z")
+    );
+
+    String[] expectedIds = {
+      newer.getId().toString(),
+      older.getId().toString()
+    };
+
+    for (int page = 0; page < expectedIds.length; page++) {
+      mockMvc.perform(
+          get("/api/admin/orders")
+            .param("view", "all")
+            .param("status", "new")
+            .param("search", "phone-search")
+            .param("dateFrom", "2092-02-10")
+            .param("dateTo", "2092-02-10")
+            .param("size", "1")
+            .param("page", Integer.toString(page))
+            .with(user("admin@example.com").roles("ADMIN"))
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items.length()").value(1))
+        .andExpect(jsonPath("$.items[0].id").value(expectedIds[page]))
+        .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("view", "archive")
+          .param("search", "phone-search")
+          .param("dateFrom", "2092-02-10")
+          .param("dateTo", "2092-02-10")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.totalElements").value(1))
+      .andExpect(jsonPath("$.items[0].id").value(
+        cancelled.getId().toString()
+      ));
+  }
+
+  @Test
+  void shouldTreatSearchWildcardsAsLiteralCharacters()
+    throws Exception {
+
+    var literal = saveOrder(
+      "literal%_!@example.com",
+      2900,
+      Instant.parse("2092-03-10T12:00:00Z")
+    );
+
+    saveOrder(
+      "ordinary@example.com",
+      3900,
+      Instant.parse("2092-03-10T13:00:00Z")
+    );
+
+    for (String phrase : new String[] { "%", "_", "!", "%_!" }) {
+      mockMvc.perform(
+          get("/api/admin/orders")
+            .param("view", "all")
+            .param("search", phrase)
+            .param("dateFrom", "2092-03-10")
+            .param("dateTo", "2092-03-10")
+            .with(user("admin@example.com").roles("ADMIN"))
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.items[0].id").value(
+          literal.getId().toString()
+        ));
+    }
+
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("view", "all")
+          .param("search", "' OR 1=1 --")
+          .param("dateFrom", "2092-03-10")
+          .param("dateTo", "2092-03-10")
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items").isEmpty())
+      .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  void shouldIgnoreBlankSearch() throws Exception {
+    var order = saveOrder(
+      "blank-search@example.com",
+      2900,
+      Instant.parse("2092-04-10T12:00:00Z")
+    );
+
+    for (String phrase : new String[] { "", "   " }) {
+      mockMvc.perform(
+          get("/api/admin/orders")
+            .param("search", phrase)
+            .param("dateFrom", "2092-04-10")
+            .param("dateTo", "2092-04-10")
+            .with(user("admin@example.com").roles("ADMIN"))
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.items[0].id").value(
+          order.getId().toString()
+        ));
+    }
+  }
+
+  @Test
+  void shouldRejectSearchLongerThanLimit() throws Exception {
+    mockMvc.perform(
+        get("/api/admin/orders")
+          .param("search", "a".repeat(255))
+          .with(user("admin@example.com").roles("ADMIN"))
+      )
+      .andExpect(status().isBadRequest());
+  }
+  @Test
+  void shouldRejectInvalidOrderFilters() throws Exception {
+    for (String query : new String[] {
+      "?status=unknown",
+      "?status=",
+      "?view=unknown",
+      "?dateFrom=invalid",
+      "?dateTo=2026-02-30",
+      "?dateFrom=2026-10-22&dateTo=2026-10-21"
+    }) {
+      mockMvc.perform(
+          get("/api/admin/orders" + query)
+            .with(user("admin@example.com").roles("ADMIN"))
+        )
+        .andExpect(status().isBadRequest());
+    }
+  }
+  @Test
   void shouldRejectInvalidPagination() throws Exception {
     for (String query : new String[] {
       "?page=-1",

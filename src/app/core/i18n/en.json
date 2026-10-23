@@ -126,6 +126,30 @@
     "contact": "Contact",
     "projectType": "Project type",
     "pagination": "Inquiry list pages",
+    "filters": {
+      "viewLabel": "Inquiry view",
+      "views": {
+        "active": "To handle",
+        "answered": "Answered",
+        "archive": "Archive",
+        "all": "All"
+      },
+      "viewHint": "To handle: new and in progress. Answered: a reply or quote has been sent, but the case remains open. Archive: closed.",
+      "search": "Find an inquiry",
+      "searchPlaceholder": "Inquiry reference, email or customer name",
+      "searchHint": "A new phrase searches all inquiries and clears previous restrictions. You can then narrow the results using filters.",
+      "status": "Status",
+      "anyStatus": "All statuses",
+      "projectType": "Service type",
+      "anyProjectType": "All services",
+      "dateFrom": "Created from",
+      "dateTo": "Created until",
+      "apply": "Apply",
+      "reset": "Clear filters",
+      "invalidDateRange": "The start date cannot be later than the end date.",
+      "invalidParameters": "The address contains invalid filter parameters. Clear the filters and try again.",
+      "searchTooLong": "The search phrase must not exceed 254 characters."
+    },
     "statuses": {
       "new": "New",
       "in_progress": "In progress",
@@ -266,7 +290,26 @@
       "accessDenied": "You do not have permission to view orders.",
       "loadFailed": "Unable to load orders. Please try again."
     },
-    "login": "Go to sign in"
+    "login": "Go to sign in",
+    "filters": {
+      "viewLabel": "Order view",
+      "active": "To handle",
+      "archive": "Archive",
+      "all": "All",
+      "viewHint": "To handle: new and processing orders, plus orders with payments requiring review. Archive: completed and cancelled orders. Filters further narrow the selected view.",
+      "status": "Status",
+      "anyStatus": "All statuses",
+      "dateFrom": "Created from",
+      "dateTo": "Created until",
+      "apply": "Apply",
+      "reset": "Clear filters",
+      "invalidDateRange": "The start date cannot be later than the end date.",
+      "invalidParameters": "The address contains invalid filter parameters. Clear the filters and try again.",
+      "search": "Find an order",
+      "searchPlaceholder": "Order reference, email or customer name",
+      "searchHint": "A new phrase searches all orders and clears previous status and date restrictions. You can then narrow the results using filters.",
+      "searchTooLong": "The search phrase must not exceed 254 characters."
+    }
   },
   "adminProducts": {
     "title": "Products",

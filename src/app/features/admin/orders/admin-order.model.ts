@@ -1,5 +1,15 @@
 export type AdminOrderStatus = 'new' | 'processing' | 'completed' | 'cancelled';
 
+export type AdminOrderView = 'active' | 'archive' | 'all';
+
+export interface AdminOrderFilters {
+  readonly view?: AdminOrderView;
+  readonly status?: AdminOrderStatus;
+  readonly dateFrom?: string;
+  readonly dateTo?: string;
+  readonly search?: string;
+}
+
 export interface AdminPaymentCancellation {
   readonly status: 'none' | 'pending' | 'completed' | 'needs_review';
   readonly reasonCode: string | null;

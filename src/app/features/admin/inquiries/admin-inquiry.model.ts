@@ -2,6 +2,17 @@ import type { ProjectType } from '../../project-inquiry/project-inquiry.model';
 
 export type InquiryStatus = 'new' | 'in_progress' | 'answered' | 'closed';
 
+export type AdminInquiryView = 'active' | 'answered' | 'archive' | 'all';
+
+export interface AdminInquiryFilters {
+  readonly view?: AdminInquiryView;
+  readonly status?: InquiryStatus;
+  readonly projectType?: ProjectType;
+  readonly dateFrom?: string;
+  readonly dateTo?: string;
+  readonly search?: string;
+}
+
 export interface AdminInquirySummary {
   readonly id: string;
   readonly createdAt: string;

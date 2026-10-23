@@ -18,7 +18,7 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 - Customer accounts with email verification, password recovery, saved profiles and order history.
 - Stripe sandbox integration with hosted Checkout, payment resumption, verified webhooks and cancellation handling.
 - Administrator tools for orders, inquiries, product translations, visibility, prices and garment variants.
-- Order work queues, archive views, status and date filters, customer search, and URL-preserved navigation.
+- Order and inquiry work queues with archive views, filters, customer search and URL-preserved navigation.
 
 ## Technology
 
@@ -74,7 +74,7 @@ The project covers both interface design and implementation. Initial designs and
 
 ## Next steps
 
-- Inquiry work queues, filtering and per-administrator read tracking.
+- Per-administrator read tracking for orders and inquiries.
 - Product image management with persistent media storage.
 - Further payment recovery, refunds and preparation for real payments.
 - Controlled digital file delivery, fulfilment notifications and off-host backups.

@@ -6,10 +6,12 @@ import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { AdminOrderApiService } from './admin-order-api.service';
 import type { AdminOrderPage } from './admin-order.model';
 import { AdminOrders } from './admin-orders';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 
 describe('AdminOrders', () => {
-  let fixture: ComponentFixture<AdminOrders>;
+  let fixture: ComponentFixture<unknown>;
+  let router: Router;
   let element: HTMLElement;
   let result: Subject<AdminOrderPage>;
 
@@ -43,11 +45,23 @@ describe('AdminOrders', () => {
 
     await TestBed.configureTestingModule({
       imports: [AdminOrders, getTranslocoTestingModule()],
-      providers: [{ provide: AdminOrderApiService, useValue: api }, provideRouter([])],
+      providers: [
+        { provide: AdminOrderApiService, useValue: api },
+        provideRouter([
+          {
+            path: 'pl/admin/orders',
+            component: AdminOrders,
+          },
+        ]),
+      ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AdminOrders);
-    element = fixture.nativeElement;
+    router = TestBed.inject(Router);
+
+    const harness = await RouterTestingHarness.create('/pl/admin/orders');
+
+    fixture = harness.fixture;
+    element = harness.routeNativeElement!;
 
     await fixture.whenStable();
   });
@@ -64,7 +78,11 @@ describe('AdminOrders', () => {
   }
 
   it('should request the first page and show a loading message', () => {
-    expect(api.getOrders).toHaveBeenCalledExactlyOnceWith(0);
+    expect(api.getOrders).toHaveBeenCalledExactlyOnceWith(
+      0,
+      20,
+      expect.objectContaining({ view: 'active' }),
+    );
     expect(element.querySelector('output')?.textContent).toContain('Ładowanie zamówień');
     expect(element.querySelector('table')).toBeNull();
   });
@@ -148,12 +166,16 @@ describe('AdminOrders', () => {
     result = new Subject<AdminOrderPage>();
     api.getOrders.mockReturnValue(result.asObservable());
 
-    element.querySelector<HTMLButtonElement>('button')!.click();
+    element.querySelector<HTMLButtonElement>('.orders-page > button')!.click();
 
     await fixture.whenStable();
 
     expect(api.getOrders).toHaveBeenCalledTimes(2);
-    expect(api.getOrders).toHaveBeenLastCalledWith(0);
+    expect(api.getOrders).toHaveBeenLastCalledWith(
+      0,
+      20,
+      expect.objectContaining({ view: 'active' }),
+    );
     expect(element.querySelector('[role="alert"]')).toBeNull();
 
     await respond(firstPage);
@@ -176,9 +198,9 @@ describe('AdminOrders', () => {
     );
     expect(element.querySelector('table')).toBeNull();
 
-    expect(
-      element.querySelector<HTMLAnchorElement>('a')?.getAttribute('href'),
-    ).toBe('/pl/admin/login');
+    expect(element.querySelector<HTMLAnchorElement>('a')?.getAttribute('href')).toBe(
+      '/pl/admin/login',
+    );
   });
 
   it('should show an access denied message', async () => {
@@ -197,6 +219,312 @@ describe('AdminOrders', () => {
     expect(element.querySelector('table')).toBeNull();
   });
 
+  it('should restore filters and page from the address', async () => {
+    await respond(firstPage);
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    await router.navigateByUrl(
+      '/pl/admin/orders?view=archive&status=cancelled' +
+        '&dateFrom=2026-10-01&dateTo=2026-10-21&page=2',
+    );
+    await fixture.whenStable();
+
+    expect(api.getOrders).toHaveBeenLastCalledWith(2, 20, {
+      view: 'archive',
+      status: 'cancelled',
+      dateFrom: '2026-10-01',
+      dateTo: '2026-10-21',
+      search: undefined,
+    });
+
+    await respond({
+      ...firstPage,
+      page: 2,
+      totalElements: 60,
+      totalPages: 3,
+    });
+
+    expect(element.querySelector<HTMLSelectElement>('#order-status-filter')?.value).toBe(
+      'cancelled',
+    );
+
+    expect(element.querySelector<HTMLInputElement>('#order-date-from')?.value).toBe('2026-10-01');
+
+    expect(element.querySelector<HTMLInputElement>('#order-date-to')?.value).toBe('2026-10-21');
+
+    expect(element.querySelector<HTMLAnchorElement>('a.order-id')?.getAttribute('href')).toBe(
+      `/pl/admin/orders/${firstPage.items[0].id}` +
+        '?view=archive&status=cancelled' +
+        '&dateFrom=2026-10-01&dateTo=2026-10-21&page=2',
+    );
+  });
+
+  it('should apply filters and return to the first page', async () => {
+    await respond(firstPage);
+
+    await router.navigateByUrl('/pl/admin/orders?view=all&page=1');
+    await fixture.whenStable();
+
+    const status = element.querySelector<HTMLSelectElement>('#order-status-filter')!;
+    const from = element.querySelector<HTMLInputElement>('#order-date-from')!;
+    const to = element.querySelector<HTMLInputElement>('#order-date-to')!;
+
+    status.value = 'processing';
+    from.value = '2026-10-01';
+    to.value = '2026-10-21';
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    element
+      .querySelector<HTMLFormElement>('.order-filters')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await fixture.whenStable();
+
+    const query = router.parseUrl(router.url).queryParams;
+
+    expect(query['view']).toBe('all');
+    expect(query['status']).toBe('processing');
+    expect(query['dateFrom']).toBe('2026-10-01');
+    expect(query['dateTo']).toBe('2026-10-21');
+    expect(query['page']).toBeUndefined();
+
+    expect(api.getOrders).toHaveBeenLastCalledWith(0, 20, {
+      view: 'all',
+      status: 'processing',
+      dateFrom: '2026-10-01',
+      dateTo: '2026-10-21',
+      search: undefined,
+    });
+  });
+
+  it('should clear filters and page while preserving the selected view', async () => {
+    await respond(firstPage);
+
+    await router.navigateByUrl(
+      '/pl/admin/orders?view=archive&status=cancelled' +
+        '&dateFrom=2026-10-01&dateTo=2026-10-21&page=2',
+    );
+    await fixture.whenStable();
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    element.querySelector<HTMLButtonElement>('.filter-actions button[type="button"]')!.click();
+
+    await fixture.whenStable();
+
+    const query = router.parseUrl(router.url).queryParams;
+
+    expect(query).toEqual({ view: 'archive' });
+
+    expect(api.getOrders).toHaveBeenLastCalledWith(
+      0,
+      20,
+      expect.objectContaining({
+        view: 'archive',
+        status: undefined,
+        dateFrom: undefined,
+        dateTo: undefined,
+      }),
+    );
+
+    expect(element.querySelector<HTMLSelectElement>('#order-status-filter')?.value).toBe('');
+
+    expect(element.querySelector<HTMLInputElement>('#order-date-from')?.value).toBe('');
+
+    expect(element.querySelector<HTMLInputElement>('#order-date-to')?.value).toBe('');
+  });
+
+  it('should change view while preserving dates and resetting status and page', async () => {
+    await respond(firstPage);
+
+    await router.navigateByUrl(
+      '/pl/admin/orders?view=active&status=processing' +
+        '&dateFrom=2026-10-01&dateTo=2026-10-21&page=1',
+    );
+    await fixture.whenStable();
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    const viewButtons = element.querySelectorAll<HTMLButtonElement>('.order-views button');
+
+    viewButtons[1].click();
+
+    await fixture.whenStable();
+
+    expect(router.parseUrl(router.url).queryParams).toEqual({
+      view: 'archive',
+      dateFrom: '2026-10-01',
+      dateTo: '2026-10-21',
+    });
+
+    expect(api.getOrders).toHaveBeenLastCalledWith(0, 20, {
+      view: 'archive',
+      status: undefined,
+      dateFrom: '2026-10-01',
+      dateTo: '2026-10-21',
+      search: undefined,
+    });
+
+    expect(viewButtons[0].getAttribute('aria-pressed')).toBe('false');
+    expect(viewButtons[1].getAttribute('aria-pressed')).toBe('true');
+
+    expect(element.querySelector<HTMLSelectElement>('#order-status-filter')?.value).toBe('');
+  });
+
+  it('should search all orders and clear restrictions for a new phrase', async () => {
+    await respond(firstPage);
+
+    await router.navigateByUrl(
+      '/pl/admin/orders?view=archive&status=cancelled' +
+        '&dateFrom=2026-10-01&dateTo=2026-10-21&page=2',
+    );
+    await fixture.whenStable();
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    element.querySelector<HTMLInputElement>('#order-search')!.value = '  Kowalska  ';
+
+    element
+      .querySelector<HTMLFormElement>('.order-filters')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await fixture.whenStable();
+
+    expect(router.parseUrl(router.url).queryParams).toEqual({
+      view: 'all',
+      search: 'Kowalska',
+    });
+
+    expect(api.getOrders).toHaveBeenLastCalledWith(0, 20, {
+      view: 'all',
+      status: undefined,
+      dateFrom: undefined,
+      dateTo: undefined,
+      search: 'Kowalska',
+    });
+
+    expect(element.querySelector<HTMLInputElement>('#order-search')?.value).toBe('Kowalska');
+  });
+
+  it('should allow narrowing results for the same search phrase', async () => {
+    await respond(firstPage);
+
+    await router.navigateByUrl('/pl/admin/orders?view=all&search=Kowalska&page=1');
+    await fixture.whenStable();
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    element.querySelector<HTMLSelectElement>('#order-status-filter')!.value = 'processing';
+    element.querySelector<HTMLInputElement>('#order-date-from')!.value = '2026-10-01';
+
+    element
+      .querySelector<HTMLFormElement>('.order-filters')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await fixture.whenStable();
+
+    expect(router.parseUrl(router.url).queryParams).toEqual({
+      view: 'all',
+      status: 'processing',
+      dateFrom: '2026-10-01',
+      search: 'Kowalska',
+    });
+
+    expect(api.getOrders).toHaveBeenLastCalledWith(0, 20, {
+      view: 'all',
+      status: 'processing',
+      dateFrom: '2026-10-01',
+      dateTo: undefined,
+      search: 'Kowalska',
+    });
+  });
+
+  it('should clear the search together with other filters', async () => {
+    await respond(firstPage);
+
+    await router.navigateByUrl('/pl/admin/orders?view=all&search=Kowalska&page=1');
+    await fixture.whenStable();
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    element.querySelector<HTMLButtonElement>('.filter-actions button[type="button"]')!.click();
+
+    await fixture.whenStable();
+
+    expect(router.parseUrl(router.url).queryParams).toEqual({
+      view: 'all',
+    });
+
+    expect(element.querySelector<HTMLInputElement>('#order-search')?.value).toBe('');
+
+    expect(api.getOrders).toHaveBeenLastCalledWith(
+      0,
+      20,
+      expect.objectContaining({
+        view: 'all',
+        search: undefined,
+      }),
+    );
+  });
+
+  it('should reject a reversed date range without fetching orders', async () => {
+    await respond(firstPage);
+
+    element.querySelector<HTMLInputElement>('#order-date-from')!.value = '2026-10-22';
+    element.querySelector<HTMLInputElement>('#order-date-to')!.value = '2026-10-21';
+
+    element
+      .querySelector<HTMLFormElement>('.order-filters')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Data początkowa nie może być późniejsza',
+    );
+    expect(api.getOrders).toHaveBeenCalledTimes(1);
+    expect(router.url).toBe('/pl/admin/orders');
+  });
+
+  it('should ignore an older response after filters change', async () => {
+    const previousResult = result;
+
+    result = new Subject<AdminOrderPage>();
+    api.getOrders.mockReturnValue(result.asObservable());
+
+    await router.navigateByUrl('/pl/admin/orders?view=archive');
+    await fixture.whenStable();
+
+    previousResult.next(firstPage);
+    previousResult.complete();
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('table')).toBeNull();
+    expect(element.querySelector('output')).not.toBeNull();
+
+    await respond({
+      items: [],
+      page: 0,
+      size: 20,
+      totalElements: 0,
+      totalPages: 0,
+    });
+
+    expect(element.querySelector('output')).toBeNull();
+    expect(element.querySelector('table')).toBeNull();
+    expect(element.textContent).toContain('Brak zamówień do wyświetlenia.');
+  });
+
   it('should load the next and previous pages with boundary buttons disabled', async () => {
     await respond(firstPage);
 
@@ -210,7 +538,11 @@ describe('AdminOrders', () => {
 
     await fixture.whenStable();
 
-    expect(api.getOrders).toHaveBeenLastCalledWith(1);
+    expect(api.getOrders).toHaveBeenLastCalledWith(
+      1,
+      20,
+      expect.objectContaining({ view: 'active' }),
+    );
     expect(element.querySelector('.orders-pagination')).toBeNull();
 
     await respond({
@@ -229,7 +561,11 @@ describe('AdminOrders', () => {
 
     await fixture.whenStable();
 
-    expect(api.getOrders).toHaveBeenLastCalledWith(0);
+    expect(api.getOrders).toHaveBeenLastCalledWith(
+      0,
+      20,
+      expect.objectContaining({ view: 'active' }),
+    );
 
     await respond(firstPage);
 
