@@ -19,6 +19,7 @@ export interface AdminOrderSummary {
   readonly id: string;
   readonly createdAt: string;
   readonly status: AdminOrderStatus;
+  readonly read?: boolean;
   readonly paymentCancellation?: AdminPaymentCancellation;
   readonly customerFullName: string;
   readonly customerEmail: string;

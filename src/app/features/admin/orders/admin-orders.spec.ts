@@ -525,6 +525,43 @@ describe('AdminOrders', () => {
     expect(element.textContent).toContain('Brak zamówień do wyświetlenia.');
   });
 
+  it.each([
+    { read: false, unread: true },
+    { read: true, unread: false },
+    { read: undefined, unread: false },
+  ])('should display unread state for read=$read', async ({ read, unread }) => {
+    await respond({
+      ...firstPage,
+      items: [
+        {
+          ...firstPage.items[0],
+          read,
+        },
+      ],
+    });
+
+    const row = element.querySelector<HTMLTableRowElement>('tbody tr')!;
+    const link = row.querySelector<HTMLAnchorElement>('a.order-id')!;
+    const indicator = link.querySelector('.unread-indicator');
+
+    expect(row.classList.contains('is-unread')).toBe(unread);
+    expect(indicator !== null).toBe(unread);
+
+    if (unread) {
+      expect(indicator?.getAttribute('aria-hidden')).toBe('true');
+      expect(link.querySelector('.visually-hidden')?.textContent).toContain(
+        'Nieprzeczytane zamówienie.',
+      );
+    } else {
+      expect(link.querySelector('.visually-hidden')).toBeNull();
+    }
+
+    expect(row.querySelector('.customer-name')?.textContent).toContain(
+      firstPage.items[0].customerFullName,
+    );
+    expect(row.querySelector('.order-status')?.textContent).toContain('Nowe');
+  });
+
   it('should load the next and previous pages with boundary buttons disabled', async () => {
     await respond(firstPage);
 

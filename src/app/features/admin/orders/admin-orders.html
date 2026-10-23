@@ -1,7 +1,10 @@
 <section class="orders-page" aria-labelledby="orders-title">
   <h1 id="orders-title">{{ 'adminOrders.title' | transloco }}</h1>
 
-  <div class="order-views" role="group" [attr.aria-label]="'adminOrders.filters.viewLabel' | transloco">
+  <fieldset class="order-views">
+    <legend class="visually-hidden">
+      {{ 'adminOrders.filters.viewLabel' | transloco }}
+    </legend>
     <button type="button" class="button button--secondary" [class.is-active]="filters().view === 'active'"
       [attr.aria-pressed]="filters().view === 'active'" (click)="selectView('active')">
       {{ 'adminOrders.filters.active' | transloco }}
@@ -16,7 +19,7 @@
       [attr.aria-pressed]="filters().view === 'all'" (click)="selectView('all')">
       {{ 'adminOrders.filters.all' | transloco }}
     </button>
-  </div>
+  </fieldset>
 
   <p class="filter-hint">
     {{ 'adminOrders.filters.viewHint' | transloco }}
@@ -110,7 +113,7 @@ message === 'adminOrders.errors.accessDenied'
     {{ 'adminOrders.total' | transloco: { count: result.totalElements } }}
   </p>
 
-  <div class="orders-table-wrapper" tabindex="0" role="region" [attr.aria-label]="'adminOrders.tableLabel' | transloco">
+  <section class="orders-table-wrapper" tabindex="0" [attr.aria-label]="'adminOrders.tableLabel' | transloco">
     <table>
       <caption class="visually-hidden">
         {{ 'adminOrders.tableLabel' | transloco }}
@@ -127,18 +130,24 @@ message === 'adminOrders.errors.accessDenied'
 
       <tbody>
         @for (order of result.items; track order.id) {
-        <tr>
+        <tr [class.is-unread]="order.read === false">
           <td>
             <time [attr.datetime]="order.createdAt">
               {{ formatDate(order.createdAt) }}
             </time>
             <a class="order-id" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders', order.id]"
               queryParamsHandling="preserve">
+              @if (order.read === false) {
+              <span class="unread-indicator" aria-hidden="true"></span>
+              <span class="visually-hidden">
+                {{ 'adminOrders.unread' | transloco }}
+              </span>
+              }
               {{ order.id }}
             </a>
           </td>
           <td>
-            <span>{{ order.customerFullName }}</span>
+            <span class="customer-name">{{ order.customerFullName }}</span>
             <small>{{ order.customerEmail }}</small>
           </td>
           <td>
@@ -162,7 +171,7 @@ message === 'adminOrders.errors.accessDenied'
         }
       </tbody>
     </table>
-  </div>
+  </section>
   }
 
   @if (result.totalPages > 1) {

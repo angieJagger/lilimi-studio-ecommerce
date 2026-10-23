@@ -78,13 +78,18 @@ export class AdminInquiryDetails {
             this.isLoading.set(true);
 
             return this.api.getInquiry(id).pipe(
-              tap((inquiry) => this.inquiry.set(inquiry)),
-              catchError((error: unknown) => {
-                this.errorKey.set(this.getErrorKey(error));
-                return EMPTY;
-              }),
-              finalize(() => this.isLoading.set(false)),
-            );
+  tap((inquiry) => this.inquiry.set(inquiry)),
+  catchError((error: unknown) => {
+    this.errorKey.set(this.getErrorKey(error));
+    return EMPTY;
+  }),
+  finalize(() => this.isLoading.set(false)),
+  switchMap((inquiry) =>
+    this.api.markRead(inquiry.id).pipe(
+      catchError(() => EMPTY),
+    ),
+  ),
+);
           }),
         ),
         takeUntilDestroyed(this.destroyRef),
@@ -176,7 +181,7 @@ export class AdminInquiryDetails {
       timeStyle: 'short',
     }).format(new Date(value));
   }
-  
+
   private getStatusErrorKey(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 401) {

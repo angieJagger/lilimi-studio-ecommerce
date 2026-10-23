@@ -1,14 +1,17 @@
 <section class="inquiries-page" aria-labelledby="inquiries-title">
   <h1 id="inquiries-title">{{ 'adminInquiries.title' | transloco }}</h1>
 
-  <div class="inquiry-views" role="group" [attr.aria-label]="'adminInquiries.filters.viewLabel' | transloco">
+<fieldset class="inquiry-views">
+  <legend class="visually-hidden">
+    {{ 'adminInquiries.filters.viewLabel' | transloco }}
+  </legend>
     @for (view of views; track view) {
     <button type="button" class="button button--secondary" [class.is-active]="filters().view === view"
       [attr.aria-pressed]="filters().view === view" (click)="selectView(view)">
       {{ ('adminInquiries.filters.views.' + view) | transloco }}
     </button>
     }
-  </div>
+  </fieldset>
 
   <p class="filter-hint">
     {{ 'adminInquiries.filters.viewHint' | transloco }}
@@ -121,8 +124,7 @@
     {{ 'adminInquiries.total' | transloco: { count: result.totalElements } }}
   </p>
 
-  <div class="inquiries-table-wrapper" tabindex="0" role="region"
-    [attr.aria-label]="'adminInquiries.tableLabel' | transloco">
+  <section class="inquiries-table-wrapper" tabindex="0" [attr.aria-label]="'adminInquiries.tableLabel' | transloco">
     <table>
       <caption class="visually-hidden">
         {{ 'adminInquiries.tableLabel' | transloco }}
@@ -139,7 +141,7 @@
 
       <tbody>
         @for (inquiry of result.items; track inquiry.id) {
-        <tr>
+        <tr [class.is-unread]="inquiry.read === false">
           <td>
             <time [attr.datetime]="inquiry.createdAt">
               {{ formatDate(inquiry.createdAt) }}
@@ -152,12 +154,18 @@
                   'inquiries',
                   inquiry.id
                 ]" queryParamsHandling="preserve">
+                @if (inquiry.read === false) {
+                <span class="unread-indicator" aria-hidden="true"></span>
+                <span class="visually-hidden">
+                  {{ 'adminInquiries.unread' | transloco }}
+                </span>
+                }
                 {{ inquiry.id }}
               </a>
             </small>
           </td>
           <td>
-            <span>{{ inquiry.name }}</span>
+            <span class="customer-name">{{ inquiry.name }}</span>
             <small>{{ inquiry.email }}</small>
           </td>
           <td>
@@ -175,7 +183,7 @@
         }
       </tbody>
     </table>
-  </div>
+  </section>
   }
 
   @if (result.totalPages > 1) {

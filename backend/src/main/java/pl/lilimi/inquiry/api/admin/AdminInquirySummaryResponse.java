@@ -12,11 +12,13 @@ public record AdminInquirySummaryResponse(
   String name,
   String email,
   String projectType,
-  String productId
+  String productId,
+  boolean read
 ) {
 
   public static AdminInquirySummaryResponse from(
-    ProjectInquiry inquiry
+    ProjectInquiry inquiry,
+    boolean read
   ) {
     return new AdminInquirySummaryResponse(
       inquiry.getId(),
@@ -25,7 +27,8 @@ public record AdminInquirySummaryResponse(
       inquiry.getName(),
       inquiry.getEmail(),
       inquiry.getProjectType(),
-      inquiry.getProductId()
+      inquiry.getProductId(),
+      read
     );
   }
 }

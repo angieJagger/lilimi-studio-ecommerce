@@ -187,7 +187,8 @@
       "versionConflict": "The inquiry has been modified. Reload its details before making another change.",
       "statusTransitionInvalid": "This status change is not allowed. Reload the inquiry details.",
       "statusSaveFailed": "The status change could not be confirmed. Reload the details to check the current status."
-    }
+    },
+    "unread": "Unread inquiry."
   },
   "adminOrderDetails": {
     "title": "Order details",
@@ -309,7 +310,8 @@
       "searchPlaceholder": "Order reference, email or customer name",
       "searchHint": "A new phrase searches all orders and clears previous status and date restrictions. You can then narrow the results using filters.",
       "searchTooLong": "The search phrase must not exceed 254 characters."
-    }
+    },
+    "unread": "Unread order."
   },
   "adminProducts": {
     "title": "Products",

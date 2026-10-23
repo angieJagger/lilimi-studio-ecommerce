@@ -58,6 +58,19 @@ export class AdminInquiryApiService {
     );
   }
 
+  markRead(id: string): Observable<void> {
+    return this.csrf
+      .initialize()
+      .pipe(
+        switchMap(() =>
+          this.http.post<void>(
+            `${this.baseUrl}/admin/project-inquiries/${encodeURIComponent(id)}/read`,
+            null,
+          ),
+        ),
+      );
+  }
+
   changeStatus(id: string, request: ChangeInquiryStatusRequest): Observable<AdminInquiryDetails> {
     return this.csrf
       .initialize()

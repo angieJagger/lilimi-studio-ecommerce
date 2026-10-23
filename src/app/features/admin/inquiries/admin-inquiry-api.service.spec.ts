@@ -205,6 +205,54 @@ describe('AdminInquiryApiService', () => {
     expect(receivedError?.status).toBe(404);
   });
 
+  it('should initialize CSRF before marking an inquiry as read', () => {
+    const url = `/api/admin/project-inquiries/${inquiry.id}/read`;
+    let completed = false;
+
+    service.markRead(inquiry.id).subscribe({
+      complete: () => {
+        completed = true;
+      },
+    });
+
+    http.expectNone(url);
+
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const pending = http.expectOne(url);
+
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.body).toBeNull();
+
+    pending.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    expect(completed).toBe(true);
+  });
+
+  it('should not mark an inquiry as read when CSRF initialization fails', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    service.markRead(inquiry.id).subscribe({
+      error: (error: HttpErrorResponse) => {
+        receivedError = error;
+      },
+    });
+
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 403,
+      statusText: 'Forbidden',
+    });
+
+    expect(receivedError?.status).toBe(403);
+    http.expectNone(`/api/admin/project-inquiries/${inquiry.id}/read`);
+  });
+
     it('should initialize CSRF before changing the status', () => {
       const request = {
         status: 'in_progress' as const,

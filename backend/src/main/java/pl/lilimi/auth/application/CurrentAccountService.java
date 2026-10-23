@@ -6,6 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import pl.lilimi.auth.domain.UserAccount;
+import pl.lilimi.auth.domain.UserRole;
 import pl.lilimi.auth.persistence.UserAccountRepository;
 
 import java.util.UUID;
@@ -16,25 +18,46 @@ public class CurrentAccountService {
 
   private final UserAccountRepository accountRepository;
 
-  public CurrentAccountService(UserAccountRepository accountRepository) {
+  public CurrentAccountService(
+    UserAccountRepository accountRepository
+  ) {
     this.accountRepository = accountRepository;
   }
 
   public UUID findAccountId(Authentication authentication) {
+    var account = findEnabledAccount(authentication);
+    return account == null ? null : account.getId();
+  }
+
+  public UUID requireAdministratorId(Authentication authentication) {
+    var account = findEnabledAccount(authentication);
+
+    if (account == null) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
+
+    if (account.getRole() != UserRole.ADMIN) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+
+    return account.getId();
+  }
+
+  private UserAccount findEnabledAccount(
+    Authentication authentication
+  ) {
     if (
-      authentication == null ||
-        !authentication.isAuthenticated() ||
-        authentication instanceof AnonymousAuthenticationToken
+      authentication == null
+        || !authentication.isAuthenticated()
+        || authentication instanceof AnonymousAuthenticationToken
     ) {
       return null;
     }
 
-    var account = accountRepository.findByEmail(authentication.getName())
-      .filter(candidate -> candidate.isEnabled())
+    return accountRepository.findByEmail(authentication.getName())
+      .filter(UserAccount::isEnabled)
       .orElseThrow(() -> new ResponseStatusException(
         HttpStatus.UNAUTHORIZED
       ));
-
-    return account.getId();
   }
 }

@@ -17,6 +17,7 @@ export interface AdminInquirySummary {
   readonly id: string;
   readonly createdAt: string;
   readonly status: InquiryStatus;
+  readonly read?: boolean;
   readonly name: string;
   readonly email: string;
   readonly projectType: ProjectType;

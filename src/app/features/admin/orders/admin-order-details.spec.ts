@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { AdminOrderApiService } from './admin-order-api.service';
@@ -17,6 +17,7 @@ describe('AdminOrderDetails', () => {
   const api = {
     getOrder: vi.fn(),
     changeStatus: vi.fn(),
+    markRead: vi.fn(),
   };
 
   const order: OrderDetails = {
@@ -67,6 +68,8 @@ describe('AdminOrderDetails', () => {
 
     api.getOrder.mockReset();
     api.changeStatus.mockReset();
+    api.markRead.mockReset();
+    api.markRead.mockReturnValue(of(undefined));
     api.getOrder.mockReturnValue(result.asObservable());
 
     await TestBed.configureTestingModule({
@@ -123,6 +126,33 @@ describe('AdminOrderDetails', () => {
     expect(element.querySelector('.back-link')?.getAttribute('href')).toBe('/pl/admin/orders');
   });
 
+  it('should mark the order as read only after loading details', async () => {
+    expect(api.markRead).not.toHaveBeenCalled();
+
+    await respond(order);
+
+    expect(api.markRead).toHaveBeenCalledExactlyOnceWith(order.id);
+    expect(element.querySelector('output')).toBeNull();
+  });
+
+  it('should keep order details visible when marking as read fails', async () => {
+    const readResult = new Subject<void>();
+    api.markRead.mockReturnValue(readResult.asObservable());
+
+    await respond(order);
+
+    // Saving the read receipt must not keep the loading state active.
+    expect(element.querySelector('output')).toBeNull();
+    expect(element.textContent).toContain(order.id);
+
+    readResult.error(new HttpErrorResponse({ status: 500 }));
+
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain(order.id);
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+  });
+
   it('should show a missing order message without a retry button', async () => {
     result.error(
       new HttpErrorResponse({
@@ -138,6 +168,7 @@ describe('AdminOrderDetails', () => {
     );
     expect(element.querySelector('button')).toBeNull();
     expect(element.querySelector('.order-card')).toBeNull();
+    expect(api.markRead).not.toHaveBeenCalled();
   });
 
   it('should retry after a connection error', async () => {
