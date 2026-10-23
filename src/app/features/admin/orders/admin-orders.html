@@ -6,32 +6,32 @@
       [attr.aria-pressed]="filters().view === 'active'" (click)="selectView('active')">
       {{ 'adminOrders.filters.active' | transloco }}
     </button>
-  
+
     <button type="button" class="button button--secondary" [class.is-active]="filters().view === 'archive'"
       [attr.aria-pressed]="filters().view === 'archive'" (click)="selectView('archive')">
       {{ 'adminOrders.filters.archive' | transloco }}
     </button>
-  
+
     <button type="button" class="button button--secondary" [class.is-active]="filters().view === 'all'"
       [attr.aria-pressed]="filters().view === 'all'" (click)="selectView('all')">
       {{ 'adminOrders.filters.all' | transloco }}
     </button>
   </div>
-  
+
   <p class="filter-hint">
     {{ 'adminOrders.filters.viewHint' | transloco }}
   </p>
-  
+
   <form class="order-filters"
     (submit)="$event.preventDefault(); applyFilters(statusFilter.value, dateFromFilter.value, dateToFilter.value, searchFilter.value)">
     <div class="filter-field filter-field--search">
       <label for="order-search">
         {{ 'adminOrders.filters.search' | transloco }}
       </label>
-    
+
       <input id="order-search" #searchFilter type="search" maxlength="254" [value]="filters().search ?? ''"
         [placeholder]="'adminOrders.filters.searchPlaceholder' | transloco" aria-describedby="order-search-hint" />
-    
+
       <small id="order-search-hint">
         {{ 'adminOrders.filters.searchHint' | transloco }}
       </small>
@@ -40,12 +40,12 @@
       <label for="order-status-filter">
         {{ 'adminOrders.filters.status' | transloco }}
       </label>
-  
+
       <select id="order-status-filter" #statusFilter>
         <option value="" [selected]="!filters().status">
           {{ 'adminOrders.filters.anyStatus' | transloco }}
         </option>
-  
+
         @for (status of statuses; track status) {
         <option [value]="status" [selected]="filters().status === status">
           {{ ('adminOrders.statuses.' + status) | transloco }}
@@ -53,34 +53,34 @@
         }
       </select>
     </div>
-  
+
     <div class="filter-field">
       <label for="order-date-from">
         {{ 'adminOrders.filters.dateFrom' | transloco }}
       </label>
-  
+
       <input id="order-date-from" #dateFromFilter type="date" [value]="filters().dateFrom ?? ''" />
     </div>
-  
+
     <div class="filter-field">
       <label for="order-date-to">
         {{ 'adminOrders.filters.dateTo' | transloco }}
       </label>
-  
+
       <input id="order-date-to" #dateToFilter type="date" [value]="filters().dateTo ?? ''" />
     </div>
-  
+
     <div class="filter-actions">
       <button type="submit" class="button button--primary">
         {{ 'adminOrders.filters.apply' | transloco }}
       </button>
-  
+
       <button type="button" class="button button--secondary" (click)="resetFilters()">
         {{ 'adminOrders.filters.reset' | transloco }}
       </button>
     </div>
   </form>
-  
+
   @if (filterErrorKey(); as message) {
   <p role="alert">{{ message | transloco }}</p>
   }

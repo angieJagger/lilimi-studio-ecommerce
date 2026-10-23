@@ -9,36 +9,36 @@
     </button>
     }
   </div>
-  
+
   <p class="filter-hint">
     {{ 'adminInquiries.filters.viewHint' | transloco }}
   </p>
-  
+
   <form class="inquiry-filters"
     (submit)="$event.preventDefault(); applyFilters(statusFilter.value, projectTypeFilter.value, dateFromFilter.value, dateToFilter.value, searchFilter.value)">
     <div class="filter-field filter-field--search">
       <label for="inquiry-search">
         {{ 'adminInquiries.filters.search' | transloco }}
       </label>
-  
+
       <input id="inquiry-search" #searchFilter type="search" maxlength="254" [value]="filters().search ?? ''"
         [placeholder]="'adminInquiries.filters.searchPlaceholder' | transloco" aria-describedby="inquiry-search-hint" />
-  
+
       <small id="inquiry-search-hint">
         {{ 'adminInquiries.filters.searchHint' | transloco }}
       </small>
     </div>
-  
+
     <div class="filter-field">
       <label for="inquiry-status-filter">
         {{ 'adminInquiries.filters.status' | transloco }}
       </label>
-  
+
       <select id="inquiry-status-filter" #statusFilter>
         <option value="" [selected]="!filters().status">
           {{ 'adminInquiries.filters.anyStatus' | transloco }}
         </option>
-  
+
         @for (status of statuses; track status) {
         <option [value]="status" [selected]="filters().status === status">
           {{ ('adminInquiries.statuses.' + status) | transloco }}
@@ -46,17 +46,17 @@
         }
       </select>
     </div>
-  
+
     <div class="filter-field">
       <label for="inquiry-project-type-filter">
         {{ 'adminInquiries.filters.projectType' | transloco }}
       </label>
-  
+
       <select id="inquiry-project-type-filter" #projectTypeFilter>
         <option value="" [selected]="!filters().projectType">
           {{ 'adminInquiries.filters.anyProjectType' | transloco }}
         </option>
-  
+
         @for (projectType of projectTypes; track projectType) {
         <option [value]="projectType" [selected]="filters().projectType === projectType">
           {{ ('projectInquiry.fields.projectType.options.' + projectType) | transloco }}
@@ -64,34 +64,34 @@
         }
       </select>
     </div>
-  
+
     <div class="filter-field">
       <label for="inquiry-date-from">
         {{ 'adminInquiries.filters.dateFrom' | transloco }}
       </label>
-  
+
       <input id="inquiry-date-from" #dateFromFilter type="date" [value]="filters().dateFrom ?? ''" />
     </div>
-  
+
     <div class="filter-field">
       <label for="inquiry-date-to">
         {{ 'adminInquiries.filters.dateTo' | transloco }}
       </label>
-  
+
       <input id="inquiry-date-to" #dateToFilter type="date" [value]="filters().dateTo ?? ''" />
     </div>
-  
+
     <div class="filter-actions">
       <button type="submit" class="button button--primary">
         {{ 'adminInquiries.filters.apply' | transloco }}
       </button>
-  
+
       <button type="button" class="button button--secondary" (click)="resetFilters()">
         {{ 'adminInquiries.filters.reset' | transloco }}
       </button>
     </div>
   </form>
-  
+
   @if (filterErrorKey(); as message) {
   <p role="alert">{{ message | transloco }}</p>
   }
