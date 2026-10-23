@@ -1,5 +1,6 @@
 <section class="inquiry-details" aria-labelledby="inquiry-details-title">
-  <a class="inquiry-details__back" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'inquiries']">
+  <a class="inquiry-details__back" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'inquiries']"
+    queryParamsHandling="preserve">
     {{ 'adminInquiries.details.back' | transloco }}
   </a>
 

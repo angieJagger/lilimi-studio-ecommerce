@@ -1,5 +1,5 @@
 <section class="order-page" aria-labelledby="order-title">
-  <a class="back-link" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']">
+  <a class="back-link" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders']" queryParamsHandling="preserve">
     {{ 'adminOrderDetails.back' | transloco }}
   </a>
 

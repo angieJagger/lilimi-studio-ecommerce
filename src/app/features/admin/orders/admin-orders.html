@@ -1,6 +1,90 @@
 <section class="orders-page" aria-labelledby="orders-title">
   <h1 id="orders-title">{{ 'adminOrders.title' | transloco }}</h1>
 
+  <div class="order-views" role="group" [attr.aria-label]="'adminOrders.filters.viewLabel' | transloco">
+    <button type="button" class="button button--secondary" [class.is-active]="filters().view === 'active'"
+      [attr.aria-pressed]="filters().view === 'active'" (click)="selectView('active')">
+      {{ 'adminOrders.filters.active' | transloco }}
+    </button>
+
+    <button type="button" class="button button--secondary" [class.is-active]="filters().view === 'archive'"
+      [attr.aria-pressed]="filters().view === 'archive'" (click)="selectView('archive')">
+      {{ 'adminOrders.filters.archive' | transloco }}
+    </button>
+
+    <button type="button" class="button button--secondary" [class.is-active]="filters().view === 'all'"
+      [attr.aria-pressed]="filters().view === 'all'" (click)="selectView('all')">
+      {{ 'adminOrders.filters.all' | transloco }}
+    </button>
+  </div>
+
+  <p class="filter-hint">
+    {{ 'adminOrders.filters.viewHint' | transloco }}
+  </p>
+
+  <form class="order-filters"
+    (submit)="$event.preventDefault(); applyFilters(statusFilter.value, dateFromFilter.value, dateToFilter.value, searchFilter.value)">
+    <div class="filter-field filter-field--search">
+      <label for="order-search">
+        {{ 'adminOrders.filters.search' | transloco }}
+      </label>
+
+      <input id="order-search" #searchFilter type="search" maxlength="254" [value]="filters().search ?? ''"
+        [placeholder]="'adminOrders.filters.searchPlaceholder' | transloco" aria-describedby="order-search-hint" />
+
+      <small id="order-search-hint">
+        {{ 'adminOrders.filters.searchHint' | transloco }}
+      </small>
+    </div>
+    <div class="filter-field">
+      <label for="order-status-filter">
+        {{ 'adminOrders.filters.status' | transloco }}
+      </label>
+
+      <select id="order-status-filter" #statusFilter>
+        <option value="" [selected]="!filters().status">
+          {{ 'adminOrders.filters.anyStatus' | transloco }}
+        </option>
+
+        @for (status of statuses; track status) {
+        <option [value]="status" [selected]="filters().status === status">
+          {{ ('adminOrders.statuses.' + status) | transloco }}
+        </option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-field">
+      <label for="order-date-from">
+        {{ 'adminOrders.filters.dateFrom' | transloco }}
+      </label>
+
+      <input id="order-date-from" #dateFromFilter type="date" [value]="filters().dateFrom ?? ''" />
+    </div>
+
+    <div class="filter-field">
+      <label for="order-date-to">
+        {{ 'adminOrders.filters.dateTo' | transloco }}
+      </label>
+
+      <input id="order-date-to" #dateToFilter type="date" [value]="filters().dateTo ?? ''" />
+    </div>
+
+    <div class="filter-actions">
+      <button type="submit" class="button button--primary">
+        {{ 'adminOrders.filters.apply' | transloco }}
+      </button>
+
+      <button type="button" class="button button--secondary" (click)="resetFilters()">
+        {{ 'adminOrders.filters.reset' | transloco }}
+      </button>
+    </div>
+  </form>
+
+  @if (filterErrorKey(); as message) {
+  <p role="alert">{{ message | transloco }}</p>
+  }
+
   @if (isLoading()) {
   <output>{{ 'adminOrders.loading' | transloco }}</output>
   } @else if (errorKey(); as message) {
@@ -48,7 +132,8 @@ message === 'adminOrders.errors.accessDenied'
             <time [attr.datetime]="order.createdAt">
               {{ formatDate(order.createdAt) }}
             </time>
-            <a class="order-id" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders', order.id]">
+            <a class="order-id" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'orders', order.id]"
+              queryParamsHandling="preserve">
               {{ order.id }}
             </a>
           </td>
@@ -57,7 +142,9 @@ message === 'adminOrders.errors.accessDenied'
             <small>{{ order.customerEmail }}</small>
           </td>
           <td>
-            {{ ('adminOrders.statuses.' + order.status) | transloco }}
+            <span class="order-status" [attr.data-status]="order.status">
+              {{ ('adminOrders.statuses.' + order.status) | transloco }}
+            </span>
 
             @if (order.paymentCancellation; as cancellation) {
             @if (cancellation.status !== 'none') {

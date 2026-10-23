@@ -128,6 +128,30 @@
     "contact": "Kontakt",
     "projectType": "Rodzaj projektu",
     "pagination": "Strony listy zapytań",
+    "filters": {
+      "viewLabel": "Widok zapytań",
+      "views": {
+        "active": "Do obsłużenia",
+        "answered": "Odpowiedziane",
+        "archive": "Archiwum",
+        "all": "Wszystkie"
+      },
+      "viewHint": "Do obsłużenia: nowe i w trakcie. Odpowiedziane: odpowiedź lub wycena wysłana, sprawa nadal otwarta. Archiwum: zamknięte.",
+      "search": "Znajdź zapytanie",
+      "searchPlaceholder": "Numer zapytania, e-mail lub nazwisko",
+      "searchHint": "Nowa fraza przeszukuje wszystkie zapytania i usuwa wcześniejsze ograniczenia. Następnie możesz zawęzić wyniki filtrami.",
+      "status": "Status",
+      "anyStatus": "Wszystkie statusy",
+      "projectType": "Rodzaj usługi",
+      "anyProjectType": "Wszystkie usługi",
+      "dateFrom": "Utworzone od",
+      "dateTo": "Utworzone do",
+      "apply": "Zastosuj",
+      "reset": "Wyczyść filtry",
+      "invalidDateRange": "Data początkowa nie może być późniejsza niż końcowa.",
+      "invalidParameters": "Nieprawidłowe parametry filtrów w adresie. Wyczyść filtry i spróbuj ponownie.",
+      "searchTooLong": "Fraza wyszukiwania może mieć maksymalnie 254 znaki."
+    },
     "statuses": {
       "new": "Nowe",
       "in_progress": "W trakcie",
@@ -269,7 +293,26 @@
       "accessDenied": "Brak uprawnień do przeglądania zamówień.",
       "loadFailed": "Nie udało się pobrać zamówień. Spróbuj ponownie."
     },
-    "login": "Przejdź do logowania"
+    "login": "Przejdź do logowania",
+    "filters": {
+      "viewLabel": "Widok zamówień",
+      "active": "Do obsłużenia",
+      "archive": "Archiwum",
+      "all": "Wszystkie",
+      "viewHint": "Do obsłużenia: nowe i w realizacji oraz zamówienia z płatnością wymagającą sprawdzenia. Archiwum: zakończone i anulowane. Filtry dodatkowo zawężają wybrany widok.",
+      "status": "Status",
+      "anyStatus": "Wszystkie statusy",
+      "dateFrom": "Utworzone od",
+      "dateTo": "Utworzone do",
+      "apply": "Zastosuj",
+      "reset": "Wyczyść filtry",
+      "invalidDateRange": "Data początkowa nie może być późniejsza niż końcowa.",
+      "invalidParameters": "Nieprawidłowe parametry filtrów w adresie. Wyczyść filtry i spróbuj ponownie.",
+      "search": "Znajdź zamówienie",
+      "searchPlaceholder": "Numer zamówienia, e-mail lub nazwisko",
+      "searchHint": "Nowa fraza przeszukuje wszystkie zamówienia i usuwa wcześniejsze ograniczenia statusu oraz dat. Następnie możesz zawęzić wyniki filtrami.",
+      "searchTooLong": "Fraza wyszukiwania może mieć maksymalnie 254 znaki."
+    }
   },
   "adminProducts": {
     "title": "Produkty",

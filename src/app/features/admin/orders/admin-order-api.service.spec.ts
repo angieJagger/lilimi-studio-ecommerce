@@ -118,6 +118,82 @@ describe('AdminOrderApiService', () => {
     });
   });
 
+  it('should send filters together with pagination', () => {
+    service
+      .getOrders(1, 10, {
+        view: 'archive',
+        status: 'cancelled',
+        dateFrom: '2026-10-01',
+        dateTo: '2026-10-21',
+      })
+      .subscribe();
+
+    const pending = http.expectOne((request) => request.url === '/api/admin/orders');
+
+    expect(pending.request.method).toBe('GET');
+    expect(pending.request.params.get('page')).toBe('1');
+    expect(pending.request.params.get('size')).toBe('10');
+    expect(pending.request.params.get('view')).toBe('archive');
+    expect(pending.request.params.get('status')).toBe('cancelled');
+    expect(pending.request.params.get('dateFrom')).toBe('2026-10-01');
+    expect(pending.request.params.get('dateTo')).toBe('2026-10-21');
+
+    pending.flush({
+      items: [],
+      page: 1,
+      size: 10,
+      totalElements: 0,
+      totalPages: 0,
+    });
+  });
+
+  it('should omit empty optional filters', () => {
+    service
+      .getOrders(0, 20, {
+        view: 'active',
+        dateFrom: '',
+        dateTo: '',
+      })
+      .subscribe();
+
+    const pending = http.expectOne((request) => request.url === '/api/admin/orders');
+
+    expect(pending.request.params.get('view')).toBe('active');
+    expect(pending.request.params.has('status')).toBe(false);
+    expect(pending.request.params.has('dateFrom')).toBe(false);
+    expect(pending.request.params.has('dateTo')).toBe(false);
+
+    pending.flush({
+      items: [],
+      page: 0,
+      size: 20,
+      totalElements: 0,
+      totalPages: 0,
+    });
+  });
+
+  it('should send a trimmed search phrase as a query parameter', () => {
+    service
+      .getOrders(0, 20, {
+        view: 'all',
+        search: '  anna+shop@example.com  ',
+      })
+      .subscribe();
+
+    const pending = http.expectOne((request) => request.url === '/api/admin/orders');
+
+    expect(pending.request.params.get('search')).toBe('anna+shop@example.com');
+    expect(pending.request.params.get('view')).toBe('all');
+
+    pending.flush({
+      items: [],
+      page: 0,
+      size: 20,
+      totalElements: 0,
+      totalPages: 0,
+    });
+  });
+
   it('should propagate an expired session error', () => {
     let receivedError: HttpErrorResponse | undefined;
 
