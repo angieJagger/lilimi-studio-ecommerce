@@ -141,6 +141,7 @@ Order history includes orders placed while signed in; guest orders are not autom
 
 - Administrator login and logout using server-side sessions.
 - Role-based access enforced by the backend.
+- Protected Angular routes.
 - Per-administrator read tracking for orders and inquiries, stored in PostgreSQL.
 - Unread references and customer names highlighted with bold text and an accessible indicator.
 - Successfully loaded detail pages trigger a separate CSRF-protected read operation; fetching a list does not mark entries as read.
