@@ -142,6 +142,9 @@ Order history includes orders placed while signed in; guest orders are not autom
 - Administrator login and logout using server-side sessions.
 - Role-based access enforced by the backend.
 - Protected Angular routes.
+- Per-administrator read tracking for orders and inquiries, stored in PostgreSQL.
+- Unread references and customer names highlighted with bold text and an accessible indicator.
+- Successfully loaded detail pages trigger a separate CSRF-protected read operation; fetching a list does not mark entries as read.
 - Shared navigation between orders, products and project inquiries, including detail and edit pages.
 - Administrator root URLs redirect to the order list.
 - Order references link directly to order details.
@@ -487,9 +490,11 @@ docker compose down
 | POST | `/api/project-inquiries` | Submit a project inquiry |
 | GET | `/api/admin/orders` | Paginated order list with optional view, status, creation date and search filters |
 | GET | `/api/admin/orders/{id}` | Order details |
+| POST | `/api/admin/orders/{id}/read` | Mark an order as read by the current administrator |
 | PATCH | `/api/admin/orders/{id}/status` | Update an order status |
 | GET | `/api/admin/project-inquiries` | Paginated inquiry list with view, status, service type, date and search filters |
 | GET | `/api/admin/project-inquiries/{id}` | Inquiry details |
+| POST | `/api/admin/project-inquiries/{id}/read` | Mark an inquiry as read by the current administrator |
 | PATCH | `/api/admin/project-inquiries/{id}/status` | Update an inquiry status |
 | GET | `/api/admin/products` | Paginated administrator product list |
 | PATCH | `/api/admin/products/{id}/visibility` | Update product visibility |
@@ -569,7 +574,19 @@ For both lists, date bounds are optional and include the complete selected local
 
 The API combines all supplied filters. In the UI, a changed non-empty search phrase selects `all`, clears the other filters and returns to page zero. Applying the same phrase allows further narrowing. Switching views resets status and page while preserving dates, search and (for inquiries) service type. Clearing filters retains only the selected view.
 
-Selected filters and the page are stored in query parameters, preserved on detail links and restored on return. Active-view membership is based on business status, not whether an administrator has read an entry; per-administrator read tracking is not implemented.
+Selected filters and the page are stored in query parameters, preserved on detail links and restored on return. Active-view membership is based on business status and any payment review task, independently of whether an administrator has read an entry.
+
+### Administrator read tracking
+
+Order and inquiry list items include a boolean `read` field for the authenticated administrator. The account is resolved from the session, not supplied by the browser. Read states for a page are fetched in one additional query per list.
+
+The detail UI calls the corresponding `POST /read` endpoint after successfully fetching details. These endpoints require an enabled administrator account and a valid CSRF token. They return HTTP `204` on success and `404` for a missing order or inquiry.
+
+Migration V25 creates separate read-receipt tables with composite primary keys. Repeated requests preserve the first `read_at` timestamp and do not create duplicate receipts. Reading does not change business status or entity version.
+
+A read-receipt failure does not block the detail view; another visit retries the operation. Receipts persist across browsers and devices using the same administrator account. Existing entries initially appear unread because they have no receipts.
+
+Read tracking records the first opening of details. Later edits do not automatically make an entry unread again.
 
 ## Verification
 
@@ -622,7 +639,6 @@ Recovery procedures are documented in [deploy/RECOVERY.md](../deploy/RECOVERY.md
 
 ## Next milestones
 
-- Add per-administrator read tracking for orders and inquiries.
 - Add product image uploads, replacement, ordering, primary image selection and Polish/English alternative text, backed by persistent media storage.
 - Extend guest payment recovery, reconciliation and operational recovery.
 - Prepare real payment configuration and refund handling.

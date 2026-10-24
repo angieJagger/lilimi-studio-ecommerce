@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { AdminInquiryApiService } from './admin-inquiry-api.service';
@@ -18,6 +18,7 @@ describe('AdminInquiryDetails', () => {
   const api = {
     getInquiry: vi.fn(),
     changeStatus: vi.fn(),
+    markRead: vi.fn(),
   };
 
   const inquiry: InquiryDetails = {
@@ -42,6 +43,8 @@ describe('AdminInquiryDetails', () => {
     api.getInquiry.mockReset();
     api.getInquiry.mockReturnValue(result.asObservable());
     api.changeStatus.mockReset();
+    api.markRead.mockReset();
+    api.markRead.mockReturnValue(of(undefined));
     api.changeStatus.mockReturnValue(statusResult.asObservable());
 
     await TestBed.configureTestingModule({
@@ -110,6 +113,32 @@ describe('AdminInquiryDetails', () => {
     expect(element.querySelector('[role="alert"]')).toBeNull();
   });
 
+  it('should mark the inquiry as read only after loading details', async () => {
+    expect(api.markRead).not.toHaveBeenCalled();
+
+    await respond(inquiry);
+
+    expect(api.markRead).toHaveBeenCalledExactlyOnceWith(inquiry.id);
+    expect(element.querySelector('output')).toBeNull();
+  });
+
+  it('should keep inquiry details visible when marking as read fails', async () => {
+    const readResult = new Subject<void>();
+    api.markRead.mockReturnValue(readResult.asObservable());
+
+    await respond(inquiry);
+
+    expect(element.querySelector('output')).toBeNull();
+    expect(element.textContent).toContain(inquiry.id);
+
+    readResult.error(new HttpErrorResponse({ status: 500 }));
+
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain(inquiry.id);
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+  });
+
   it('should show a missing inquiry message', async () => {
     await fail(404);
 
@@ -119,6 +148,7 @@ describe('AdminInquiryDetails', () => {
 
     expect(element.querySelector('.inquiry-details__card')).toBeNull();
     expect(element.querySelector('output')).toBeNull();
+    expect(api.markRead).not.toHaveBeenCalled();
   });
 
   it('should retry after a connection error and display the result', async () => {

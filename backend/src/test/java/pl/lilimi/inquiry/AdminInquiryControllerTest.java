@@ -1,7 +1,7 @@
 package pl.lilimi.inquiry;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -14,9 +14,13 @@ import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.inquiry.domain.ProjectInquiry;
 import pl.lilimi.inquiry.persistence.ProjectInquiryRepository;
 import pl.lilimi.inquiry.domain.InquiryStatus;
+import pl.lilimi.auth.domain.UserAccount;
+import pl.lilimi.auth.domain.UserRole;
+import pl.lilimi.auth.persistence.UserAccountRepository;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,12 +41,27 @@ class AdminInquiryControllerTest {
 
   @Autowired
   private JdbcTemplate jdbc;
+  @Autowired
+  private UserAccountRepository accounts;
 
   private ProjectInquiry saveInquiry(
     String email,
     Instant createdAt
   ) {
     return saveInquiry(email, createdAt, "website");
+  }
+
+  @BeforeEach
+  void ensureAdministratorExists() {
+    if (accounts.findByEmail("admin@example.com").isEmpty()) {
+      accounts.saveAndFlush(
+        new UserAccount(
+          "admin@example.com",
+          "test-password-hash",
+          UserRole.ADMIN
+        )
+      );
+    }
   }
 
   private ProjectInquiry saveInquiry(

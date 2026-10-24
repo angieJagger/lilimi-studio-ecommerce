@@ -77,6 +77,7 @@ export class AdminOrderDetails {
                 return EMPTY;
               }),
               finalize(() => this.isLoading.set(false)),
+              switchMap((order) => this.api.markRead(order.id).pipe(catchError(() => EMPTY))),
             );
           }),
         ),

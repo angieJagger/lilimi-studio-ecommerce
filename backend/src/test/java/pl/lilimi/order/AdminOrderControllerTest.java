@@ -1,6 +1,7 @@
 package pl.lilimi.order;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -10,6 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import pl.lilimi.auth.domain.UserAccount;
+import pl.lilimi.auth.domain.UserRole;
+import pl.lilimi.auth.persistence.UserAccountRepository;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
@@ -57,6 +61,21 @@ class AdminOrderControllerTest {
 
   @Autowired
   private JdbcTemplate jdbc;
+  @Autowired
+  private UserAccountRepository accounts;
+
+  @BeforeEach
+  void ensureAdministratorExists() {
+    if (accounts.findByEmail("admin@example.com").isEmpty()) {
+      accounts.saveAndFlush(
+        new UserAccount(
+          "admin@example.com",
+          "test-password-hash",
+          UserRole.ADMIN
+        )
+      );
+    }
+  }
 
   private Order saveOrder(
     String email,

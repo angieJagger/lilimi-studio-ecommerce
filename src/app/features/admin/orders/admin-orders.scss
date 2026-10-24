@@ -20,6 +20,9 @@
   flex-wrap: wrap;
   gap: var(--spacing-12);
   margin-block: var(--spacing-24) var(--spacing-12);
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
 
   .is-active {
     border-color: var(--border-brand);
@@ -135,6 +138,23 @@ small {
 .order-id:focus-visible {
   outline: 2px solid var(--border-brand);
   outline-offset: 3px;
+}
+
+tr.is-unread {
+  .order-id,
+  .customer-name {
+    font-weight: 700;
+  }
+}
+
+.unread-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: var(--spacing-8);
+  border-radius: 50%;
+  background: var(--brand-primary);
+  vertical-align: middle;
 }
 
 .order-status {

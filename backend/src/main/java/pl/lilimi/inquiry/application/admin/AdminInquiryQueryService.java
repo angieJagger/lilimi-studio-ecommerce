@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import pl.lilimi.inquiry.api.admin.AdminInquiryDetailsResponse;
+import pl.lilimi.inquiry.api.admin.AdminInquirySummaryResponse;
 import pl.lilimi.inquiry.domain.InquiryStatus;
 import pl.lilimi.inquiry.domain.ProjectInquiry;
 import pl.lilimi.inquiry.persistence.ProjectInquiryRepository;
+import pl.lilimi.inquiry.persistence.InquiryReadRepository;
 
 import java.time.DateTimeException;
 import java.time.Instant;
@@ -44,15 +46,19 @@ public class AdminInquiryQueryService {
   );
 
   private final ProjectInquiryRepository inquiries;
+  private final InquiryReadRepository reads;
 
   public AdminInquiryQueryService(
-    ProjectInquiryRepository inquiries
+    ProjectInquiryRepository inquiries,
+    InquiryReadRepository reads
   ) {
     this.inquiries = inquiries;
+    this.reads = reads;
   }
 
   @Transactional(readOnly = true)
-  public Page<ProjectInquiry> findInquiries(
+  public Page<AdminInquirySummaryResponse> findInquiries(
+    UUID administratorId,
     int page,
     int size,
     String view,
@@ -214,9 +220,25 @@ public class AdminInquiryQueryService {
       Sort.Order.desc("id")
     );
 
-    return inquiries.findAll(
+    var result = inquiries.findAll(
       filter,
       PageRequest.of(page, size, sorting)
+    );
+
+    var inquiryIds = result.getContent().stream()
+      .map(ProjectInquiry::getId)
+      .toList();
+
+    var readInquiryIds = reads.findReadIds(
+      administratorId,
+      inquiryIds
+    );
+
+    return result.map(inquiry ->
+      AdminInquirySummaryResponse.from(
+        inquiry,
+        readInquiryIds.contains(inquiry.getId())
+      )
     );
   }
 

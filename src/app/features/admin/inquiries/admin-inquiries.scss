@@ -160,6 +160,23 @@ small {
   max-width: 220px;
 }
 
+tr.is-unread {
+  .inquiry-reference a,
+  .customer-name {
+    font-weight: 700;
+  }
+}
+
+.unread-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-end: var(--spacing-8);
+  border-radius: 50%;
+  background: var(--brand-primary);
+  vertical-align: middle;
+}
+
 .inquiries-pagination {
   display: flex;
   flex-wrap: wrap;

@@ -189,7 +189,8 @@
     "versionConflict": "Zapytanie zostało zmienione. Odśwież szczegóły przed kolejną zmianą.",
     "statusTransitionInvalid": "Ta zmiana statusu jest niedozwolona. Odśwież szczegóły.",
     "statusSaveFailed": "Nie udało się potwierdzić zmiany statusu. Odśwież szczegóły, aby sprawdzić aktualny stan."
-  }
+  },
+  "unread": "Nieprzeczytane zapytanie."
 },
   "adminOrderDetails": {
     "title": "Szczegóły zamówienia",
@@ -312,7 +313,8 @@
       "searchPlaceholder": "Numer zamówienia, e-mail lub nazwisko",
       "searchHint": "Nowa fraza przeszukuje wszystkie zamówienia i usuwa wcześniejsze ograniczenia statusu oraz dat. Następnie możesz zawęzić wyniki filtrami.",
       "searchTooLong": "Fraza wyszukiwania może mieć maksymalnie 254 znaki."
-    }
+    },
+    "unread": "Nieprzeczytane zamówienie."
   },
   "adminProducts": {
     "title": "Produkty",

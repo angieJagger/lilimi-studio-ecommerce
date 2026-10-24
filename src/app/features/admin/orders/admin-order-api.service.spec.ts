@@ -234,6 +234,54 @@ describe('AdminOrderApiService', () => {
     expect(receivedError?.status).toBe(403);
   });
 
+  it('should initialize CSRF before marking an order as read', () => {
+    const url = `/api/admin/orders/${updatedOrder.id}/read`;
+    let completed = false;
+
+    service.markRead(updatedOrder.id).subscribe({
+      complete: () => {
+        completed = true;
+      },
+    });
+
+    http.expectNone(url);
+
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const pending = http.expectOne(url);
+
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.body).toBeNull();
+
+    pending.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    expect(completed).toBe(true);
+  });
+
+  it('should not mark an order as read when CSRF initialization fails', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    service.markRead(updatedOrder.id).subscribe({
+      error: (error: HttpErrorResponse) => {
+        receivedError = error;
+      },
+    });
+
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 403,
+      statusText: 'Forbidden',
+    });
+
+    expect(receivedError?.status).toBe(403);
+    http.expectNone(`/api/admin/orders/${updatedOrder.id}/read`);
+  });
+
   it('should initialize CSRF before changing status and return the updated order', () => {
     const url = `/api/admin/orders/${updatedOrder.id}/status`;
     const request = {

@@ -14,12 +14,14 @@ public record AdminOrderSummaryResponse(
   String customerEmail,
   String currency,
   long totalInGrosz,
-  CheckoutExpirationSummary paymentCancellation
+  CheckoutExpirationSummary paymentCancellation,
+  boolean read
 ) {
 
   public static AdminOrderSummaryResponse from(
     Order order,
-    CheckoutExpirationSummary paymentCancellation
+    CheckoutExpirationSummary paymentCancellation,
+    boolean read
   ) {
     return new AdminOrderSummaryResponse(
       order.getId(),
@@ -29,7 +31,8 @@ public record AdminOrderSummaryResponse(
       order.getContact().getEmail(),
       order.getCurrency(),
       order.getTotalInGrosz(),
-      paymentCancellation
+      paymentCancellation,
+      read
     );
   }
 }

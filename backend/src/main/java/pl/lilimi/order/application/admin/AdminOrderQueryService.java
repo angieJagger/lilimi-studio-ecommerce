@@ -22,6 +22,7 @@ import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderStatus;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.order.persistence.OrderReadRepository;
 import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 import pl.lilimi.payment.cancellation.CheckoutExpirationTaskView;
 import pl.lilimi.payment.domain.PaymentAttempt;
@@ -44,18 +45,23 @@ public class AdminOrderQueryService {
   private final OrderItemRepository items;
   private final CheckoutExpirationQueue expirationQueue;
 
+  private final OrderReadRepository reads;
+
   public AdminOrderQueryService(
     OrderRepository orders,
     OrderItemRepository items,
-    CheckoutExpirationQueue expirationQueue
+    CheckoutExpirationQueue expirationQueue,
+    OrderReadRepository reads
   ) {
     this.orders = orders;
     this.items = items;
     this.expirationQueue = expirationQueue;
+    this.reads = reads;
   }
 
   @Transactional(readOnly = true)
   public Page<AdminOrderSummaryResponse> findOrders(
+    UUID administratorId,
     int page,
     int size,
     String view,
@@ -220,12 +226,14 @@ public class AdminOrderQueryService {
       .map(order -> order.getId())
       .toList();
 
+    var readOrderIds = reads.findReadIds(administratorId, orderIds);
     var cancellations = expirationQueue.findSummaries(orderIds);
 
     return result.map(order ->
       AdminOrderSummaryResponse.from(
         order,
-        cancellations.get(order.getId())
+        cancellations.get(order.getId()),
+        readOrderIds.contains(order.getId())
       )
     );
   }
