@@ -77,12 +77,18 @@ export class CustomerLogin {
           this.loginForm.controls.password.reset();
 
           this.errorKey.set(
-            error instanceof HttpErrorResponse && error.status === 401
-              ? 'customerLogin.errors.invalidCredentials'
-              : 'customerLogin.errors.loginUnavailable',
+            this.loginError(error),
           );
         },
       });
+  }
+
+  private loginError(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 429) return 'customerLogin.errors.tooManyAttempts';
+      if (error.status === 401) return 'customerLogin.errors.invalidCredentials';
+    }
+    return 'customerLogin.errors.loginUnavailable';
   }
 
   protected logout(): void {
