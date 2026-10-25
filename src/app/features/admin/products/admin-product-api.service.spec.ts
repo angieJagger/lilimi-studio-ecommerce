@@ -63,27 +63,27 @@ describe('AdminProductApiService', () => {
     expectedVersion: details.version,
   };
 
-    const variant: AdminGarmentVariant = {
-      id: '00000000-0000-0000-0000-000000000001',
-      version: 2,
-      productId: 'embroidered-002',
-      patternId: 'pattern-001',
-      embroideryOptionId: 'small-front',
-      fit: 'women',
-      size: 'M',
-      color: 'navy',
-      priceInGrosz: 14900,
-      currency: 'PLN',
-      active: true,
-    };
+  const variant: AdminGarmentVariant = {
+    id: '00000000-0000-0000-0000-000000000001',
+    version: 2,
+    productId: 'embroidered-002',
+    patternId: 'pattern-001',
+    embroideryOptionId: 'small-front',
+    fit: 'women',
+    size: 'M',
+    color: 'navy',
+    priceInGrosz: 14900,
+    currency: 'PLN',
+    active: true,
+  };
 
-    const variantPage: AdminGarmentVariantPage = {
-      items: [variant],
-      page: 0,
-      size: 20,
-      totalElements: 1,
-      totalPages: 1,
-    };
+  const variantPage: AdminGarmentVariantPage = {
+    items: [variant],
+    page: 0,
+    size: 20,
+    totalElements: 1,
+    totalPages: 1,
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -154,430 +154,458 @@ describe('AdminProductApiService', () => {
     http.expectNone(url);
   });
 
-    it('should initialize CSRF before changing product visibility', () => {
-      const product = page.items[0];
-      const request = {
+  it('should initialize CSRF before changing product visibility', () => {
+    const product = page.items[0];
+    const request = {
+      active: true,
+      expectedVersion: product.version,
+    };
+
+    const updated: AdminProductSummary = {
+      ...product,
+      active: true,
+      version: product.version + 1,
+    };
+
+    let result: AdminProductSummary | undefined;
+
+    service.changeVisibility(product.id, request).subscribe((response) => {
+      result = response;
+    });
+
+    const url = `/api/admin/products/${product.id}/visibility`;
+    const csrfRequest = http.expectOne('/api/auth/csrf');
+
+    expect(csrfRequest.request.method).toBe('GET');
+    http.expectNone(url);
+
+    csrfRequest.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const pending = http.expectOne(url);
+
+    expect(pending.request.method).toBe('PATCH');
+    expect(pending.request.body).toEqual(request);
+
+    pending.flush(updated);
+
+    expect(result).toEqual(updated);
+  });
+
+  it('should propagate a version conflict without retrying', () => {
+    const product = page.items[0];
+    let receivedError: HttpErrorResponse | undefined;
+
+    service
+      .changeVisibility(product.id, {
         active: true,
         expectedVersion: product.version,
-      };
+      })
+      .subscribe({
+        error: (error: HttpErrorResponse) => {
+          receivedError = error;
+        },
+      });
 
-      const updated: AdminProductSummary = {
-        ...product,
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const url = `/api/admin/products/${product.id}/visibility`;
+
+    http
+      .expectOne(url)
+      .flush({ code: 'PRODUCT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
+
+    expect(receivedError?.status).toBe(409);
+    expect(receivedError?.error.code).toBe('PRODUCT_VERSION_CONFLICT');
+
+    http.expectNone(url);
+    http.expectNone('/api/auth/csrf');
+  });
+
+  it('should not update visibility when CSRF initialization fails', () => {
+    const product = page.items[0];
+    let receivedError: HttpErrorResponse | undefined;
+
+    service
+      .changeVisibility(product.id, {
         active: true,
-        version: product.version + 1,
-      };
-
-      let result: AdminProductSummary | undefined;
-
-      service.changeVisibility(product.id, request).subscribe((response) => {
-        result = response;
-      });
-
-      const url = `/api/admin/products/${product.id}/visibility`;
-      const csrfRequest = http.expectOne('/api/auth/csrf');
-
-      expect(csrfRequest.request.method).toBe('GET');
-      http.expectNone(url);
-
-      csrfRequest.flush(null, {
-        status: 204,
-        statusText: 'No Content',
-      });
-
-      const pending = http.expectOne(url);
-
-      expect(pending.request.method).toBe('PATCH');
-      expect(pending.request.body).toEqual(request);
-
-      pending.flush(updated);
-
-      expect(result).toEqual(updated);
-    });
-
-    it('should propagate a version conflict without retrying', () => {
-      const product = page.items[0];
-      let receivedError: HttpErrorResponse | undefined;
-
-      service
-        .changeVisibility(product.id, {
-          active: true,
-          expectedVersion: product.version,
-        })
-        .subscribe({
-          error: (error: HttpErrorResponse) => {
-            receivedError = error;
-          },
-        });
-
-      http.expectOne('/api/auth/csrf').flush(null, {
-        status: 204,
-        statusText: 'No Content',
-      });
-
-      const url = `/api/admin/products/${product.id}/visibility`;
-
-      http
-        .expectOne(url)
-        .flush({ code: 'PRODUCT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
-
-      expect(receivedError?.status).toBe(409);
-      expect(receivedError?.error.code).toBe('PRODUCT_VERSION_CONFLICT');
-
-      http.expectNone(url);
-      http.expectNone('/api/auth/csrf');
-    });
-
-    it('should not update visibility when CSRF initialization fails', () => {
-      const product = page.items[0];
-      let receivedError: HttpErrorResponse | undefined;
-
-      service
-        .changeVisibility(product.id, {
-          active: true,
-          expectedVersion: product.version,
-        })
-        .subscribe({
-          error: (error: HttpErrorResponse) => {
-            receivedError = error;
-          },
-        });
-
-      http.expectOne('/api/auth/csrf').flush(null, {
-        status: 503,
-        statusText: 'Service Unavailable',
-      });
-
-      expect(receivedError?.status).toBe(503);
-
-      http.expectNone(`/api/admin/products/${product.id}/visibility`);
-    });
-    it('should request product details with both translations', () => {
-      let result: AdminProductDetails | undefined;
-
-      service.getProduct(details.id).subscribe((response) => {
-        result = response;
-      });
-
-      const pending = http.expectOne(`/api/admin/products/${details.id}`);
-
-      expect(pending.request.method).toBe('GET');
-
-      pending.flush(details);
-
-      expect(result).toEqual(details);
-    });
-
-    it('should initialize CSRF before saving both translations', () => {
-      const updated: AdminProductDetails = {
-        ...details,
-        version: details.version + 1,
-        translations: [
-          { language: 'en', ...translationRequest.en },
-          { language: 'pl', ...translationRequest.pl },
-        ],
-      };
-
-      let result: AdminProductDetails | undefined;
-
-      service.updateTranslations(details.id, translationRequest).subscribe((response) => {
-        result = response;
-      });
-
-      const url = `/api/admin/products/${details.id}/translations`;
-      const csrfRequest = http.expectOne('/api/auth/csrf');
-
-      expect(csrfRequest.request.method).toBe('GET');
-      http.expectNone(url);
-
-      csrfRequest.flush(null, {
-        status: 204,
-        statusText: 'No Content',
-      });
-
-      const pending = http.expectOne(url);
-
-      expect(pending.request.method).toBe('PATCH');
-      expect(pending.request.body).toEqual(translationRequest);
-
-      pending.flush(updated);
-
-      expect(result).toEqual(updated);
-    });
-
-    it('should propagate a translation version conflict without retrying', () => {
-      let receivedError: HttpErrorResponse | undefined;
-
-      service.updateTranslations(details.id, translationRequest).subscribe({
+        expectedVersion: product.version,
+      })
+      .subscribe({
         error: (error: HttpErrorResponse) => {
           receivedError = error;
         },
       });
 
-      http.expectOne('/api/auth/csrf').flush(null, {
-        status: 204,
-        statusText: 'No Content',
-      });
-
-      const url = `/api/admin/products/${details.id}/translations`;
-
-      http
-        .expectOne(url)
-        .flush({ code: 'PRODUCT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
-
-      expect(receivedError?.status).toBe(409);
-      expect(receivedError?.error.code).toBe('PRODUCT_VERSION_CONFLICT');
-
-      http.expectNone(url);
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 503,
+      statusText: 'Service Unavailable',
     });
 
-    it('should not save translations when CSRF initialization fails', () => {
-      let receivedError: HttpErrorResponse | undefined;
+    expect(receivedError?.status).toBe(503);
 
-      service.updateTranslations(details.id, translationRequest).subscribe({
+    http.expectNone(`/api/admin/products/${product.id}/visibility`);
+  });
+  it('should request product details with both translations', () => {
+    let result: AdminProductDetails | undefined;
+
+    service.getProduct(details.id).subscribe((response) => {
+      result = response;
+    });
+
+    const pending = http.expectOne(`/api/admin/products/${details.id}`);
+
+    expect(pending.request.method).toBe('GET');
+
+    pending.flush(details);
+
+    expect(result).toEqual(details);
+  });
+
+  it('should initialize CSRF before saving both translations', () => {
+    const updated: AdminProductDetails = {
+      ...details,
+      version: details.version + 1,
+      translations: [
+        { language: 'en', ...translationRequest.en },
+        { language: 'pl', ...translationRequest.pl },
+      ],
+    };
+
+    let result: AdminProductDetails | undefined;
+
+    service.updateTranslations(details.id, translationRequest).subscribe((response) => {
+      result = response;
+    });
+
+    const url = `/api/admin/products/${details.id}/translations`;
+    const csrfRequest = http.expectOne('/api/auth/csrf');
+
+    expect(csrfRequest.request.method).toBe('GET');
+    http.expectNone(url);
+
+    csrfRequest.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const pending = http.expectOne(url);
+
+    expect(pending.request.method).toBe('PATCH');
+    expect(pending.request.body).toEqual(translationRequest);
+
+    pending.flush(updated);
+
+    expect(result).toEqual(updated);
+  });
+
+  it('should propagate a translation version conflict without retrying', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    service.updateTranslations(details.id, translationRequest).subscribe({
+      error: (error: HttpErrorResponse) => {
+        receivedError = error;
+      },
+    });
+
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const url = `/api/admin/products/${details.id}/translations`;
+
+    http
+      .expectOne(url)
+      .flush({ code: 'PRODUCT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
+
+    expect(receivedError?.status).toBe(409);
+    expect(receivedError?.error.code).toBe('PRODUCT_VERSION_CONFLICT');
+
+    http.expectNone(url);
+  });
+
+  it('should not save translations when CSRF initialization fails', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    service.updateTranslations(details.id, translationRequest).subscribe({
+      error: (error: HttpErrorResponse) => {
+        receivedError = error;
+      },
+    });
+
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 503,
+      statusText: 'Service Unavailable',
+    });
+
+    expect(receivedError?.status).toBe(503);
+
+    http.expectNone(`/api/admin/products/${details.id}/translations`);
+  });
+
+  it('should initialize CSRF before saving a digital price', () => {
+    const request = {
+      priceInGrosz: 3550,
+      expectedVersion: details.version,
+    };
+
+    const updated: AdminProductDetails = {
+      ...details,
+      version: details.version + 1,
+      digitalPriceInGrosz: 3550,
+    };
+
+    let result: AdminProductDetails | undefined;
+
+    service.updateDigitalPrice(details.id, request).subscribe((response) => {
+      result = response;
+    });
+
+    const url = `/api/admin/products/${details.id}/digital-price`;
+    const csrfRequest = http.expectOne('/api/auth/csrf');
+
+    expect(csrfRequest.request.method).toBe('GET');
+    http.expectNone(url);
+
+    csrfRequest.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const pending = http.expectOne(url);
+
+    expect(pending.request.method).toBe('PATCH');
+    expect(pending.request.body).toEqual(request);
+
+    pending.flush(updated);
+
+    expect(result).toEqual(updated);
+  });
+
+  it('should propagate a price version conflict without retrying', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    service
+      .updateDigitalPrice(details.id, {
+        priceInGrosz: 3550,
+        expectedVersion: details.version,
+      })
+      .subscribe({
         error: (error: HttpErrorResponse) => {
           receivedError = error;
         },
       });
 
-      http.expectOne('/api/auth/csrf').flush(null, {
-        status: 503,
-        statusText: 'Service Unavailable',
-      });
-
-      expect(receivedError?.status).toBe(503);
-
-      http.expectNone(`/api/admin/products/${details.id}/translations`);
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
     });
 
-      it('should initialize CSRF before saving a digital price', () => {
-        const request = {
-          priceInGrosz: 3550,
-          expectedVersion: details.version,
-        };
+    const url = `/api/admin/products/${details.id}/digital-price`;
 
-        const updated: AdminProductDetails = {
-          ...details,
-          version: details.version + 1,
-          digitalPriceInGrosz: 3550,
-        };
+    http
+      .expectOne(url)
+      .flush({ code: 'PRODUCT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
 
-        let result: AdminProductDetails | undefined;
+    expect(receivedError?.status).toBe(409);
+    expect(receivedError?.error.code).toBe('PRODUCT_VERSION_CONFLICT');
 
-        service.updateDigitalPrice(details.id, request).subscribe((response) => {
-          result = response;
-        });
+    http.expectNone(url);
+    http.expectNone('/api/auth/csrf');
+  });
 
-        const url = `/api/admin/products/${details.id}/digital-price`;
-        const csrfRequest = http.expectOne('/api/auth/csrf');
+  it('should not save a price when CSRF initialization fails', () => {
+    let receivedError: HttpErrorResponse | undefined;
 
-        expect(csrfRequest.request.method).toBe('GET');
-        http.expectNone(url);
-
-        csrfRequest.flush(null, {
-          status: 204,
-          statusText: 'No Content',
-        });
-
-        const pending = http.expectOne(url);
-
-        expect(pending.request.method).toBe('PATCH');
-        expect(pending.request.body).toEqual(request);
-
-        pending.flush(updated);
-
-        expect(result).toEqual(updated);
+    service
+      .updateDigitalPrice(details.id, {
+        priceInGrosz: 3550,
+        expectedVersion: details.version,
+      })
+      .subscribe({
+        error: (error: HttpErrorResponse) => {
+          receivedError = error;
+        },
       });
 
-      it('should propagate a price version conflict without retrying', () => {
-        let receivedError: HttpErrorResponse | undefined;
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 503,
+      statusText: 'Service Unavailable',
+    });
 
-        service
-          .updateDigitalPrice(details.id, {
-            priceInGrosz: 3550,
-            expectedVersion: details.version,
-          })
-          .subscribe({
-            error: (error: HttpErrorResponse) => {
-              receivedError = error;
-            },
-          });
+    expect(receivedError?.status).toBe(503);
 
-        http.expectOne('/api/auth/csrf').flush(null, {
-          status: 204,
-          statusText: 'No Content',
-        });
+    http.expectNone(`/api/admin/products/${details.id}/digital-price`);
+  });
 
-        const url = `/api/admin/products/${details.id}/digital-price`;
+  it('should request the default variant page', () => {
+    let result: AdminGarmentVariantPage | undefined;
 
-        http
-          .expectOne(url)
-          .flush({ code: 'PRODUCT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
+    service.getVariants(variant.productId).subscribe((response) => {
+      result = response;
+    });
 
-        expect(receivedError?.status).toBe(409);
-        expect(receivedError?.error.code).toBe('PRODUCT_VERSION_CONFLICT');
+    const pending = http.expectOne('/api/admin/products/embroidered-002/variants?page=0&size=20');
 
-        http.expectNone(url);
-        http.expectNone('/api/auth/csrf');
+    expect(pending.request.method).toBe('GET');
+
+    pending.flush(variantPage);
+
+    expect(result).toEqual(variantPage);
+  });
+
+  it('should request the selected variant page and size', () => {
+    service.getVariants(variant.productId, 2, 10).subscribe();
+
+    const pending = http.expectOne('/api/admin/products/embroidered-002/variants?page=2&size=10');
+
+    expect(pending.request.method).toBe('GET');
+
+    pending.flush({
+      ...variantPage,
+      page: 2,
+      size: 10,
+    });
+  });
+
+  it('should initialize CSRF before updating a variant', () => {
+    const request = {
+      priceInGrosz: 18990,
+      active: false,
+      expectedVersion: variant.version,
+    };
+
+    const updated: AdminGarmentVariant = {
+      ...variant,
+      priceInGrosz: 18990,
+      active: false,
+      version: variant.version + 1,
+    };
+
+    let result: AdminGarmentVariant | undefined;
+
+    service.updateVariant(variant.productId, variant.id, request).subscribe((response) => {
+      result = response;
+    });
+
+    const url = `/api/admin/products/${variant.productId}/variants/${variant.id}`;
+
+    const csrfRequest = http.expectOne('/api/auth/csrf');
+
+    expect(csrfRequest.request.method).toBe('GET');
+    http.expectNone(url);
+
+    csrfRequest.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const pending = http.expectOne(url);
+
+    expect(pending.request.method).toBe('PATCH');
+    expect(pending.request.body).toEqual(request);
+
+    pending.flush(updated);
+
+    expect(result).toEqual(updated);
+  });
+
+  it('should propagate a variant conflict without retrying', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    service
+      .updateVariant(variant.productId, variant.id, {
+        priceInGrosz: 18990,
+        active: false,
+        expectedVersion: variant.version,
+      })
+      .subscribe({
+        error: (error: HttpErrorResponse) => {
+          receivedError = error;
+        },
       });
 
-      it('should not save a price when CSRF initialization fails', () => {
-        let receivedError: HttpErrorResponse | undefined;
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
 
-        service
-          .updateDigitalPrice(details.id, {
-            priceInGrosz: 3550,
-            expectedVersion: details.version,
-          })
-          .subscribe({
-            error: (error: HttpErrorResponse) => {
-              receivedError = error;
-            },
-          });
+    const url = `/api/admin/products/${variant.productId}/variants/${variant.id}`;
 
-        http.expectOne('/api/auth/csrf').flush(null, {
-          status: 503,
-          statusText: 'Service Unavailable',
-        });
+    http
+      .expectOne(url)
+      .flush({ code: 'GARMENT_VARIANT_VERSION_CONFLICT' }, { status: 409, statusText: 'Conflict' });
 
-        expect(receivedError?.status).toBe(503);
+    expect(receivedError?.status).toBe(409);
+    expect(receivedError?.error.code).toBe('GARMENT_VARIANT_VERSION_CONFLICT');
 
-        http.expectNone(`/api/admin/products/${details.id}/digital-price`);
+    http.expectNone(url);
+    http.expectNone('/api/auth/csrf');
+  });
+
+  it('should not update a variant when CSRF initialization fails', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    service
+      .updateVariant(variant.productId, variant.id, {
+        priceInGrosz: 18990,
+        active: false,
+        expectedVersion: variant.version,
+      })
+      .subscribe({
+        error: (error: HttpErrorResponse) => {
+          receivedError = error;
+        },
       });
 
-        it('should request the default variant page', () => {
-          let result: AdminGarmentVariantPage | undefined;
+    http.expectOne('/api/auth/csrf').flush(null, {
+      status: 503,
+      statusText: 'Service Unavailable',
+    });
 
-          service.getVariants(variant.productId).subscribe((response) => {
-            result = response;
-          });
+    expect(receivedError?.status).toBe(503);
 
-          const pending = http.expectOne(
-            '/api/admin/products/embroidered-002/variants?page=0&size=20',
-          );
+    http.expectNone(`/api/admin/products/${variant.productId}/variants/${variant.id}`);
+  });
 
-          expect(pending.request.method).toBe('GET');
-
-          pending.flush(variantPage);
-
-          expect(result).toEqual(variantPage);
-        });
-
-        it('should request the selected variant page and size', () => {
-          service.getVariants(variant.productId, 2, 10).subscribe();
-
-          const pending = http.expectOne(
-            '/api/admin/products/embroidered-002/variants?page=2&size=10',
-          );
-
-          expect(pending.request.method).toBe('GET');
-
-          pending.flush({
-            ...variantPage,
-            page: 2,
-            size: 10,
-          });
-        });
-
-        it('should initialize CSRF before updating a variant', () => {
-          const request = {
-            priceInGrosz: 18990,
-            active: false,
-            expectedVersion: variant.version,
-          };
-
-          const updated: AdminGarmentVariant = {
-            ...variant,
-            priceInGrosz: 18990,
-            active: false,
-            version: variant.version + 1,
-          };
-
-          let result: AdminGarmentVariant | undefined;
-
-          service.updateVariant(variant.productId, variant.id, request).subscribe((response) => {
-            result = response;
-          });
-
-          const url = `/api/admin/products/${variant.productId}/variants/${variant.id}`;
-
-          const csrfRequest = http.expectOne('/api/auth/csrf');
-
-          expect(csrfRequest.request.method).toBe('GET');
-          http.expectNone(url);
-
-          csrfRequest.flush(null, {
-            status: 204,
-            statusText: 'No Content',
-          });
-
-          const pending = http.expectOne(url);
-
-          expect(pending.request.method).toBe('PATCH');
-          expect(pending.request.body).toEqual(request);
-
-          pending.flush(updated);
-
-          expect(result).toEqual(updated);
-        });
-
-        it('should propagate a variant conflict without retrying', () => {
-          let receivedError: HttpErrorResponse | undefined;
-
-          service
-            .updateVariant(variant.productId, variant.id, {
-              priceInGrosz: 18990,
-              active: false,
-              expectedVersion: variant.version,
-            })
-            .subscribe({
-              error: (error: HttpErrorResponse) => {
-                receivedError = error;
-              },
-            });
-
-          http.expectOne('/api/auth/csrf').flush(null, {
-            status: 204,
-            statusText: 'No Content',
-          });
-
-          const url = `/api/admin/products/${variant.productId}/variants/${variant.id}`;
-
-          http
-            .expectOne(url)
-            .flush(
-              { code: 'GARMENT_VARIANT_VERSION_CONFLICT' },
-              { status: 409, statusText: 'Conflict' },
-            );
-
-          expect(receivedError?.status).toBe(409);
-          expect(receivedError?.error.code).toBe('GARMENT_VARIANT_VERSION_CONFLICT');
-
-          http.expectNone(url);
-          http.expectNone('/api/auth/csrf');
-        });
-
-        it('should not update a variant when CSRF initialization fails', () => {
-          let receivedError: HttpErrorResponse | undefined;
-
-          service
-            .updateVariant(variant.productId, variant.id, {
-              priceInGrosz: 18990,
-              active: false,
-              expectedVersion: variant.version,
-            })
-            .subscribe({
-              error: (error: HttpErrorResponse) => {
-                receivedError = error;
-              },
-            });
-
-          http.expectOne('/api/auth/csrf').flush(null, {
-            status: 503,
-            statusText: 'Service Unavailable',
-          });
-
-          expect(receivedError?.status).toBe(503);
-
-          http.expectNone(`/api/admin/products/${variant.productId}/variants/${variant.id}`);
-        });
+  it('should save the complete product in one multipart request after CSRF', async () => {
+    const request = {
+      expectedVersion: 0,
+      pl: { name: 'PL name', description: 'PL description' },
+      en: { name: 'EN name', description: 'EN description' },
+      digitalPriceInGrosz: 3500,
+      images: [{ id: null, fileIndex: 0, altPl: '', altEn: '', primaryImage: true }],
+    };
+    const file = new File(['image'], 'new.png', { type: 'image/png' });
+    let result: unknown;
+    service.saveProduct('product/name', request, [file]).subscribe((value) => (result = value));
+    const url = '/api/admin/products/product%2Fname/edit';
+    http.expectNone(url);
+    http.expectOne('/api/auth/csrf').flush(null, { status: 204, statusText: 'No Content' });
+    const pending = http.expectOne(url);
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.headers.has('Content-Type')).toBe(false);
+    const body = pending.request.body as FormData;
+    expect(body.getAll('files')).toHaveLength(1);
+    const blob = body.get('metadata') as Blob;
+    expect(blob.type).toBe('application/json');
+    const metadata = new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(blob);
+    });
+    pending.flush({
+      product: details,
+      gallery: { productId: details.id, version: details.version, images: [] },
+    });
+    expect(result).toEqual(expect.objectContaining({ product: details }));
+    expect(JSON.parse(await metadata)).toEqual(request);
+  });
 });

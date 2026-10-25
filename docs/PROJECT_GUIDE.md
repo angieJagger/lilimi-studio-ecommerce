@@ -499,6 +499,10 @@ docker compose down
 | GET | `/api/admin/products` | Paginated administrator product list |
 | PATCH | `/api/admin/products/{id}/visibility` | Update product visibility |
 | GET | `/api/admin/products/{id}` | Administrator product details, translations, and digital price |
+| POST | `/api/admin/products/{id}/edit` | Save translations, digital price and the complete image gallery together (multipart) |
+| GET | `/api/products/{slug}/images/{imageId}/content` | Public image of an active, available product |
+| GET | `/api/admin/products/{productId}/images` | Administrator image gallery and product version |
+| GET | `/api/admin/products/{productId}/images/{imageId}/content` | Authenticated image preview |
 | PATCH | `/api/admin/products/{id}/translations` | Update Polish and English product translations |
 | PATCH | `/api/admin/products/{id}/digital-price` | Update a digital product price |
 | GET | `/api/admin/products/{productId}/variants` | Paginated administrator garment variant list |
@@ -588,6 +592,20 @@ A read-receipt failure does not block the detail view; another visit retries the
 
 Read tracking records the first opening of details. Later edits do not automatically make an entry unread again.
 
+### Product editing and image drafts
+
+The product editor uses one **Save changes** action for PL/EN translations, the digital price (digital products only), and the image gallery. Selecting a file, replacing it, changing its alternative text, selecting the primary image, reordering, or marking an image for removal changes only the browser draft. Removal can be undone before saving. **Cancel changes** reloads the saved product and discards unsaved form and gallery changes. Garment variants keep their separate editor and versioning.
+
+The multipart save request contains JSON `metadata` plus repeated `files` parts. The ordered image manifest identifies retained images and indexes any new or replacement files; existing images omitted from it are removed. The server validates membership, uniqueness, file references, the ten-image limit, and exactly one primary image for a non-empty gallery. It checks `expectedVersion` and updates the product version before changing related data or storing files.
+
+Translations, price, image metadata and removals commit in one database transaction. Newly written files are removed on rollback; obsolete files are removed after commit. Filesystem and database operations are not a distributed transaction: cleanup failures are logged, and a process crash can leave orphaned files requiring reconciliation. Stored files are never removed merely by changing a browser draft.
+
+Uploads support JPEG, PNG and WebP, with a 10 MiB limit per file, a maximum dimension of 8000 pixels and at most 20 million pixels. The validator detects the actual format and decodes the image; it does not trust the browser MIME type. The multipart request limit is 105 MiB to accommodate ten files plus metadata. `MEDIA_STORAGE_DIRECTORY` configures the local filesystem storage root (default `./var/media`, relative to the backend working directory); uploaded media is excluded from Git. Administrator previews require an authenticated administrator and use `Cache-Control: no-store` and `X-Content-Type-Options: nosniff`.
+
+Public product responses include an `images` array with the primary image first, localized alternative text, dimensions and the product version. Catalog images are loaded in a batch, rather than one database query per product. The home page, catalog and related-product cards show only the primary image. Product details show the full gallery with selectable thumbnail buttons. Browser-facing image URLs use `PUBLIC_MEDIA_BASE_URL` (default `/api`), independently of the backend origin used for SSR requests. Their version query changes after product edits; ETags and mandatory cache revalidation prevent stale images and ensure hidden or unavailable products return `404`, including on conditional requests. Missing images retain a placeholder. The public endpoint does not expose storage keys or filesystem paths.
+
+The deployment media volume and media backup remain separate integration steps. Existing administrator image endpoints remain available, but the editor uses the unified save endpoint.
+
 ## Verification
 
 Frontend, from the repository root:
@@ -639,7 +657,7 @@ Recovery procedures are documented in [deploy/RECOVERY.md](../deploy/RECOVERY.md
 
 ## Next milestones
 
-- Add product image uploads, replacement, ordering, primary image selection and Polish/English alternative text, backed by persistent media storage.
+- Configure persistent product media storage and media backups for deployment.
 - Extend guest payment recovery, reconciliation and operational recovery.
 - Prepare real payment configuration and refund handling.
 - Implement controlled delivery of purchased digital files and order fulfilment.

@@ -14,11 +14,13 @@ public record ProductResponse(
   String currency,
   List<String> fileFormats,
   boolean madeToOrder,
-  boolean personalizationAvailable
+  boolean personalizationAvailable,
+  List<ProductImageResponse> images
 ) {
   public ProductResponse {
     name = Map.copyOf(name);
     description = Map.copyOf(description);
     fileFormats = List.copyOf(fileFormats);
+    images = List.copyOf(images);
   }
 }

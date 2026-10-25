@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -16,13 +17,16 @@ public class ProductService {
 
   private final ProductRepository productRepository;
   private final ProductTranslationRepository translationRepository;
+  private final ProductImageRepository imageRepository;
 
   public ProductService(
     ProductRepository productRepository,
-    ProductTranslationRepository translationRepository
+    ProductTranslationRepository translationRepository,
+    ProductImageRepository imageRepository
   ) {
     this.productRepository = productRepository;
     this.translationRepository = translationRepository;
+    this.imageRepository = imageRepository;
   }
 
   public List<ProductResponse> getActiveProducts() {
@@ -55,6 +59,9 @@ public class ProductService {
     Map<String, List<String>> fileFormatsByProduct =
       getFileFormatsByProduct(productIds);
 
+    var imagesByProduct = imageRepository.findAllByProductIdInOrderBySortOrderAscIdAsc(productIds)
+      .stream().collect(Collectors.groupingBy(ProductImage::getProductId));
+
     return products.stream()
       .filter(product -> pricesByProduct.containsKey(product.getId()))
       .map(product -> toResponse(
@@ -67,7 +74,8 @@ public class ProductService {
         fileFormatsByProduct.getOrDefault(
           product.getId(),
           List.of()
-        )
+        ),
+        imagesByProduct.getOrDefault(product.getId(), List.of())
       ))
       .toList();
   }
@@ -96,7 +104,8 @@ public class ProductService {
           product,
           translations,
           price.get(),
-          fileFormats
+          fileFormats,
+          imageRepository.findAllByProductIdOrderBySortOrderAscIdAsc(product.getId())
         ));
       });
   }
@@ -148,7 +157,8 @@ public class ProductService {
     Product product,
     List<ProductTranslation> translations,
     ProductPriceView price,
-    List<String> fileFormats
+    List<String> fileFormats,
+    List<ProductImage> images
   ) {
     Map<String, String> names = new HashMap<>();
     Map<String, String> descriptions = new HashMap<>();
@@ -171,7 +181,12 @@ public class ProductService {
       "PLN",
       fileFormats,
       product.isMadeToOrder(),
-      product.isPersonalizationAvailable()
+      product.isPersonalizationAvailable(),
+      images.stream()
+        .sorted(Comparator.comparing(ProductImage::isPrimaryImage).reversed()
+          .thenComparingInt(ProductImage::getSortOrder).thenComparing(ProductImage::getId))
+        .map(image -> ProductImageResponse.from(image, product.getVersion()))
+        .toList()
     );
   }
 }

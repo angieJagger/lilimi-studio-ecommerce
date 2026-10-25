@@ -8,16 +8,6 @@
   margin-top: var(--spacing-24);
 }
 
-.product-detail__media {
-  aspect-ratio: 1;
-  background-color: var(--brand-lilac);
-  border: 1px solid var(--border-brand-soft);
-  border-radius: var(--radius-8);
-  display: grid;
-  place-items: center;
-  padding: var(--spacing-24);
-}
-
 .product-detail__info {
   display: flex;
   flex-direction: column;
@@ -29,13 +19,6 @@
   p {
     margin: 0;
   }
-}
-
-.product-detail__media-placeholder {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  text-align: center;
 }
 
 .product-detail__type {
@@ -152,7 +135,7 @@
 
 @media (min-width: 768px) {
   .product-detail__related-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 20rem));
     gap: var(--spacing-24);
   }
 }

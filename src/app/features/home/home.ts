@@ -16,10 +16,9 @@ export class Home {
 
   protected readonly catalog = inject(ProductCatalogService);
 
-  private readonly activeLanguage = toSignal(
-    this.transloco.langChanges$,
-    { initialValue: this.transloco.getActiveLang() },
-  );
+  private readonly activeLanguage = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
 
   protected readonly language = computed<'pl' | 'en'>(() =>
     this.activeLanguage() === 'en' ? 'en' : 'pl',
@@ -32,6 +31,13 @@ export class Home {
       return product ? [product] : [];
     }),
   );
+  constructor() {
+    // Refresh an earlier catalog snapshot when returning after product edits.
+    if (this.catalog.state().status !== 'loading') {
+      this.catalog.reload();
+    }
+  }
+
   protected readonly offerItems = [
     {
       id: 'graphic',

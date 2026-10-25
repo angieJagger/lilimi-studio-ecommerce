@@ -4,145 +4,160 @@
       {{ 'productDetail.backToProducts' | transloco }}
     </a>
 
-        @if (detailState().status === 'loading') {
-        <output>{{ 'productDetail.loading' | transloco }}</output>
-        } @else if (detailState().status === 'error') {
-        <p role="alert">
-          {{ 'productDetail.loadError' | transloco }}
-        </p>
-        
-        <button class="button button--primary" type="button" (click)="reloadProduct()">
-          {{ 'productDetail.retry' | transloco }}
-        </button>
-        } @else if (product(); as currentProduct) {
-    <div class="product-detail__overview">
-      <div class="product-detail__media">
-        <p class="product-detail__media-placeholder">
-          {{ 'productDetail.imageUnavailable' | transloco }}
-        </p>
-      </div>
-    
-      <div class="product-detail__info">
-        <p class="product-detail__type">
-          {{
-          (currentProduct.category === 'embroidery-patterns'
-          ? 'products.digitalType'
-          : 'products.physicalType') | transloco
-          }}
-        </p>
-    
-        <h1 class="heading-1">
-          {{ currentProduct.name[language()] }}
-        </h1>
-    
-        <p class="product-detail__description">
-          {{ currentProduct.description[language()] }}
-        </p>
-    
-        @if (currentProduct.slug === 'embroidered-sweatshirt') {
-        <app-sweatshirt-configurator></app-sweatshirt-configurator>
-        } @else {
-        <p class="product-detail__price">
-          @if (currentProduct.priceType === 'from') {
-          <span>{{ 'products.priceFrom' | transloco }}</span>
-          }
-          <span>{{ formattedPrice() }}</span>
-        </p>
-        }
+    @if (detailState().status === 'loading') {
+      <output>{{ 'productDetail.loading' | transloco }}</output>
+    } @else if (detailState().status === 'error') {
+      <p role="alert">
+        {{ 'productDetail.loadError' | transloco }}
+      </p>
 
-        <div class="product-detail__actions">
-          @if (
-          currentProduct.category === 'embroidery-patterns' &&
-          currentProduct.priceType === 'fixed'
-          ) {
-          @if (isInCart()) {
-          <a class="button button--primary" [routerLink]="['/', language(), 'cart']">
-            {{ 'productDetail.goToCart' | transloco }}
-          </a>
+      <button class="button button--primary" type="button" (click)="reloadProduct()">
+        {{ 'productDetail.retry' | transloco }}
+      </button>
+    } @else if (product(); as currentProduct) {
+      <div class="product-detail__overview">
+        <app-product-gallery
+          [slug]="currentProduct.slug"
+          [images]="currentProduct.images ?? []"
+          [locale]="language()"
+          [productName]="currentProduct.name[language()]"
+        />
+        <div class="product-detail__info">
+          <p class="product-detail__type">
+            {{
+              (currentProduct.category === 'embroidery-patterns'
+                ? 'products.digitalType'
+                : 'products.physicalType'
+              ) | transloco
+            }}
+          </p>
+
+          <h1 class="heading-1">
+            {{ currentProduct.name[language()] }}
+          </h1>
+
+          <p class="product-detail__description">
+            {{ currentProduct.description[language()] }}
+          </p>
+
+          @if (currentProduct.slug === 'embroidered-sweatshirt') {
+            <app-sweatshirt-configurator></app-sweatshirt-configurator>
           } @else {
-          <button class="button button--primary" type="button" (click)="addToCart()">
-            {{ 'productDetail.addToCart' | transloco }}
-          </button>
+            <p class="product-detail__price">
+              @if (currentProduct.priceType === 'from') {
+                <span>{{ 'products.priceFrom' | transloco }}</span>
+              }
+              <span>{{ formattedPrice() }}</span>
+            </p>
           }
-          }
-          <a class="button button--secondary" [routerLink]="['/', language(), 'project-inquiry']" [queryParams]="{ product: currentProduct.slug }">
-            {{ 'productDetail.askAboutProduct' | transloco }}
-          </a>
-        </div>
-        <output class="product-detail__cart-status">
-          @if (isInCart()) {
-          {{ 'productDetail.inCart' | transloco }}
-          }
-        </output>
-      </div>
-    </div>
-    <section class="product-detail__details" aria-labelledby="product-details-title">
-      <h2 id="product-details-title" class="heading-2">
-        {{ 'productDetail.detailsTitle' | transloco }}
-      </h2>
-    
-      <dl class="product-detail__specifications">
-        @if (currentProduct.category === 'embroidery-patterns') {
-        <div>
-          <dt>{{ 'productDetail.fileFormats' | transloco }}</dt>
-          <dd>{{ currentProduct.fileFormats.join(', ') }}</dd>
-        </div>
-        } @else {
-        <div>
-          <dt>{{ 'productDetail.madeToOrder' | transloco }}</dt>
-          <dd>
-            {{
-            (currentProduct.madeToOrder
-            ? 'productDetail.yes'
-            : 'productDetail.no') | transloco
-            }}
-          </dd>
-        </div>
-    
-        <div>
-          <dt>{{ 'productDetail.personalization' | transloco }}</dt>
-          <dd>
-            {{
-            (currentProduct.personalizationAvailable
-            ? 'productDetail.yes'
-            : 'productDetail.no') | transloco
-            }}
-          </dd>
-        </div>
-        }
-      </dl>
-    </section>
-    @if (relatedProducts().length > 0) {
-    <section class="product-detail__related" aria-labelledby="related-products-title">
-      <h2 id="related-products-title" class="heading-2">
-        {{ 'productDetail.relatedTitle' | transloco }}
-      </h2>
-    
-      <div class="product-detail__related-grid">
-        @for (relatedProduct of relatedProducts(); track relatedProduct.id) {
-        <a class="product-detail__related-link" [routerLink]="['/', language(), 'products', relatedProduct.slug]"
-          [attr.aria-label]="relatedProduct.name[language()]">
-          <app-product-card [productName]="relatedProduct.name[language()]"
-            [description]="relatedProduct.description[language()]" [typeLabel]="
-                  (relatedProduct.category === 'embroidery-patterns'
-                    ? 'products.digitalType'
-                    : 'products.physicalType') | transloco
-                " [priceInGrosz]="relatedProduct.priceInGrosz" [pricePrefix]="
-                  relatedProduct.priceType === 'from'
-                    ? ('products.priceFrom' | transloco)
-                    : ''
-                " [locale]="language()"></app-product-card>
-        </a>
-        }
-      </div>
-    </section>
-    }
-    } @else {
-    <h1 class="heading-1">
-      {{ 'productDetail.notFoundTitle' | transloco }}
-    </h1>
 
-    <p>{{ 'productDetail.notFoundDescription' | transloco }}</p>
+          <div class="product-detail__actions">
+            @if (
+              currentProduct.category === 'embroidery-patterns' &&
+              currentProduct.priceType === 'fixed'
+            ) {
+              @if (isInCart()) {
+                <a class="button button--primary" [routerLink]="['/', language(), 'cart']">
+                  {{ 'productDetail.goToCart' | transloco }}
+                </a>
+              } @else {
+                <button class="button button--primary" type="button" (click)="addToCart()">
+                  {{ 'productDetail.addToCart' | transloco }}
+                </button>
+              }
+            }
+            <a
+              class="button button--secondary"
+              [routerLink]="['/', language(), 'project-inquiry']"
+              [queryParams]="{ product: currentProduct.slug }"
+            >
+              {{ 'productDetail.askAboutProduct' | transloco }}
+            </a>
+          </div>
+          <output class="product-detail__cart-status">
+            @if (isInCart()) {
+              {{ 'productDetail.inCart' | transloco }}
+            }
+          </output>
+        </div>
+      </div>
+      <section class="product-detail__details" aria-labelledby="product-details-title">
+        <h2 id="product-details-title" class="heading-2">
+          {{ 'productDetail.detailsTitle' | transloco }}
+        </h2>
+
+        <dl class="product-detail__specifications">
+          @if (currentProduct.category === 'embroidery-patterns') {
+            <div>
+              <dt>{{ 'productDetail.fileFormats' | transloco }}</dt>
+              <dd>{{ currentProduct.fileFormats.join(', ') }}</dd>
+            </div>
+          } @else {
+            <div>
+              <dt>{{ 'productDetail.madeToOrder' | transloco }}</dt>
+              <dd>
+                {{
+                  (currentProduct.madeToOrder ? 'productDetail.yes' : 'productDetail.no')
+                    | transloco
+                }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>{{ 'productDetail.personalization' | transloco }}</dt>
+              <dd>
+                {{
+                  (currentProduct.personalizationAvailable
+                    ? 'productDetail.yes'
+                    : 'productDetail.no'
+                  ) | transloco
+                }}
+              </dd>
+            </div>
+          }
+        </dl>
+      </section>
+      @if (relatedProducts().length > 0) {
+        <section class="product-detail__related" aria-labelledby="related-products-title">
+          <h2 id="related-products-title" class="heading-2">
+            {{ 'productDetail.relatedTitle' | transloco }}
+          </h2>
+
+          <div class="product-detail__related-grid">
+            @for (relatedProduct of relatedProducts(); track relatedProduct.id) {
+              <a
+                class="product-detail__related-link"
+                [routerLink]="['/', language(), 'products', relatedProduct.slug]"
+                [attr.aria-label]="relatedProduct.name[language()]"
+              >
+                <app-product-card
+                  [slug]="relatedProduct.slug"
+                  [images]="relatedProduct.images ?? []"
+                  [productName]="relatedProduct.name[language()]"
+                  [description]="relatedProduct.description[language()]"
+                  [typeLabel]="
+                    (relatedProduct.category === 'embroidery-patterns'
+                      ? 'products.digitalType'
+                      : 'products.physicalType'
+                    ) | transloco
+                  "
+                  [priceInGrosz]="relatedProduct.priceInGrosz"
+                  [pricePrefix]="
+                    relatedProduct.priceType === 'from' ? ('products.priceFrom' | transloco) : ''
+                  "
+                  [locale]="language()"
+                ></app-product-card>
+              </a>
+            }
+          </div>
+        </section>
+      }
+    } @else {
+      <h1 class="heading-1">
+        {{ 'productDetail.notFoundTitle' | transloco }}
+      </h1>
+
+      <p>{{ 'productDetail.notFoundDescription' | transloco }}</p>
     }
   </div>
 </section>

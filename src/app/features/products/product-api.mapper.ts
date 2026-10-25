@@ -4,6 +4,7 @@ import type { Product } from './product.model';
 export function mapApiProductToProduct(response: ProductApiResponse): Product {
   const common = {
     id: response.id,
+    images: response.images ?? [],
     slug: response.slug,
     name: response.name,
     description: response.description,

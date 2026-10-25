@@ -8,196 +8,189 @@
   </h1>
 
   @if (isLoading()) {
-  <output>{{ 'adminProducts.loading' | transloco }}</output>
+    <output>{{ 'adminProducts.loading' | transloco }}</output>
   } @else if (errorKey(); as message) {
-  <p role="alert">{{ message | transloco }}</p>
-
-  @if (
-  message === 'adminOrders.errors.sessionExpired' ||
-  message === 'adminOrders.errors.accessDenied'
-  ) {
-  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
-    {{ 'adminOrders.login' | transloco }}
-  </a>
-  } @else {
-  <button type="button" (click)="retry()">
-    {{ 'adminProducts.reload' | transloco }}
-  </button>
-  }
-  } @else if (product(); as details) {
-  <p class="product-edit__reference">
-    {{ details.slug }} · {{ details.id }}
-  </p>
-
-  @if (saved()) {
-  <output class="product-edit__success">
-    {{ 'adminProducts.edit.saved' | transloco }}
-  </output>
-  }
-
-  @if (saveErrorKey(); as message) {
-  <div class="product-edit__feedback">
     <p role="alert">{{ message | transloco }}</p>
 
     @if (
-    message === 'adminOrders.errors.sessionExpired' ||
-    message === 'adminOrders.errors.accessDenied'
+      message === 'adminOrders.errors.sessionExpired' ||
+      message === 'adminOrders.errors.accessDenied'
     ) {
-    <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
-      {{ 'adminOrders.login' | transloco }}
-    </a>
+      <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+        {{ 'adminOrders.login' | transloco }}
+      </a>
     } @else {
-    <p>{{ 'adminProducts.edit.reloadNotice' | transloco }}</p>
-
-    <button type="button" data-testid="reload-product" [disabled]="isSaving()" (click)="retry()">
-      {{ 'adminProducts.reload' | transloco }}
-    </button>
+      <button type="button" (click)="retry()">
+        {{ 'adminProducts.reload' | transloco }}
+      </button>
     }
-  </div>
-  }
+  } @else if (product(); as details) {
+    <p class="product-edit__reference">{{ details.slug }} · {{ details.id }}</p>
 
-  @if (details.productType === 'digital') {
-  <section aria-labelledby="product-price-title">
-    <h2 id="product-price-title">
-      {{ 'adminProducts.price.title' | transloco }}
-    </h2>
-  
-    @if (details.digitalPriceInGrosz === null) {
-    <p role="alert">
-      {{ 'adminProducts.price.errors.missing' | transloco }}
-    </p>
-    } @else {
-    @if (priceSaved()) {
-    <output class="product-edit__success">
-      {{ 'adminProducts.price.saved' | transloco }}
-    </output>
+    @if (saved()) {
+      <output class="product-edit__success">
+        {{ 'adminProducts.edit.saved' | transloco }}
+      </output>
     }
-  
-    <form id="product-price-form" novalidate (submit)="onPriceSubmit($event)" [attr.aria-busy]="isSaving()">
-      <fieldset class="product-edit__language" [disabled]="isSaving() || saveErrorKey() !== null">
-        <div class="form-field">
-          <label for="product-price">
-            {{ 'adminProducts.price.label' | transloco }}
-          </label>
-  
-          <input id="product-price" type="text" inputmode="decimal" [formField]="priceForm.amount" [attr.aria-invalid]="
-                  priceForm.amount().touched() && priceForm.amount().invalid()
-                    ? 'true'
-                    : null
-                " [attr.aria-describedby]="
-                  priceForm.amount().touched() && priceForm.amount().invalid()
-                    ? 'product-price-hint product-price-errors'
-                    : 'product-price-hint'
-                " />
-  
-          <p id="product-price-hint">
-            {{ 'adminProducts.price.hint' | transloco }}
-          </p>
-  
-          @if (
-          priceForm.amount().touched() && priceForm.amount().invalid()
-          ) {
-          <ul class="form-field__errors" id="product-price-errors">
-            @for (error of priceForm.amount().errors(); track $index) {
-            <li>{{ error.message! | transloco }}</li>
-            }
-          </ul>
+
+    @if (saveErrorKey(); as message) {
+      <div class="product-edit__feedback">
+        <p role="alert">{{ message | transloco }}</p>
+
+        @if (
+          message === 'adminOrders.errors.sessionExpired' ||
+          message === 'adminOrders.errors.accessDenied'
+        ) {
+          <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+            {{ 'adminOrders.login' | transloco }}
+          </a>
+        } @else {
+          @if (hasBlockingSaveError()) {
+            <p>{{ 'adminProducts.edit.reloadNotice' | transloco }}</p>
           }
-        </div>
-  
-        <button type="submit">
-          {{
-          (
-          isSaving()
-          ? 'adminProducts.price.saving'
-          : 'adminProducts.price.save'
-          ) | transloco
-          }}
-        </button>
-      </fieldset>
-    </form>
 
+          <button
+            type="button"
+            data-testid="reload-product"
+            [disabled]="isSaving()"
+            (click)="retry()"
+          >
+            {{ 'adminProducts.reload' | transloco }}
+          </button>
+        }
+      </div>
     }
-  </section>
-  }
 
-  <form id="product-translations-form" novalidate (submit)="onSubmit($event)" [attr.aria-busy]="isSaving()">
-    <fieldset class="product-edit__fields" [disabled]="isSaving() || saveErrorKey() !== null">
-      @for (group of translationGroups; track group.language) {
-      <fieldset class="product-edit__language">
-        <legend>
-          {{ 'adminProducts.edit.languages.' + group.language | transloco }}
-        </legend>
+    <form
+      id="product-edit-form"
+      novalidate
+      (submit)="onSubmit($event)"
+      (input)="onDraftInput()"
+      (change)="onDraftInput()"
+      [attr.aria-busy]="isSaving()"
+    >
+      <fieldset class="product-edit__fields" [disabled]="isSaving() || hasBlockingSaveError()">
+        @if (details.productType === 'digital') {
+          <section aria-labelledby="product-price-title">
+            <h2 id="product-price-title">{{ 'adminProducts.price.title' | transloco }}</h2>
+            <div class="form-field">
+              <label for="product-price">{{ 'adminProducts.price.label' | transloco }}</label>
+              <input
+                id="product-price"
+                type="text"
+                inputmode="decimal"
+                [formField]="priceForm.amount"
+                aria-describedby="product-price-hint"
+                [attr.aria-invalid]="
+                  priceForm.amount().touched() && priceForm.amount().invalid() ? 'true' : null
+                "
+              />
+              <p id="product-price-hint">{{ 'adminProducts.price.hint' | transloco }}</p>
+              @if (priceForm.amount().touched() && priceForm.amount().invalid()) {
+                <ul class="form-field__errors">
+                  @for (error of priceForm.amount().errors(); track $index) {
+                    <li>{{ error.message! | transloco }}</li>
+                  }
+                </ul>
+              }
+            </div>
+          </section>
+        }
 
-        <div class="form-field">
-          <label [for]="'product-name-' + group.language">
-            {{ 'adminProducts.edit.name' | transloco }}
-          </label>
+        @for (group of translationGroups; track group.language) {
+          <fieldset class="product-edit__language">
+            <legend>
+              {{ 'adminProducts.edit.languages.' + group.language | transloco }}
+            </legend>
 
-          <input [id]="'product-name-' + group.language" type="text" [formField]="group.name" [attr.aria-invalid]="
-                  group.name().touched() && group.name().invalid()
-                    ? 'true'
-                    : null
-                " [attr.aria-describedby]="
+            <div class="form-field">
+              <label [for]="'product-name-' + group.language">
+                {{ 'adminProducts.edit.name' | transloco }}
+              </label>
+
+              <input
+                [id]="'product-name-' + group.language"
+                type="text"
+                [formField]="group.name"
+                [attr.aria-invalid]="
+                  group.name().touched() && group.name().invalid() ? 'true' : null
+                "
+                [attr.aria-describedby]="
                   group.name().touched() && group.name().invalid()
                     ? 'product-name-errors-' + group.language
                     : null
-                " />
+                "
+              />
 
-          @if (group.name().touched() && group.name().invalid()) {
-          <ul class="form-field__errors" [id]="'product-name-errors-' + group.language">
-            @for (error of group.name().errors(); track $index) {
-            <li>{{ error.message! | transloco }}</li>
-            }
-          </ul>
-          }
-        </div>
+              @if (group.name().touched() && group.name().invalid()) {
+                <ul class="form-field__errors" [id]="'product-name-errors-' + group.language">
+                  @for (error of group.name().errors(); track $index) {
+                    <li>{{ error.message! | transloco }}</li>
+                  }
+                </ul>
+              }
+            </div>
 
-        <div class="form-field">
-          <label [for]="'product-description-' + group.language">
-            {{ 'adminProducts.edit.description' | transloco }}
-          </label>
+            <div class="form-field">
+              <label [for]="'product-description-' + group.language">
+                {{ 'adminProducts.edit.description' | transloco }}
+              </label>
 
-          <textarea [id]="'product-description-' + group.language" rows="8" [formField]="group.description"
-            [attr.aria-invalid]="
-                  group.description().touched() && group.description().invalid()
-                    ? 'true'
-                    : null
-                " [attr.aria-describedby]="
+              <textarea
+                [id]="'product-description-' + group.language"
+                rows="8"
+                [formField]="group.description"
+                [attr.aria-invalid]="
+                  group.description().touched() && group.description().invalid() ? 'true' : null
+                "
+                [attr.aria-describedby]="
                   group.description().touched() && group.description().invalid()
                     ? 'product-description-errors-' + group.language
                     : null
-                "></textarea>
+                "
+              ></textarea>
 
-          @if (
-          group.description().touched() && group.description().invalid()
-          ) {
-          <ul class="form-field__errors" [id]="'product-description-errors-' + group.language">
-            @for (error of group.description().errors(); track $index) {
-            <li>{{ error.message! | transloco }}</li>
-            }
-          </ul>
-          }
-        </div>
+              @if (group.description().touched() && group.description().invalid()) {
+                <ul
+                  class="form-field__errors"
+                  [id]="'product-description-errors-' + group.language"
+                >
+                  @for (error of group.description().errors(); track $index) {
+                    <li>{{ error.message! | transloco }}</li>
+                  }
+                </ul>
+              }
+            </div>
+          </fieldset>
+        }
       </fieldset>
-      }
+      <app-admin-product-images
+        [productId]="details.id"
+        [productVersion]="details.version"
+        [disabled]="isSaving() || hasBlockingSaveError()"
+        (draftChanged)="onDraftInput()"
+      />
 
-      <button type="submit">
-        {{
-        (
-        isSaving()
-        ? 'adminProducts.edit.saving'
-        : 'adminProducts.edit.save'
-        ) | transloco
-        }}
-      </button>
-    </fieldset>
-  </form>
-  @if (
-  details.productType === 'sweatshirt' ||
-  details.productType === 'tshirt'
-  ) {
-  <app-admin-product-variants [productId]="details.id" />
-  }
+      <div class="product-edit__actions">
+        <p>{{ 'adminProductImages.draftHint' | transloco }}</p>
+        @if (saved()) {
+          <output>{{ 'adminProducts.edit.saved' | transloco }}</output>
+        }
+        <button
+          type="submit"
+          [disabled]="isSaving() || hasBlockingSaveError() || !imageEditor()?.ready()"
+        >
+          {{
+            (isSaving() ? 'adminProducts.edit.saving' : 'adminProducts.edit.saveAll') | transloco
+          }}
+        </button>
+        <button type="button" [disabled]="isSaving()" (click)="cancelChanges()">
+          {{ 'adminProducts.edit.cancelAll' | transloco }}
+        </button>
+      </div>
+    </form>
+    @if (details.productType === 'sweatshirt' || details.productType === 'tshirt') {
+      <app-admin-product-variants [productId]="details.id" />
+    }
   }
 </section>

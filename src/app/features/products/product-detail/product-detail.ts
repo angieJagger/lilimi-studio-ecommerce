@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { ProductGallery } from './product-gallery';
 import { ProductCard } from '../../../shared/components/product-card/product-card';
 import { CartService } from '../../cart/cart.service';
 import { SweatshirtConfigurator } from '../sweatshirt-configurator/sweatshirt-configurator';
@@ -28,7 +29,7 @@ type ProductDetailState =
   | { status: 'error' };
 
 @Component({
-  imports: [RouterLink, TranslocoPipe, ProductCard, SweatshirtConfigurator],
+  imports: [RouterLink, TranslocoPipe, ProductCard, SweatshirtConfigurator, ProductGallery],
   selector: 'app-product-detail',
   styleUrl: './product-detail.scss',
   templateUrl: './product-detail.html',
@@ -121,12 +122,12 @@ export class ProductDetail {
       return [];
     }
 
-        return this.catalogProducts()
-          .filter(
-            (product) =>
-              product.category === currentProduct.category && product.id !== currentProduct.id,
-          )
-          .slice(0, 3);
+    return this.catalogProducts()
+      .filter(
+        (product) =>
+          product.category === currentProduct.category && product.id !== currentProduct.id,
+      )
+      .slice(0, 3);
   });
 
   protected readonly formattedPrice = computed(() => {

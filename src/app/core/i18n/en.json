@@ -313,6 +313,48 @@
     },
     "unread": "Unread order."
   },
+      "adminProductImages": {
+    "title": "Product images",
+    "hint": "Add up to 10 images in JPEG, PNG or WebP format. Maximum file size: 10 MB.",
+    "loading": "Loading images…",
+    "empty": "This product has no images yet.",
+    "reload": "Reload images",
+    "primary": "Primary image",
+    "previewLoading": "Loading preview…",
+    "previewFailed": "The image preview could not be loaded.",
+    "uploadTitle": "Add an image",
+    "file": "Image file",
+    "altPl": "Alternative text — Polish",
+    "altEn": "Alternative text — English",
+    "upload": "Upload image",
+    "saving": "Saving…",
+    "saved": "The image has been saved.",
+    "tryAgain": "Try again",
+    "reloadProduct": "Reload product",
+    "reloadNotice": "Reload the product before making another change. Unsaved product form changes will be discarded.",
+    "errors": {
+      "loadFailed": "Product images could not be loaded.",
+      "notFound": "The product or image could not be found.",
+      "versionConflict": "The product has changed. Reload it before making another change.",
+      "limitReached": "A product can have at most 10 images.",
+      "fileRequired": "Choose an image file.",
+      "fileTooLarge": "The file must not exceed 10 MB.",
+      "altTooLong": "Alternative text must not exceed 250 characters.",
+      "invalidImage": "Choose a valid JPEG, PNG or WebP image, no larger than 8000 pixels per side and 20 megapixels in total.",
+      "saveFailed": "The save could not be confirmed. Reload the product to check the current gallery."
+    },
+    "draftHint": "Changes to price, translations and images are saved together using “Save changes” below.",
+    "chooseFiles": "Choose images to add",
+    "pendingRemoval": "Marked for removal — not saved yet.",
+    "undoRemove": "Undo removal",
+    "pendingFile": "New file — not saved yet.",
+    "imageDetails": "Image details",
+    "replace": "Choose a replacement file",
+    "makePrimary": "Set as primary",
+    "moveEarlier": "Move earlier",
+    "moveLater": "Move later",
+    "remove": "Remove"
+  },
   "adminProducts": {
     "title": "Products",
     "loading": "Loading products…",
@@ -358,7 +400,7 @@
       "description": "Product description",
       "save": "Save translations",
       "saving": "Saving…",
-      "saved": "Translations have been saved.",
+      "saved": "Product changes have been saved.",
       "reloadNotice": "Reloading will replace your entries with server data. Copy your changes first if you want to keep them.",
       "languages": {
         "pl": "Polish",
@@ -385,10 +427,12 @@
         "descriptionRequired": "Enter a product description.",
         "nameTooLong": "The name must not exceed 200 characters.",
         "descriptionTooLong": "The description must not exceed 5000 characters.",
-        "invalidRequest": "The data was rejected. Reload the product and check both translations.",
+        "invalidRequest": "Check the translations, price and image files. Each image must be a valid JPEG, PNG or WebP up to 10 MB, 8000 pixels per side and 20 megapixels in total.",
         "conflict": "Translations cannot be saved in the product's current state. Reload its details.",
-        "saveFailed": "The translation update could not be confirmed. Reload the product to check the current state."
-      }
+        "saveFailed": "The product save could not be confirmed. Reload the product before trying again."
+      },
+      "saveAll": "Save changes",
+      "cancelAll": "Cancel changes"
     },
     "variants": {
       "title": "Garment variants",
@@ -648,6 +692,8 @@
   },
 
   "productDetail": {
+    "galleryLabel": "Product images",
+    "selectImage": "Show image {{ number }}",
     "detailsTitle": "Product details",
     "fileFormats": "File formats",
     "madeToOrder": "Made to order",

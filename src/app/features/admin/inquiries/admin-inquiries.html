@@ -124,6 +124,7 @@
     {{ 'adminInquiries.total' | transloco: { count: result.totalElements } }}
   </p>
 
+  <!-- Keyboard focus is required to scroll this wide table without a pointer. -->
   <section class="inquiries-table-wrapper" tabindex="0" [attr.aria-label]="'adminInquiries.tableLabel' | transloco">
     <table>
       <caption class="visually-hidden">

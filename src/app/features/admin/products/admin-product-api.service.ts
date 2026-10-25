@@ -5,6 +5,8 @@ import { API_BASE_URL } from '../../../core/api/api-base-url';
 import { CsrfService } from '../../../core/auth/csrf.service';
 import type {
   AdminProductDetails,
+  SaveProductRequest,
+  SaveProductResponse,
   AdminProductPage,
   AdminProductSummary,
   ChangeProductVisibilityRequest,
@@ -22,6 +24,24 @@ export class AdminProductApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
   private readonly csrf = inject(CsrfService);
+
+  saveProduct(
+    productId: string,
+    request: SaveProductRequest,
+    files: readonly File[],
+  ): Observable<SaveProductResponse> {
+    return this.csrf.initialize().pipe(
+      switchMap(() => {
+        const body = new FormData();
+        body.append('metadata', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+        for (const file of files) body.append('files', file);
+        return this.http.post<SaveProductResponse>(
+          `${this.baseUrl}/admin/products/${encodeURIComponent(productId)}/edit`,
+          body,
+        );
+      }),
+    );
+  }
 
   getProducts(page = 0, size = 20): Observable<AdminProductPage> {
     const params = new HttpParams().set('page', page).set('size', size);
