@@ -113,6 +113,7 @@ message === 'adminOrders.errors.accessDenied'
     {{ 'adminOrders.total' | transloco: { count: result.totalElements } }}
   </p>
 
+  <!-- Keyboard focus is required to scroll this wide table without a pointer. -->
   <section class="orders-table-wrapper" tabindex="0" [attr.aria-label]="'adminOrders.tableLabel' | transloco">
     <table>
       <caption class="visually-hidden">

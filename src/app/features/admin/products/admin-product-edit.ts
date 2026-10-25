@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -20,6 +20,7 @@ import {
 } from 'rxjs';
 import { AdminProductApiService } from './admin-product-api.service';
 import type { AdminProductDetails } from './admin-product.model';
+import { AdminProductImages } from './admin-product-images';
 
 interface ProductTranslationsModel {
   plName: string;
@@ -34,7 +35,7 @@ interface ProductPriceModel {
 
 @Component({
   selector: 'app-admin-product-edit',
-  imports: [TranslocoPipe, RouterLink, FormField, AdminProductVariants],
+  imports: [TranslocoPipe, RouterLink, FormField, AdminProductVariants, AdminProductImages],
   templateUrl: './admin-product-edit.html',
   styleUrl: './admin-product-edit.scss',
 })
@@ -53,7 +54,7 @@ export class AdminProductEdit {
   protected readonly saveErrorKey = signal<string | null>(null);
   protected readonly saved = signal(false);
 
-  protected readonly priceSaved = signal(false);
+  protected readonly imageEditor = viewChild(AdminProductImages);
 
   protected readonly priceModel = signal<ProductPriceModel>({
     amount: '',
@@ -166,7 +167,6 @@ export class AdminProductEdit {
             this.errorKey.set(null);
             this.saveErrorKey.set(null);
             this.saved.set(false);
-            this.priceSaved.set(false);
 
             if (!id) {
               this.errorKey.set('adminProducts.errors.notFound');
@@ -192,38 +192,49 @@ export class AdminProductEdit {
 
   protected onSubmit(event: Event): void {
     event.preventDefault();
-
     const product = this.product();
-
-    if (!product || this.isLoading() || this.isSaving() || this.saveErrorKey()) {
+    const editor = this.imageEditor();
+    if (
+      !product ||
+      !editor?.ready() ||
+      this.isLoading() ||
+      this.isSaving() ||
+      this.hasBlockingSaveError()
+    )
       return;
-    }
-
     this.saved.set(false);
+    this.saveErrorKey.set(null);
     this.translationsForm().markAsTouched();
-
     if (!this.translationsForm().valid()) {
-      const firstError = this.translationsForm().errorSummary()[0];
-      firstError?.fieldTree().focusBoundControl();
+      this.translationsForm().errorSummary()[0]?.fieldTree().focusBoundControl();
       return;
     }
-
+    let price: number | null = null;
+    if (product.productType === 'digital') {
+      this.priceForm().markAsTouched();
+      if (!this.priceForm().valid()) {
+        this.priceForm.amount().focusBoundControl();
+        return;
+      }
+      price = this.parsePriceInGrosz(this.priceModel().amount);
+      if (price === null) return;
+    }
+    const changes = editor.buildChanges();
+    if (!changes) return;
     const model = this.translationsModel();
-
     this.isSaving.set(true);
-
     this.api
-      .updateTranslations(product.id, {
-        pl: {
-          name: model.plName.trim(),
-          description: model.plDescription.trim(),
+      .saveProduct(
+        product.id,
+        {
+          expectedVersion: product.version,
+          pl: { name: model.plName.trim(), description: model.plDescription.trim() },
+          en: { name: model.enName.trim(), description: model.enDescription.trim() },
+          digitalPriceInGrosz: price,
+          images: changes.images,
         },
-        en: {
-          name: model.enName.trim(),
-          description: model.enDescription.trim(),
-        },
-        expectedVersion: product.version,
-      })
+        changes.files,
+      )
       .pipe(
         takeUntil(this.route.paramMap.pipe(skip(1))),
         takeUntilDestroyed(this.destroyRef),
@@ -231,89 +242,32 @@ export class AdminProductEdit {
       )
       .subscribe({
         next: (updated) => {
-          if (this.product()?.id !== product.id) {
-            return;
-          }
-
-          this.populateForm(updated, false);
-
-          if (!this.errorKey()) {
-            this.saved.set(true);
-          }
+          if (this.product()?.id !== product.id) return;
+          this.populateForm(updated.product);
+          this.saved.set(true);
         },
         error: (error: unknown) => {
-          if (this.product()?.id !== product.id) {
-            return;
-          }
-
+          if (this.product()?.id !== product.id) return;
           this.saveErrorKey.set(this.getSaveErrorKey(error));
         },
       });
   }
 
-  protected onPriceSubmit(event: Event): void {
-    event.preventDefault();
+  protected hasBlockingSaveError(): boolean {
+    return (
+      this.saveErrorKey() !== null &&
+      this.saveErrorKey() !== 'adminProducts.edit.errors.invalidRequest'
+    );
+  }
 
-    const product = this.product();
+  protected onDraftInput(): void {
+    this.saved.set(false);
+    if (!this.hasBlockingSaveError()) this.saveErrorKey.set(null);
+  }
 
-    if (
-      !product ||
-      product.productType !== 'digital' ||
-      product.digitalPriceInGrosz === null ||
-      this.isLoading() ||
-      this.isSaving() ||
-      this.saveErrorKey()
-    ) {
-      return;
-    }
-
-    this.priceSaved.set(false);
-    this.priceForm().markAsTouched();
-
-    if (!this.priceForm().valid()) {
-      this.priceForm.amount().focusBoundControl();
-      return;
-    }
-
-    const priceInGrosz = this.parsePriceInGrosz(this.priceModel().amount);
-
-    if (priceInGrosz === null) {
-      return;
-    }
-
-    this.isSaving.set(true);
-
-    this.api
-      .updateDigitalPrice(product.id, {
-        priceInGrosz,
-        expectedVersion: product.version,
-      })
-      .pipe(
-        takeUntil(this.route.paramMap.pipe(skip(1))),
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isSaving.set(false)),
-      )
-      .subscribe({
-        next: (updated) => {
-          if (this.product()?.id !== product.id) {
-            return;
-          }
-
-          // Preserve any unsaved translation edits.
-          this.product.set(updated);
-          this.priceForm().reset({
-            amount: this.formatPrice(updated.digitalPriceInGrosz!),
-          });
-          this.priceSaved.set(true);
-        },
-        error: (error: unknown) => {
-          if (this.product()?.id !== product.id) {
-            return;
-          }
-
-          this.saveErrorKey.set(this.getPriceSaveErrorKey(error));
-        },
-      });
+  protected cancelChanges(): void {
+    if (this.isSaving()) return;
+    this.retry();
   }
 
   private parsePriceInGrosz(input: string): number | null {
@@ -335,27 +289,6 @@ export class AdminProductEdit {
     const fraction = String(grosz % 100).padStart(2, '0');
 
     return `${whole}.${fraction}`;
-  }
-
-  private getPriceSaveErrorKey(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      switch (error.status) {
-        case 400:
-          return 'adminProducts.price.errors.invalidRequest';
-        case 401:
-          return 'adminOrders.errors.sessionExpired';
-        case 403:
-          return 'adminOrders.errors.accessDenied';
-        case 404:
-          return 'adminProducts.errors.notFound';
-        case 409:
-          return error.error?.code === 'PRODUCT_VERSION_CONFLICT'
-            ? 'adminProducts.errors.versionConflict'
-            : 'adminProducts.price.errors.conflict';
-      }
-    }
-
-    return 'adminProducts.price.errors.saveFailed';
   }
 
   protected retry(): void {
@@ -398,6 +331,8 @@ export class AdminProductEdit {
     if (error instanceof HttpErrorResponse) {
       switch (error.status) {
         case 400:
+        case 413:
+        case 415:
           return 'adminProducts.edit.errors.invalidRequest';
         case 401:
           return 'adminOrders.errors.sessionExpired';

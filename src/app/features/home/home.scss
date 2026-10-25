@@ -249,7 +249,7 @@
   }
 
   .featured__products {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 20rem));
     gap: var(--spacing-24);
     margin-top: var(--spacing-40);
   }

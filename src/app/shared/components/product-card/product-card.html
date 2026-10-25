@@ -1,5 +1,12 @@
 <article class="product-card">
-  <div class="product-card__media" aria-hidden="true"></div>
+  <div class="product-card__media" [attr.aria-hidden]="primaryImage() ? null : 'true'">
+    <app-product-image
+      [slug]="slug()"
+      [image]="primaryImage()"
+      [locale]="locale()"
+      [fallbackAlt]="productName()"
+    />
+  </div>
 
   <div class="product-card__content">
     <p class="product-card__type">{{ typeLabel() }}</p>
@@ -7,12 +14,12 @@
     <h3 class="product-card__name">{{ productName() }}</h3>
 
     @if (description()) {
-    <p class="product-card__description">{{ description() }}</p>
+      <p class="product-card__description">{{ description() }}</p>
     }
 
     <p class="product-card__price">
       @if (pricePrefix()) {
-      <span>{{ pricePrefix() }}</span>
+        <span>{{ pricePrefix() }}</span>
       }
       <span>{{ formattedPrice() }}</span>
     </p>

@@ -1,6 +1,7 @@
-import type { LocalizedText } from './product.model';
+import type { LocalizedText, ProductImage } from './product.model';
 
 export interface ProductApiResponse {
+  readonly images?: readonly ProductImage[];
   readonly id: string;
   readonly slug: string;
   readonly productType: 'digital' | 'sweatshirt' | 'tshirt' | 'tote';

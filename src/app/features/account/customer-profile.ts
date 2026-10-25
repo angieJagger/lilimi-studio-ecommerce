@@ -24,7 +24,7 @@ const profileValidator: ValidatorFn = (control: AbstractControl): ValidationErro
     value.saveAddress &&
     (!value.addressLine1.trim() ||
       !value.city.trim() ||
-      !/^[0-9]{2}-[0-9]{3}$/.test(value.postalCode.trim()))
+      !/^\d{2}-\d{3}$/.test(value.postalCode.trim()))
   )
     errors['addressIncomplete'] = true;
   return Object.keys(errors).length ? errors : null;
@@ -56,11 +56,17 @@ export class CustomerProfile {
   );
   protected readonly hasDetails = computed(() => {
     const profile = this.profile();
-    return Boolean(profile && (
-      profile.firstName || profile.lastName || profile.phone ||
-      profile.addressLine1 || profile.addressLine2 ||
-      profile.postalCode || profile.city || profile.countryCode
-    ));
+    return Boolean(
+      profile &&
+      (profile.firstName ||
+        profile.lastName ||
+        profile.phone ||
+        profile.addressLine1 ||
+        profile.addressLine2 ||
+        profile.postalCode ||
+        profile.city ||
+        profile.countryCode),
+    );
   });
   protected readonly conflict = signal(false);
   protected readonly accessBlocked = signal(false);
@@ -212,32 +218,41 @@ export class CustomerProfile {
   }
 
   protected deleteDetails(): void {
-    if (!this.confirmingDelete() || this.busy() || this.conflict() ||
-      this.accessBlocked() || !this.hasDetails()) return;
+    if (
+      !this.confirmingDelete() ||
+      this.busy() ||
+      this.conflict() ||
+      this.accessBlocked() ||
+      !this.hasDetails()
+    )
+      return;
 
     this.isDeleting.set(true);
     this.errorKey.set(null);
-    this.api.updateProfile({
-      firstName: null,
-      lastName: null,
-      phone: null,
-      addressLine1: null,
-      addressLine2: null,
-      postalCode: null,
-      city: null,
-      countryCode: null,
-      version: this.version,
-    }).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.isDeleting.set(false)),
-    ).subscribe({
-      next: (profile) => {
-        this.applyProfile(profile);
-        this.confirmingDelete.set(false);
-        this.noticeKey.set('customerProfile.deleted');
-      },
-      error: (error: unknown) => this.handleError(error, 'deleteFailed'),
-    });
+    this.api
+      .updateProfile({
+        firstName: null,
+        lastName: null,
+        phone: null,
+        addressLine1: null,
+        addressLine2: null,
+        postalCode: null,
+        city: null,
+        countryCode: null,
+        version: this.version,
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isDeleting.set(false)),
+      )
+      .subscribe({
+        next: (profile) => {
+          this.applyProfile(profile);
+          this.confirmingDelete.set(false);
+          this.noticeKey.set('customerProfile.deleted');
+        },
+        error: (error: unknown) => this.handleError(error, 'deleteFailed'),
+      });
   }
 
   private applyProfile(profile: ProfileData): void {

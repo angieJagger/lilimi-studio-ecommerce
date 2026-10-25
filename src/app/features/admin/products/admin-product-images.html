@@ -1,0 +1,142 @@
+<section
+  class="product-images"
+  aria-labelledby="product-images-title"
+  [attr.aria-busy]="isLoading()"
+>
+  <h2 id="product-images-title">{{ 'adminProductImages.title' | transloco }}</h2>
+  <p>{{ 'adminProductImages.draftHint' | transloco }}</p>
+  <p class="product-images__hint">{{ 'adminProductImages.hint' | transloco }}</p>
+
+  @if (isLoading()) {
+    <output>{{ 'adminProductImages.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+    <p role="alert">{{ message | transloco }}</p>
+    <button type="button" [disabled]="disabled()" (click)="retry()">
+      {{ 'adminProductImages.reload' | transloco }}
+    </button>
+  } @else {
+    @if (validationError(); as message) {
+      <p role="alert">{{ message | transloco }}</p>
+    }
+    <div class="product-images__upload">
+      <label for="product-image-files">{{ 'adminProductImages.chooseFiles' | transloco }}</label>
+      <input
+        #newFiles
+        id="product-image-files"
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp"
+        [disabled]="disabled() || activeImages().length >= 10"
+        (change)="stageFiles(newFiles)"
+      />
+    </div>
+    @if (!drafts().length) {
+      <p>{{ 'adminProductImages.empty' | transloco }}</p>
+    }
+    <ul class="product-images__list">
+      @for (entry of drafts(); track entry.key) {
+        <li class="product-images__card" [class.product-images__card--removed]="entry.removed">
+          <div class="product-images__preview">
+            @if (entry.preview) {
+              <img [src]="entry.preview" [alt]="alternativeText(entry)" />
+            } @else if (entry.previewFailed) {
+              <p>{{ 'adminProductImages.previewFailed' | transloco }}</p>
+            } @else {
+              <output>{{ 'adminProductImages.previewLoading' | transloco }}</output>
+            }
+          </div>
+          <div class="product-images__details">
+            @if (entry.removed) {
+              <p>{{ 'adminProductImages.pendingRemoval' | transloco }}</p>
+              <button type="button" [disabled]="disabled()" (click)="restore(entry.key)">
+                {{ 'adminProductImages.undoRemove' | transloco }}
+              </button>
+            } @else {
+              @if (entry.primaryImage) {
+                <span class="product-images__primary">{{
+                  'adminProductImages.primary' | transloco
+                }}</span>
+              }
+              @if (entry.file) {
+                <p class="product-images__pending">
+                  {{ 'adminProductImages.pendingFile' | transloco }}
+                </p>
+              }
+              @if (entry.width && entry.height) {
+                <p>{{ entry.width }} × {{ entry.height }} px</p>
+              }
+              <fieldset [disabled]="disabled()" class="product-images__text">
+                <legend class="visually-hidden">
+                  {{ 'adminProductImages.imageDetails' | transloco }}
+                </legend>
+                <label [for]="'image-alt-pl-' + entry.key">{{
+                  'adminProductImages.altPl' | transloco
+                }}</label>
+                <input
+                  [id]="'image-alt-pl-' + entry.key"
+                  lang="pl"
+                  type="text"
+                  maxlength="250"
+                  [value]="entry.altPl"
+                  (input)="updateText(entry.key, 'pl', $event)"
+                />
+                <label [for]="'image-alt-en-' + entry.key">{{
+                  'adminProductImages.altEn' | transloco
+                }}</label>
+                <input
+                  [id]="'image-alt-en-' + entry.key"
+                  lang="en"
+                  type="text"
+                  maxlength="250"
+                  [value]="entry.altEn"
+                  (input)="updateText(entry.key, 'en', $event)"
+                />
+                <label [for]="'image-replacement-' + entry.key">{{
+                  'adminProductImages.replace' | transloco
+                }}</label>
+                <input
+                  #replacement
+                  [id]="'image-replacement-' + entry.key"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  (change)="replace(entry.key, replacement)"
+                />
+              </fieldset>
+              <div class="product-images__actions">
+                <button
+                  type="button"
+                  [disabled]="disabled() || entry.primaryImage"
+                  (click)="makePrimary(entry.key)"
+                >
+                  {{ 'adminProductImages.makePrimary' | transloco }}
+                </button>
+                <button
+                  type="button"
+                  [disabled]="disabled() || !canMove(entry.key, -1)"
+                  (click)="move(entry.key, -1)"
+                >
+                  {{ 'adminProductImages.moveEarlier' | transloco }}
+                </button>
+                <button
+                  type="button"
+                  [disabled]="disabled() || !canMove(entry.key, 1)"
+                  (click)="move(entry.key, 1)"
+                >
+                  {{ 'adminProductImages.moveLater' | transloco }}
+                </button>
+                <button
+                  type="button"
+                  class="product-images__remove"
+                  [disabled]="disabled()"
+                  (click)="remove(entry.key)"
+                >
+                  {{ 'adminProductImages.remove' | transloco }}
+                </button>
+              </div>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

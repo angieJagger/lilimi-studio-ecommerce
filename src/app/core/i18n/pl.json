@@ -316,6 +316,48 @@
     },
     "unread": "Nieprzeczytane zamówienie."
   },
+    "adminProductImages": {
+    "title": "Zdjęcia produktu",
+    "hint": "Dodaj maksymalnie 10 zdjęć w formacie JPEG, PNG lub WebP. Maksymalny rozmiar pliku: 10 MB.",
+    "loading": "Ładowanie zdjęć…",
+    "empty": "Ten produkt nie ma jeszcze zdjęć.",
+    "reload": "Wczytaj zdjęcia ponownie",
+    "primary": "Zdjęcie główne",
+    "previewLoading": "Ładowanie podglądu…",
+    "previewFailed": "Nie udało się załadować podglądu zdjęcia.",
+    "uploadTitle": "Dodaj zdjęcie",
+    "file": "Plik zdjęcia",
+    "altPl": "Tekst alternatywny — polski",
+    "altEn": "Tekst alternatywny — angielski",
+    "upload": "Prześlij zdjęcie",
+    "saving": "Zapisywanie…",
+    "saved": "Zdjęcie zostało zapisane.",
+    "tryAgain": "Spróbuj ponownie",
+    "reloadProduct": "Wczytaj produkt ponownie",
+    "reloadNotice": "Przed kolejną zmianą wczytaj produkt ponownie. Niezapisane zmiany w formularzach produktu zostaną odrzucone.",
+    "errors": {
+      "loadFailed": "Nie udało się załadować zdjęć produktu.",
+      "notFound": "Nie znaleziono produktu lub zdjęcia.",
+      "versionConflict": "Produkt został zmieniony. Wczytaj go ponownie przed kolejną zmianą.",
+      "limitReached": "Produkt może mieć maksymalnie 10 zdjęć.",
+      "fileRequired": "Wybierz plik zdjęcia.",
+      "fileTooLarge": "Plik może mieć maksymalnie 10 MB.",
+      "altTooLong": "Tekst alternatywny może mieć maksymalnie 250 znaków.",
+      "invalidImage": "Wybierz poprawne zdjęcie JPEG, PNG lub WebP: maksymalnie 8000 pikseli na bok i 20 megapikseli łącznie.",
+      "saveFailed": "Nie udało się potwierdzić zapisu. Wczytaj produkt ponownie, aby sprawdzić aktualną galerię."
+    },
+    "draftHint": "Zmiany ceny, tłumaczeń i zdjęć zapiszesz razem przyciskiem „Zapisz zmiany” poniżej.",
+    "chooseFiles": "Wybierz zdjęcia do dodania",
+    "pendingRemoval": "Oznaczone do usunięcia — jeszcze niezapisane.",
+    "undoRemove": "Cofnij usunięcie",
+    "pendingFile": "Nowy plik — jeszcze niezapisany.",
+    "imageDetails": "Szczegóły zdjęcia",
+    "replace": "Wybierz plik do podmiany",
+    "makePrimary": "Ustaw jako główne",
+    "moveEarlier": "Przesuń wcześniej",
+    "moveLater": "Przesuń później",
+    "remove": "Usuń"
+  },
   "adminProducts": {
     "title": "Produkty",
     "loading": "Ładowanie produktów…",
@@ -361,7 +403,7 @@
       "description": "Opis produktu",
       "save": "Zapisz tłumaczenia",
       "saving": "Zapisywanie…",
-      "saved": "Tłumaczenia zostały zapisane.",
+      "saved": "Zmiany produktu zostały zapisane.",
       "reloadNotice": "Odświeżenie zastąpi wpisane treści danymi z serwera. Skopiuj swoje zmiany, jeśli chcesz je zachować.",
       "languages": {
         "pl": "Polski",
@@ -388,10 +430,12 @@
         "descriptionRequired": "Podaj opis produktu.",
         "nameTooLong": "Nazwa może mieć maksymalnie 200 znaków.",
         "descriptionTooLong": "Opis może mieć maksymalnie 5000 znaków.",
-        "invalidRequest": "Dane zostały odrzucone. Odśwież produkt i sprawdź treść obu tłumaczeń.",
+        "invalidRequest": "Sprawdź tłumaczenia, cenę i pliki zdjęć. Zdjęcie musi być poprawnym plikiem JPEG, PNG lub WebP do 10 MB, 8000 pikseli na bok i 20 megapikseli łącznie.",
         "conflict": "Nie można zapisać tłumaczeń w obecnym stanie produktu. Odśwież dane.",
-        "saveFailed": "Nie udało się potwierdzić zapisu tłumaczeń. Odśwież produkt, aby sprawdzić aktualny stan."
-      }
+        "saveFailed": "Nie udało się potwierdzić zapisu produktu. Wczytaj produkt ponownie przed kolejną próbą."
+      },
+      "saveAll": "Zapisz zmiany",
+      "cancelAll": "Anuluj zmiany"
     },
     "variants": {
       "title": "Warianty odzieży",
@@ -651,6 +695,8 @@
   },
 
   "productDetail": {
+    "galleryLabel": "Zdjęcia produktu",
+    "selectImage": "Pokaż zdjęcie {{ number }}",
     "detailsTitle": "Szczegóły produktu",
     "fileFormats": "Formaty plików",
     "madeToOrder": "Wykonywany na zamówienie",

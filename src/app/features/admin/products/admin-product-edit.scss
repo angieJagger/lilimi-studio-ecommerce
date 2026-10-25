@@ -134,3 +134,23 @@ textarea:focus-visible {
 section[aria-labelledby='product-price-title'] {
   margin-block: 2rem;
 }
+.product-edit__actions {
+  margin-block: 24px;
+  padding: 20px;
+  border: 1px solid var(--border-default, #ddd);
+  border-radius: 12px;
+  background: var(--surface-page, #fff);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  p,
+  output {
+    flex-basis: 100%;
+    margin: 0;
+  }
+  output {
+    color: #166534;
+    font-weight: 700;
+  }
+}

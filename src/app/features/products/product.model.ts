@@ -3,7 +3,17 @@ export interface LocalizedText {
   readonly en: string;
 }
 
+export interface ProductImage {
+  readonly id: string;
+  readonly width: number;
+  readonly height: number;
+  readonly primaryImage: boolean;
+  readonly alt: LocalizedText;
+  readonly version: number;
+}
+
 interface ProductBase {
+  readonly images?: readonly ProductImage[];
   readonly id: string;
   readonly slug: string;
   readonly name: LocalizedText;

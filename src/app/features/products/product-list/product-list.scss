@@ -24,7 +24,7 @@
   }
 
   .product-list__grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 20rem));
     gap: var(--spacing-24);
   }
 }

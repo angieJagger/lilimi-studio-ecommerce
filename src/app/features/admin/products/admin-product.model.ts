@@ -1,3 +1,5 @@
+import type { AdminProductImages, ProductImageDraftRequest } from './admin-product-image.model';
+
 export type AdminProductType = 'digital' | 'sweatshirt' | 'tshirt' | 'tote';
 
 export interface AdminProductSummary {
@@ -78,4 +80,17 @@ export interface UpdateGarmentVariantRequest {
   readonly priceInGrosz: number;
   readonly active: boolean;
   readonly expectedVersion: number;
+}
+
+export interface SaveProductRequest {
+  readonly expectedVersion: number;
+  readonly pl: UpdateProductTranslationRequest;
+  readonly en: UpdateProductTranslationRequest;
+  readonly digitalPriceInGrosz: number | null;
+  readonly images: readonly ProductImageDraftRequest[];
+}
+
+export interface SaveProductResponse {
+  readonly product: AdminProductDetails;
+  readonly gallery: AdminProductImages;
 }

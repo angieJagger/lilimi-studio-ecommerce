@@ -13,23 +13,32 @@
         {{ 'home.hero.description' | transloco }}
       </p>
 
-          <div class="hero__actions">
-            <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'services']">
-              {{ 'home.hero.viewOffer' | transloco }}
-            </a>
-          
-            <a class="button button--secondary" [routerLink]="[
-                '/',
-                transloco.getActiveLang(),
-                'project-inquiry'
-              ]">
-              {{ 'home.hero.requestProject' | transloco }}
-            </a>
-          </div>
+      <div class="hero__actions">
+        <a
+          class="button button--primary"
+          [routerLink]="['/', transloco.getActiveLang(), 'services']"
+        >
+          {{ 'home.hero.viewOffer' | transloco }}
+        </a>
+
+        <a
+          class="button button--secondary"
+          [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
+        >
+          {{ 'home.hero.requestProject' | transloco }}
+        </a>
+      </div>
     </div>
 
     <div class="hero__media">
-      <img class="hero__image" src="/images/lilimi-animacja.svg" width="1150" height="570" alt="" fetchpriority="high" />
+      <img
+        class="hero__image"
+        src="/images/lilimi-animacja.svg"
+        width="1150"
+        height="570"
+        alt=""
+        fetchpriority="high"
+      />
     </div>
   </div>
 </section>
@@ -42,30 +51,28 @@
 
     <ul class="offer__grid">
       @for (item of offerItems; track item.id) {
-      <li>
-        <article class="offer-card">
-          <h3 class="offer-card__title">
-            {{ item.titleKey | transloco }}
-          </h3>
+        <li>
+          <article class="offer-card">
+            <h3 class="offer-card__title">
+              {{ item.titleKey | transloco }}
+            </h3>
 
-          <p class="offer-card__description">
-            {{ item.descriptionKey | transloco }}
-          </p>
+            <p class="offer-card__description">
+              {{ item.descriptionKey | transloco }}
+            </p>
 
-          <a class="offer-card__action" [routerLink]="[
-                '/',
-                transloco.getActiveLang(),
-                'project-inquiry'
-              ]" [attr.aria-label]="
-                ('home.offer.inquire' | transloco) +
-                ': ' +
-                (item.titleKey | transloco)
-              ">
-            {{ 'home.offer.inquire' | transloco }}
-            <span aria-hidden="true">→</span>
-          </a>
-        </article>
-      </li>
+            <a
+              class="offer-card__action"
+              [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
+              [attr.aria-label]="
+                ('home.offer.inquire' | transloco) + ': ' + (item.titleKey | transloco)
+              "
+            >
+              {{ 'home.offer.inquire' | transloco }}
+              <span aria-hidden="true">→</span>
+            </a>
+          </article>
+        </li>
       }
     </ul>
   </div>
@@ -83,21 +90,21 @@
 
     <ol class="process__steps">
       @for (step of ['choose', 'describe', 'receive']; track step; let index = $index) {
-      <li class="process__step">
-        <span class="process__number" aria-hidden="true">
-          {{ index + 1 }}
-        </span>
+        <li class="process__step">
+          <span class="process__number" aria-hidden="true">
+            {{ index + 1 }}
+          </span>
 
-        <div class="process__content">
-          <h3 class="process__title">
-            {{ ('home.process.steps.' + step + '.title') | transloco }}
-          </h3>
+          <div class="process__content">
+            <h3 class="process__title">
+              {{ 'home.process.steps.' + step + '.title' | transloco }}
+            </h3>
 
-          <p class="process__description">
-            {{ ('home.process.steps.' + step + '.description') | transloco }}
-          </p>
-        </div>
-      </li>
+            <p class="process__description">
+              {{ 'home.process.steps.' + step + '.description' | transloco }}
+            </p>
+          </div>
+        </li>
       }
     </ol>
   </div>
@@ -123,33 +130,41 @@
     </div>
 
     @if (catalog.state().status === 'loading') {
-    <output>{{ 'products.loading' | transloco }}</output>
+      <output>{{ 'products.loading' | transloco }}</output>
     } @else if (catalog.state().status === 'error') {
-    <p role="alert">{{ 'products.loadError' | transloco }}</p>
+      <p role="alert">{{ 'products.loadError' | transloco }}</p>
 
-    <button class="button button--secondary" type="button" (click)="catalog.reload()">
-      {{ 'products.retry' | transloco }}
-    </button>
+      <button class="button button--secondary" type="button" (click)="catalog.reload()">
+        {{ 'products.retry' | transloco }}
+      </button>
     } @else {
-    <div class="featured__products">
-      @for (product of featuredProducts(); track product.id) {
-      <a class="featured__product-link" [routerLink]="['/', language(), 'products', product.slug]"
-        [attr.aria-label]="product.name[language()]">
-        <app-product-card [productName]="product.name[language()]" [description]="product.description[language()]"
-          [typeLabel]="
+      <div class="featured__products">
+        @for (product of featuredProducts(); track product.id) {
+          <a
+            class="featured__product-link"
+            [routerLink]="['/', language(), 'products', product.slug]"
+            [attr.aria-label]="product.name[language()]"
+          >
+            <app-product-card
+              [slug]="product.slug"
+              [images]="product.images ?? []"
+              [productName]="product.name[language()]"
+              [description]="product.description[language()]"
+              [typeLabel]="
                 (product.category === 'embroidery-patterns'
                   ? 'products.digitalType'
-                  : 'products.physicalType') | transloco
-              " [priceInGrosz]="product.priceInGrosz" [pricePrefix]="
-                product.priceType === 'from'
-                  ? ('products.priceFrom' | transloco)
-                  : ''
-              " [locale]="language()"></app-product-card>
-      </a>
-      } @empty {
-      <p>{{ 'home.featured.empty' | transloco }}</p>
-      }
-    </div>
+                  : 'products.physicalType'
+                ) | transloco
+              "
+              [priceInGrosz]="product.priceInGrosz"
+              [pricePrefix]="product.priceType === 'from' ? ('products.priceFrom' | transloco) : ''"
+              [locale]="language()"
+            ></app-product-card>
+          </a>
+        } @empty {
+          <p>{{ 'home.featured.empty' | transloco }}</p>
+        }
+      </div>
     }
   </div>
 </section>
@@ -170,7 +185,10 @@
           {{ 'home.customOrder.description' | transloco }}
         </p>
       </div>
-      <a class="button button--primary custom-order__cta" [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']">
+      <a
+        class="button button--primary custom-order__cta"
+        [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
+      >
         {{ 'home.customOrder.cta' | transloco }}
       </a>
     </div>

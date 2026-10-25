@@ -50,3 +50,7 @@ Thumbs.db
 
 # Local database backups
 *.dump
+
+# Locally uploaded media
+/var/media/
+/backend/var/media/

@@ -1,6 +1,12 @@
 package pl.lilimi.catalog.admin.api;
 
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+import pl.lilimi.catalog.admin.application.AdminProductEditService;
+import java.util.List;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,17 +29,20 @@ public class AdminProductController {
   private final AdminProductVisibilityService visibilityService;
   private final AdminProductTranslationService translationService;
   private final AdminProductPriceService priceService;
+  private final AdminProductEditService editService;
 
   public AdminProductController(
     AdminProductQueryService queryService,
     AdminProductVisibilityService visibilityService,
     AdminProductTranslationService translationService,
-    AdminProductPriceService priceService
+    AdminProductPriceService priceService,
+    AdminProductEditService editService
   ) {
     this.queryService = queryService;
     this.visibilityService = visibilityService;
     this.translationService = translationService;
     this.priceService = priceService;
+    this.editService = editService;
   }
 
   @GetMapping
@@ -75,5 +84,14 @@ public class AdminProductController {
     @Valid @RequestBody UpdateDigitalProductPriceRequest request
   ) {
     return priceService.updatePrice(id, request);
+  }
+
+  @PostMapping(value = "/{id}/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public SaveProductResponse saveProduct(
+    @PathVariable String id,
+    @Valid @RequestPart("metadata") SaveProductRequest request,
+    @RequestPart(value = "files", required = false) List<MultipartFile> files
+  ) {
+    return editService.save(id, request, files == null ? List.of() : files);
   }
 }

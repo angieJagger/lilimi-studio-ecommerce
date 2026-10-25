@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pl.lilimi.catalog.admin.application.ProductVersionConflictException;
 
 @RestControllerAdvice(
-  assignableTypes = AdminProductController.class
+  assignableTypes = {
+    AdminProductController.class,
+    AdminProductImageController.class
+  }
 )
 public class AdminProductExceptionHandler {
 

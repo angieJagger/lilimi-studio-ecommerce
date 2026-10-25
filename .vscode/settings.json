@@ -1,13 +1,4 @@
 {
-    "html-validate.validate": [
-        "html",
-        "javascript",
-        "markdown",
-        "vue",
-        "vue-html",
-        "angular"
-    ],
-    "cSpell.words": [
-        "transloco"
-    ]
+  "html-validate.validate": ["html", "javascript", "markdown", "vue", "vue-html", "angular"],
+  "cSpell.words": ["transloco", "jsverse", "libpeerconnection"]
 }
