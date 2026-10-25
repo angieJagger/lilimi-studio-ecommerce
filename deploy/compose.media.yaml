@@ -1,0 +1,11 @@
+# Apply alongside the existing Lightsail compose.yaml.
+# Keep this file on the server as compose.override.yaml for automatic loading.
+services:
+  backend:
+    environment:
+      MEDIA_STORAGE_DIRECTORY: /app/var/media
+    volumes:
+      - product_media:/app/var/media
+
+volumes:
+  product_media:
