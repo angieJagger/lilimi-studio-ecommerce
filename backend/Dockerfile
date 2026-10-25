@@ -11,6 +11,8 @@ RUN groupadd --system app && useradd --system --gid app app \
     && apt-get install -y --no-install-recommends curl libssl3 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
+RUN mkdir -p /app/var/media && chown app:app /app/var/media
+ENV MEDIA_STORAGE_DIRECTORY=/app/var/media
 COPY --from=build /app/target/lilimi-backend-0.0.1-SNAPSHOT.jar app.jar
 USER app
 EXPOSE 8080
