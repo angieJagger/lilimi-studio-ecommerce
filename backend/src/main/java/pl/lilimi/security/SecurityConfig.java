@@ -15,6 +15,8 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 
 
 import pl.lilimi.auth.persistence.UserAccountRepository;
+import pl.lilimi.auth.application.LoginRateLimiter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -28,10 +30,13 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(
     HttpSecurity http,
-    UserAccountRepository accounts
+    UserAccountRepository accounts,
+    LoginRateLimiter loginRateLimiter
   ) throws Exception {
 
     http
+      .addFilterBefore(new LoginRateLimitFilter(loginRateLimiter),
+        UsernamePasswordAuthenticationFilter.class)
       .addFilterAfter(
         new CredentialsVersionFilter(accounts),
         SecurityContextHolderFilter.class

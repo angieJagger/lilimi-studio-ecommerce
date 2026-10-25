@@ -49,6 +49,7 @@
         "errors": {
           "sessionUnavailable": "Your session could not be checked. Refresh the page and try again.",
           "invalidCredentials": "Incorrect email address or password.",
+          "tooManyAttempts": "Too many sign-in attempts. Please wait before trying again.",
           "loginUnavailable": "Sign-in failed. Please try again later.",
           "logoutUnavailable": "Sign-out failed. Please try again."
         }
@@ -598,6 +599,7 @@
       "emailInvalid": "Enter a valid email address.",
       "passwordRequired": "Enter your password.",
       "invalidCredentials": "Incorrect email address or password.",
+          "tooManyAttempts": "Too many sign-in attempts. Please wait before trying again.",
       "loginUnavailable": "Unable to sign in. Please try again.",
       "adminRequired": "This account does not have administrator access.",
       "sessionUnavailable": "Unable to check your session. Please refresh the page.",

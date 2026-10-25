@@ -49,6 +49,7 @@
     "errors": {
       "sessionUnavailable": "Nie udało się sprawdzić sesji. Odśwież stronę i spróbuj ponownie.",
       "invalidCredentials": "Niepoprawny adres e-mail lub hasło.",
+          "tooManyAttempts": "Zbyt wiele prób logowania. Odczekaj przed kolejną próbą.",
       "loginUnavailable": "Nie udało się zalogować. Spróbuj ponownie później.",
       "logoutUnavailable": "Nie udało się wylogować. Spróbuj ponownie."
     }
@@ -601,6 +602,7 @@
       "emailInvalid": "Podaj poprawny adres e-mail.",
       "passwordRequired": "Podaj hasło.",
       "invalidCredentials": "Nieprawidłowy adres e-mail lub hasło.",
+          "tooManyAttempts": "Zbyt wiele prób logowania. Odczekaj przed kolejną próbą.",
       "loginUnavailable": "Nie udało się zalogować. Spróbuj ponownie.",
       "adminRequired": "To konto nie ma uprawnień administratora.",
       "sessionUnavailable": "Nie udało się sprawdzić sesji. Spróbuj odświeżyć stronę.",

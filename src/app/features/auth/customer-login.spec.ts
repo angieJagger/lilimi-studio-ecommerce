@@ -1,3 +1,4 @@
+import { TranslocoService } from '@jsverse/transloco';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -72,6 +73,17 @@ describe('CustomerLogin', () => {
     await fillField('email', customer.email);
     await fillField('password', 'Customer-password!');
   }
+
+  it('should distinguish rate limiting from invalid credentials and clear the password', async () => {
+    TestBed.inject(TranslocoService).setActiveLang('en');
+    await fixture.whenStable();
+    await fillValidForm();
+    await submitForm();
+    loginResult.error(new HttpErrorResponse({ status: 429 }));
+    await fixture.whenStable();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('Too many sign-in attempts');
+    expect(element.querySelector<HTMLInputElement>('input[type="password"]')?.value).toBe('');
+  });
 
   it('should reject an empty form without calling login', async () => {
     await submitForm();

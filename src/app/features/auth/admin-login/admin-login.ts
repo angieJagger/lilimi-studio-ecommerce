@@ -88,12 +88,18 @@ export class AdminLogin {
           this.clearPassword();
 
           this.errorKey.set(
-            error instanceof HttpErrorResponse && error.status === 401
-              ? 'auth.errors.invalidCredentials'
-              : 'auth.errors.loginUnavailable',
+            this.loginError(error),
           );
         },
       });
+  }
+
+  private loginError(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 429) return 'auth.errors.tooManyAttempts';
+      if (error.status === 401) return 'auth.errors.invalidCredentials';
+    }
+    return 'auth.errors.loginUnavailable';
   }
 
   protected logout(): void {
