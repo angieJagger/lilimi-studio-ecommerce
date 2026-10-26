@@ -912,14 +912,13 @@
 
   "home": {
     "hero": {
-      "eyebrow": "UX/UI • Websites • Graphic design • Embroidery digitizing",
-      "title": "From your idea to design and delivery",
-      "description": "I design interfaces in Figma, build websites and web applications, and create WordPress and WooCommerce solutions. I also prepare graphic materials and machine embroidery files.",
+      "eyebrow": "UX/UI • Websites • Online stores • Graphic design",
+      "title": "Websites and online stores that work for your business.",
+      "description": "Business websites, WordPress and WooCommerce stores, and custom e-commerce — designed, built and maintained from the first idea to launch and beyond.",
       "mediaPlaceholder": "Space for a featured Lilimi project",
-      "viewOffer": "Explore services",
-      "requestProject": "Let's discuss your project"
+      "viewOffer": "See services",
+      "requestProject": "Discuss your project"
     },
-
     "offer": {
       "title": "How can I help?",
       "inquire": "Discuss your project",
@@ -932,36 +931,33 @@
         "description": "Responsive websites and applications tailored to your needs. I help turn your idea and interface design into a working solution."
       }
     },
-
     "customOrder": {
-      "eyebrow": "LET'S DISCUSS YOUR PROJECT",
-      "title": "What does your brand need?",
-      "description": "Graphic design, a website or an application? Tell me about your idea and where you are now. Together, we can work out how I can help.",
+      "eyebrow": "Your next project",
+      "title": "What does your project need?",
+      "description": "A website, a store or an improvement? Describe the idea and the current stage to receive a proposed scope and quote.",
       "cta": "Discuss working together"
     },
-
     "featured": {
       "eyebrow": "LILIMI SHOP",
       "title": "Embroidery patterns and embroidered products",
       "viewAll": "Visit the shop",
       "empty": "There are no featured products available right now. Browse the full shop catalogue."
     },
-
     "process": {
-      "eyebrow": "FROM IDEA TO DELIVERY",
-      "title": "How does working together look?",
+      "eyebrow": "How it works",
+      "title": "From idea to launch in three steps",
       "steps": {
         "choose": {
-          "title": "Tell me what you need",
-          "description": "Describe what you want to create, who it is for and what it should achieve. You do not need a complete brief — I can help define the scope."
+          "title": "Describe the project",
+          "description": "Goals, audience and current needs form the starting point. A complete brief is not required."
         },
         "describe": {
-          "title": "We agree on scope and price",
-          "description": "We agree on the materials, timeline, deliverables and revision rounds. Work starts once you approve these details."
+          "title": "Agree on scope and price",
+          "description": "Deliverables, timeline and revision rounds are agreed before work starts."
         },
         "receive": {
-          "title": "I create and deliver your project",
-          "description": "I develop the project and discuss progress with you. After the agreed revisions, I deliver the finished materials or launch your website or application."
+          "title": "Build, review and launch",
+          "description": "Progress is shared along the way, followed by agreed revisions and a supported launch."
         }
       }
     }
@@ -1046,14 +1042,31 @@
   },
 
   "about": {
-    "eyebrow": "MEET LILIMI STUDIO",
-    "title": "A small studio with a personal story",
-    "intro": "We create embroidery patterns, personalised products and websites. We help turn ideas into things that matter to you and your brand.",
+    "eyebrow": "About Lilimi",
+    "title": "A small studio with care in every detail.",
+    "intro": "Lilimi Studio brings together design, code and craft: websites, online stores, interfaces, graphics and machine-embroidery files. One consistent approach, from the first idea to the finished result.",
     "storyTitle": "Where does Lilimi come from?",
     "story": "Lilimi takes its name from the founder's daughter. It marks the personal beginning of the brand and the hope that, over time, it will become something mother and daughter build together.",
-    "approachTitle": "We start with your idea",
-    "approach": "Every project starts with a conversation about your needs and expectations. Together, we define the scope, discuss the details and find an approach that fits your idea.",
-    "cta": "Tell us about your project"
+    "approachTitle": "Quality, clarity and your goals",
+    "approach": "Engineering and design connect through Angular, Java, WordPress and Figma. Alongside software, embroidery digitizing brings the same attention to precision and detail.",
+    "cta": "Discuss your project",
+    "valuesEyebrow": "What guides each project",
+    "skillsTitle": "Design, code and craft under one roof",
+    "toolsTitle": "Tools and technologies",
+    "values": {
+      "quality": {
+        "title": "Quality first",
+        "description": "Careful implementation and checks before delivery, with room for review and agreed revisions."
+      },
+      "goals": {
+        "title": "Your goals as a starting point",
+        "description": "The scope follows the business, its audience and the result the project should achieve."
+      },
+      "clarity": {
+        "title": "Clear and honest",
+        "description": "Understandable language, a defined scope and price, and progress updates along the way."
+      }
+    }
   },
 
   "contact": {
@@ -1071,5 +1084,90 @@
     "contact": "Contact",
     "terms": "Terms and conditions",
     "privacy": "Privacy policy"
+  },
+  "studioServices": {
+    "eyebrow": "Services",
+    "homeTitle": "Websites and solutions that help your business grow online",
+    "pageTitle": "Everything needed to get your business online",
+    "intro": "From a clear business website to a complete online store — designed to be responsive, manageable and ready to grow.",
+    "moreTitle": "More ways to support your project",
+    "goodFor": "Good for:",
+    "included": "What’s included",
+    "discuss": "Discuss this service",
+    "individualQuote": "Individual quote",
+    "getQuote": "Get a quote",
+    "valuesLabel": "Working principles",
+    "values": {
+      "reliable": {
+        "title": "Reliable",
+        "description": "A clear scope, honest estimates and solutions built with care."
+      },
+      "timely": {
+        "title": "Clear timelines",
+        "description": "Agreed milestones and regular updates on progress."
+      },
+      "tailored": {
+        "title": "Tailored to your goals",
+        "description": "Each project starts with your needs and audience."
+      }
+    },
+    "cta": {
+      "title": "What does your project need?",
+      "description": "A website, a store or an improvement? Describe the idea and the current stage to receive a proposed scope and quote.",
+      "action": "Discuss working together"
+    },
+    "items": {
+      "websites": {
+        "title": "Websites and WordPress",
+        "description": "Responsive business websites, built custom or on WordPress and other CMS platforms, with content that is easy to manage.",
+        "action": "Discuss a website",
+        "audience": "Local businesses, freelancers and small companies that need a clear online presence.",
+        "included": {
+          "0": "Responsive layouts for phone, tablet and desktop",
+          "1": "Custom development or an editable WordPress / CMS website",
+          "2": "Contact form and basic technical SEO setup",
+          "3": "Support with launch, domain, hosting and HTTPS"
+        }
+      },
+      "stores": {
+        "title": "Online stores",
+        "description": "WooCommerce or custom e-commerce: product catalogue, cart, checkout, orders and an administration panel.",
+        "action": "Discuss a store",
+        "audience": "Businesses selling physical products or digital downloads online.",
+        "included": {
+          "0": "Product catalogue with variants and options",
+          "1": "Cart, checkout and payment integration",
+          "2": "Order management and administration tools",
+          "3": "Customer and administrator email notifications"
+        }
+      },
+      "maintenance": {
+        "title": "Fixes and maintenance",
+        "description": "Bug fixes, performance and design improvements, updates and new features for an existing website or application.",
+        "action": "Request a fix",
+        "audience": "Owners of websites that need repairs, updates or additional features.",
+        "included": {
+          "0": "Diagnosis and repair of reported issues",
+          "1": "Performance and mobile usability improvements",
+          "2": "Design refreshes and additional sections",
+          "3": "An agreed plan for updates, backups and support"
+        }
+      },
+      "design": {
+        "title": "UX/UI design in Figma",
+        "description": "Interface designs, prototypes and user flows, ready for development.",
+        "action": "Discuss design"
+      },
+      "graphics": {
+        "title": "Logos and print graphics",
+        "description": "Logos, visual identities, flyers and materials for print and digital use.",
+        "action": "Discuss graphics"
+      },
+      "digitizing": {
+        "title": "Embroidery digitizing",
+        "description": "Artwork prepared as machine-embroidery files, ready for a test stitch.",
+        "action": "Discuss digitizing"
+      }
+    }
   }
 }

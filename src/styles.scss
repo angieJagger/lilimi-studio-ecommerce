@@ -1,10 +1,10 @@
 @use '@fontsource-variable/manrope/wght.css' as manrope;
-@use '@fontsource/abhaya-libre/800.css' as abhaya;
+@use '@fontsource-variable/fraunces/wght.css' as fraunces;
 @use './styles/tokens';
 @use './styles/utilities';
 @use './styles/typography';
 @use './styles/buttons';
-
+@use './styles/studio';
 
 *,
 *::before,
@@ -26,4 +26,8 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+html:has(app-mobile-menu dialog[open]) {
+  overflow: hidden;
 }

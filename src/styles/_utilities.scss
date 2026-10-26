@@ -1,5 +1,11 @@
 .container {
-  width: calc(100% - var(--spacing-16) - var(--spacing-16));
-  max-width: 1200px;
+  width: calc(100% - 40px);
+  max-width: 1152px;
   margin-inline: auto;
+}
+
+@media (min-width: 64rem) {
+  .container {
+    width: calc(100% - 80px);
+  }
 }

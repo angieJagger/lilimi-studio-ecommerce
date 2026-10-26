@@ -914,14 +914,13 @@
 
   "home": {
     "hero": {
-      "eyebrow": "UX/UI • Strony internetowe • Grafika • Digitalizacja haftu",
-      "title": "Od pomysłu do projektu i realizacji",
-      "description": "Projektuję interfejsy w Figmie, tworzę strony i aplikacje internetowe oraz rozwiązania WordPress i WooCommerce. Przygotowuję też materiały graficzne i pliki do haftu maszynowego.",
+      "eyebrow": "UX/UI • Strony internetowe •  Sklepy online • Grafika",
+      "title": "Strony i sklepy internetowe, które pracują na Twój biznes.",
+      "description": "Projektowanie, tworzenie i utrzymanie stron firmowych, sklepów WordPress i WooCommerce oraz dedykowanych rozwiązań e-commerce — od pomysłu po uruchomienie i dalszy rozwój.",
       "mediaPlaceholder": "Miejsce na wybraną realizację Lilimi",
-      "viewOffer": "Poznaj usługi",
+      "viewOffer": "Zobacz usługi",
       "requestProject": "Porozmawiajmy o projekcie"
     },
-
     "offer": {
       "title": "W czym mogę Ci pomóc?",
       "inquire": "Zapytaj o projekt",
@@ -934,40 +933,36 @@
         "description": "Responsywne strony i aplikacje dopasowane do Twoich potrzeb. Pomagam przejść od pomysłu i projektu interfejsu do działającego rozwiązania."
       }
     },
-
     "customOrder": {
-      "eyebrow": "POROZMAWIAJMY O TWOIM PROJEKCIE",
-      "title": "Czego potrzebuje Twoja marka?",
-      "description": "Projektu graficznego, strony czy aplikacji? Opisz swój pomysł i etap, na którym jesteś. Wspólnie ustalimy, jak mogę Ci pomóc.",
+      "eyebrow": "Twój kolejny projekt",
+      "title": "Czego potrzebuje Twój projekt?",
+      "description": "Strony, sklepu czy poprawek? Opisz pomysł i obecny etap, aby otrzymać propozycję zakresu oraz wycenę.",
       "cta": "Zapytaj o współpracę"
     },
-
     "featured": {
       "eyebrow": "SKLEP LILIMI",
       "title": "Wzory i produkty z haftem",
       "viewAll": "Przejdź do sklepu",
       "empty": "Obecnie nie ma polecanych produktów. Sprawdź pełny katalog w sklepie."
     },
-
     "process": {
-      "eyebrow": "OD POMYSŁU DO REALIZACJI",
-      "title": "Jak wygląda współpraca?",
+      "eyebrow": "Jak wygląda współpraca",
+      "title": "Od pomysłu do uruchomienia w trzech krokach",
       "steps": {
         "choose": {
-          "title": "Opowiedz, czego potrzebujesz",
-          "description": "Napisz, co chcesz stworzyć, dla kogo i jaki cel ma spełniać projekt. Nie musisz mieć gotowego briefu — pomogę doprecyzować zakres."
+          "title": "Opis projektu",
+          "description": "Punktem wyjścia są cele, odbiorcy i obecne potrzeby. Gotowy brief nie jest wymagany."
         },
         "describe": {
-          "title": "Ustalamy zakres i wycenę",
-          "description": "Uzgadniamy materiały, termin, sposób realizacji i liczbę rund poprawek. Pracę rozpoczynam po zaakceptowaniu ustaleń."
+          "title": "Ustalenie zakresu i ceny",
+          "description": "Zakres, harmonogram i liczba rund poprawek są uzgadniane przed rozpoczęciem prac."
         },
         "receive": {
-          "title": "Tworzę i przekazuję projekt",
-          "description": "Przygotowuję realizację i omawiam z Tobą postępy. Po uzgodnionych poprawkach przekazuję gotowe materiały lub wdrażam stronę czy aplikację."
+          "title": "Realizacja, odbiór i uruchomienie",
+          "description": "Kolejne etapy podlegają ocenie, a po uzgodnionych poprawkach następuje uruchomienie projektu."
         }
       }
     }
-
   },
 
   "demoProducts": {
@@ -1049,14 +1044,31 @@
   },
 
   "about": {
-    "eyebrow": "POZNAJ LILIMI STUDIO",
-    "title": "Mała pracownia, osobista historia",
-    "intro": "Tworzymy wzory haftów, personalizowane produkty i strony internetowe. Pomagamy zamieniać pomysły w rzeczy, które mają znaczenie dla Ciebie i Twojej marki.",
+    "eyebrow": "O Lilimi",
+    "title": "Małe studio, dbałość o każdy szczegół.",
+    "intro": "Lilimi Studio łączy projektowanie, kod i rzemiosło: strony, sklepy internetowe, interfejsy, grafikę oraz pliki do haftu maszynowego. Spójne podejście od pierwszego pomysłu po gotowy efekt.",
     "storyTitle": "Skąd wzięło się Lilimi?",
     "story": "Nazwa Lilimi pochodzi od imienia córki założycielki. To osobisty początek marki i nadzieja, że z czasem stanie się ona wspólnym dziełem mamy i córki.",
-    "approachTitle": "Zaczynamy od Twojego pomysłu",
-    "approach": "Każdy projekt zaczynamy od rozmowy o potrzebach i oczekiwaniach. Ustalamy zakres, omawiamy szczegóły i szukamy rozwiązania dopasowanego do Twojego pomysłu.",
-    "cta": "Opowiedz nam o swoim projekcie"
+    "approachTitle": "Jakość, przejrzystość i Twoje cele",
+    "approach": "Rozwiązania techniczne i projektowanie łączą się dzięki Angularowi, Javie, WordPressowi i Figmie. Digitalizacja haftu uzupełnia ten warsztat o precyzję i dbałość o detale.",
+    "cta": "Porozmawiajmy o projekcie",
+    "valuesEyebrow": "Podstawy każdego projektu",
+    "skillsTitle": "Projektowanie, kod i rzemiosło w jednym miejscu",
+    "toolsTitle": "Narzędzia i technologie",
+    "values": {
+      "quality": {
+        "title": "Jakość na pierwszym miejscu",
+        "description": "Staranne wykonanie i sprawdzenie przed oddaniem, z miejscem na odbiór oraz uzgodnione poprawki."
+      },
+      "goals": {
+        "title": "Twoje cele jako punkt wyjścia",
+        "description": "Zakres wynika z potrzeb firmy, jej odbiorców i efektu, jaki projekt ma przynieść."
+      },
+      "clarity": {
+        "title": "Jasno i uczciwie",
+        "description": "Zrozumiały język, określony zakres i cena oraz informacje o postępach na kolejnych etapach."
+      }
+    }
   },
 
   "contact": {
@@ -1074,6 +1086,90 @@
     "contact": "Kontakt",
     "terms": "Regulamin",
     "privacy": "Polityka prywatności"
+  },
+  "studioServices": {
+    "eyebrow": "Usługi",
+    "homeTitle": "Strony i rozwiązania, które pomagają rozwijać biznes",
+    "pageTitle": "Wszystko, czego potrzeba, aby zaistnieć w internecie",
+    "intro": "Od przejrzystej strony firmowej po sklep internetowy — rozwiązania responsywne, łatwe w obsłudze i gotowe na dalszy rozwój.",
+    "moreTitle": "Dodatkowe możliwości dla Twojego projektu",
+    "goodFor": "Dla kogo:",
+    "included": "Co zawiera",
+    "discuss": "Zapytaj o tę usługę",
+    "individualQuote": "Wycena indywidualna",
+    "getQuote": "Zapytaj o wycenę",
+    "valuesLabel": "Zasady współpracy",
+    "values": {
+      "reliable": {
+        "title": "Rzetelnie",
+        "description": "Jasny zakres, uczciwa wycena i staranne wykonanie."
+      },
+      "timely": {
+        "title": "Jasny harmonogram",
+        "description": "Uzgodnione etapy i regularne informacje o postępach."
+      },
+      "tailored": {
+        "title": "Z myślą o Twoich celach",
+        "description": "Punktem wyjścia są potrzeby projektu i jego odbiorcy."
+      }
+    },
+    "cta": {
+      "title": "Czego potrzebuje Twój projekt?",
+      "description": "Strony, sklepu czy poprawek? Opisz pomysł i obecny etap, aby otrzymać propozycję zakresu oraz wycenę.",
+      "action": "Zapytaj o współpracę"
+    },
+    "items": {
+      "websites": {
+        "title": "Strony internetowe i WordPress",
+        "description": "Responsywne strony firmowe, tworzone indywidualnie lub na WordPressie i innych systemach CMS, z łatwą edycją treści.",
+        "action": "Zapytaj o stronę",
+        "audience": "Lokalne firmy, freelancerzy i małe przedsiębiorstwa potrzebujące czytelnej obecności w internecie.",
+        "included": {
+          "0": "Układ dopasowany do telefonu, tabletu i komputera",
+          "1": "Dedykowane wykonanie lub edytowalna strona WordPress / CMS",
+          "2": "Formularz kontaktowy i podstawy technicznego SEO",
+          "3": "Wsparcie przy uruchomieniu, domenie, hostingu i HTTPS"
+        }
+      },
+      "stores": {
+        "title": "Sklepy internetowe",
+        "description": "WooCommerce lub dedykowane e-commerce: katalog produktów, koszyk, zamówienia, płatności i panel administracyjny.",
+        "action": "Zapytaj o sklep",
+        "audience": "Firmy sprzedające produkty fizyczne lub pliki cyfrowe przez internet.",
+        "included": {
+          "0": "Katalog produktów z wariantami i opcjami",
+          "1": "Koszyk, składanie zamówień i integracja płatności",
+          "2": "Obsługa zamówień i narzędzia administracyjne",
+          "3": "Powiadomienia e-mail dla klientów i administratora"
+        }
+      },
+      "maintenance": {
+        "title": "Poprawki i utrzymanie",
+        "description": "Naprawa błędów, poprawa wydajności i wyglądu, aktualizacje oraz nowe funkcje istniejącej strony lub aplikacji.",
+        "action": "Zgłoś poprawki",
+        "audience": "Właściciele stron wymagających naprawy, aktualizacji lub rozbudowy.",
+        "included": {
+          "0": "Diagnoza i naprawa zgłoszonych problemów",
+          "1": "Poprawa wydajności i obsługi na telefonach",
+          "2": "Odświeżenie wyglądu oraz nowe sekcje",
+          "3": "Uzgodniony zakres aktualizacji, kopii zapasowych i wsparcia"
+        }
+      },
+      "design": {
+        "title": "Projektowanie UX/UI w Figmie",
+        "description": "Projekty interfejsów, prototypy i ścieżki użytkownika przygotowane do wdrożenia.",
+        "action": "Zapytaj o projekt"
+      },
+      "graphics": {
+        "title": "Logo i materiały graficzne",
+        "description": "Logo, identyfikacja wizualna, ulotki oraz materiały do druku i internetu.",
+        "action": "Zapytaj o grafikę"
+      },
+      "digitizing": {
+        "title": "Digitalizacja haftu",
+        "description": "Przygotowanie grafiki do haftu maszynowego, gotowej do próbnego wyszycia.",
+        "action": "Zapytaj o digitalizację"
+      }
+    }
   }
 }
-

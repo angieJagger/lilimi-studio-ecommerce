@@ -1,38 +1,22 @@
-.heading-1 {
-  margin: 0;
-  color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-size: 2.25rem;
-  font-weight: 800;
-  line-height: 1.222222;
-}
-
-.heading-2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-size: 1.75rem;
-  font-weight: 800;
-  line-height: 1.285714;
-}
-
+.heading-1,
+.heading-2,
 .heading-3 {
   margin: 0;
   color: var(--text-primary);
-  font-family: var(--font-body);
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.4;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  overflow-wrap: break-word;
 }
-
-@media (min-width: 64rem) {
-  .heading-1 {
-    font-size: 3rem;
-    line-height: 1.166667;
-  }
-
-  .heading-2 {
-    font-size: 2.25rem;
-    line-height: 1.222222;
-  }
+.heading-1 {
+  font-size: clamp(2.2rem, 4vw, 3.75rem);
+  line-height: 1.12;
+}
+.heading-2 {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.2;
+}
+.heading-3 {
+  font-size: 1.4rem;
+  line-height: 1.35;
 }

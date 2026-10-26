@@ -1,9 +1,12 @@
 :host {
   display: block;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .site-header {
-  background-color: var(--surface-default);
+  background-color: var(--surface-page);
   border-bottom: 1px solid var(--border-brand-soft);
 }
 
@@ -20,10 +23,10 @@
 .site-header__brand {
   white-space: nowrap;
   flex-shrink: 0;
-  color: var(--brand-primary);
+  color: var(--logo-dark);
   font-family: var(--font-heading);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 28px;
   text-decoration: none;
 }
@@ -44,23 +47,14 @@
   }
 }
 
-.site-header__language {
-  min-width: 44px;
-  min-height: 44px;
-  padding: var(--spacing-8);
-  border: 0;
-  background: transparent;
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
-  cursor: pointer;
+.site-header__languages {
+  display: none;
 }
 
-.site-header__language:focus-visible {
-  outline: 2px solid var(--border-brand);
-  outline-offset: 4px;
+@media (min-width: 64rem) {
+  .site-header__languages {
+    display: inline-block;
+  }
 }
 
 .site-header__navigation {
@@ -176,5 +170,58 @@
 @media (min-width: 64rem) {
   .site-header__actions {
     gap: var(--spacing-8);
+  }
+}
+
+.site-header__account {
+  display: none;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--spacing-8);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-header__account:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.site-header__account:focus-visible {
+  outline: 2px solid var(--border-brand);
+  outline-offset: 4px;
+}
+
+@media (min-width: 64rem) {
+  .site-header__account {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 64rem) {
+  .site-header__container {
+    gap: 24px;
+  }
+  .site-header__navigation {
+    gap: 24px;
+    margin-inline: auto;
+  }
+  .site-header__actions {
+    gap: 6px;
+  }
+}
+.site-header__quote {
+  display: none;
+}
+@media (min-width: 75rem) {
+  .site-header__quote {
+    display: inline-flex;
+    min-height: 42px;
+    padding: 10px 16px;
+    font-size: 0.8125rem;
+    margin-left: 8px;
   }
 }
