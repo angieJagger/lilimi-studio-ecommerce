@@ -6,6 +6,7 @@ import { AuthSessionService } from '../../core/auth/auth-session.service';
 import type { CurrentUser } from '../../core/auth/auth.model';
 import { CustomerProfileApiService } from '../../core/customer/customer-profile-api.service';
 import type { CustomerProfile } from '../../core/customer/customer-profile.model';
+import { TranslocoService } from '@jsverse/transloco';
 import { vi } from 'vitest';
 
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
@@ -509,6 +510,61 @@ describe('Checkout', () => {
     expect(element.querySelector<HTMLButtonElement>('button[aria-busy]')?.disabled).toBe(false);
 
     expect(orderApiMock.createOrder).toHaveBeenCalledTimes(1);
+  });
+
+  it('should preserve the cart, contact details and submission key after HTTP 429', async () => {
+    TestBed.inject(TranslocoService).setActiveLang('en');
+    await fixture.whenStable();
+
+    await reviewDigitalOrder();
+
+    const retryResult = new Subject<CreateOrderResponse>();
+
+    orderApiMock.createOrder
+      .mockReturnValueOnce(orderResult.asObservable())
+      .mockReturnValueOnce(retryResult.asObservable());
+
+    await submitReviewedOrder();
+
+    const [firstRequest, firstKey] = orderApiMock.createOrder.mock.calls[0];
+
+    orderResult.error(
+      new HttpErrorResponse({
+        status: 429,
+        error: {
+          code: 'ORDER_RATE_LIMITED',
+        },
+      }),
+    );
+
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Too many orders in a short time. Please wait before trying again.',
+    );
+
+    expect(cart.itemCount()).toBe(1);
+    expect(submissionKeysMock.markCompleted).not.toHaveBeenCalled();
+    expect(element.querySelector('#checkout-success-title')).toBeNull();
+
+    expect(element.querySelector<HTMLInputElement>('#checkout-fullName')!.value).toBe(
+      'Anna Kowalska',
+    );
+
+    expect(element.querySelector<HTMLInputElement>('#checkout-email')!.value).toBe(
+      'anna@example.com',
+    );
+
+    expect(element.querySelector<HTMLButtonElement>('button[aria-busy]')!.disabled).toBe(false);
+
+    await submitReviewedOrder();
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(2);
+    expect(orderApiMock.createOrder.mock.calls[1][0]).toEqual(firstRequest);
+    expect(orderApiMock.createOrder.mock.calls[1][1]).toBe(firstKey);
+
+    retryResult.error(new HttpErrorResponse({ status: 429 }));
+    await fixture.whenStable();
   });
 
   it('should reuse the same key after a connection error', async () => {

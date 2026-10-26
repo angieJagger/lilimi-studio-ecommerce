@@ -769,7 +769,8 @@
       "connection": "Could not receive confirmation. Your order may have been saved.",
       "unavailable": "A product or selected variant is no longer available. Return to your cart and review its contents.",
       "delivery": "The delivery method does not match your order. Return to editing your details.",
-      "validation": "Review your order details — some fields are invalid."
+      "validation": "Review your order details — some fields are invalid.",
+      "tooManyRequests": "Too many orders in a short time. Please wait before trying again."
     },
     "errors": {
       "nameRequired": "Enter your full name.",
@@ -1032,7 +1033,9 @@
       "descriptionTooLong": "The description must not exceed 5000 characters.",
       "inspirationUrlTooLong": "The URL must not exceed 2048 characters.",
       "catalogLoading": "The selected product is being checked. Please wait a moment before submitting again.",
-      "catalogUnavailable": "Unable to check the selected product. Please refresh the page and try again."
+      "catalogUnavailable": "Unable to check the selected product. Please refresh the page and try again.",
+      "tooManyRequests": "Too many inquiry attempts. Please wait before trying again.",
+      "serviceUnavailable": "The inquiry service is temporarily unavailable. Please try again later."
     },
 
     "submitting": "Submitting…",

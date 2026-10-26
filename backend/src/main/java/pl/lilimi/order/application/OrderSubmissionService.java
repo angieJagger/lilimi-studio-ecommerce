@@ -2,14 +2,19 @@ package pl.lilimi.order.application;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+
 import pl.lilimi.order.api.CreateOrderRequest;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.persistence.OrderConfirmationEmailRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.order.persistence.OrderSubmissionRepository;
+import pl.lilimi.security.application.PublicFormRateLimiter;
+
 import tools.jackson.databind.json.JsonMapper;
 
 import java.security.MessageDigest;
@@ -26,19 +31,21 @@ public class OrderSubmissionService {
   private final OrderRepository orderRepository;
   private final OrderSubmissionRepository submissionRepository;
   private final OrderConfirmationEmailRepository confirmationEmails;
-
   private final JsonMapper mapper = JsonMapper.builder().build();
+  private final PublicFormRateLimiter rateLimiter;
 
   public OrderSubmissionService(
     OrderService orderService,
     OrderRepository orderRepository,
     OrderSubmissionRepository submissionRepository,
-    OrderConfirmationEmailRepository confirmationEmails
+    OrderConfirmationEmailRepository confirmationEmails,
+    PublicFormRateLimiter rateLimiter
   ) {
     this.orderService = orderService;
     this.orderRepository = orderRepository;
     this.submissionRepository = submissionRepository;
     this.confirmationEmails = confirmationEmails;
+    this.rateLimiter = rateLimiter;
   }
 
   @Transactional
@@ -46,7 +53,12 @@ public class OrderSubmissionService {
     @NotNull UUID idempotencyKey,
     @NotNull @Valid CreateOrderRequest request
   ) {
-    return submit(idempotencyKey, request, null);
+    return submitInternal(
+      idempotencyKey,
+      request,
+      null,
+      null
+    );
   }
 
   @Transactional
@@ -55,9 +67,41 @@ public class OrderSubmissionService {
     @NotNull @Valid CreateOrderRequest request,
     UUID customerAccountId
   ) {
+    return submitInternal(
+      idempotencyKey,
+      request,
+      customerAccountId,
+      null
+    );
+  }
+
+  @Transactional
+  public Order submitFromSource(
+    @NotNull UUID idempotencyKey,
+    @NotNull @Valid CreateOrderRequest request,
+    UUID customerAccountId,
+    @NotBlank String source
+  ) {
+    return submitInternal(
+      idempotencyKey,
+      request,
+      customerAccountId,
+      source
+    );
+  }
+
+  private Order submitInternal(
+    UUID idempotencyKey,
+    CreateOrderRequest request,
+    UUID customerAccountId,
+    String source
+  ) {
     String requestHash = hash(request);
 
-    submissionRepository.reserve(idempotencyKey, requestHash);
+    submissionRepository.reserve(
+      idempotencyKey,
+      requestHash
+    );
 
     var submission = submissionRepository.lock(idempotencyKey);
 
@@ -81,6 +125,14 @@ public class OrderSubmissionService {
       }
 
       return existingOrder;
+    }
+
+    if (source != null) {
+      long retryAfter = rateLimiter.reserveOrder(source);
+
+      if (retryAfter > 0) {
+        throw new OrderRateLimitExceededException(retryAfter);
+      }
     }
 
     var order = orderService.createOrder(

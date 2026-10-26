@@ -6,6 +6,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
+import { TranslocoService } from '@jsverse/transloco';
 import { ProjectInquiryApiService } from './project-inquiry-api.service';
 import type { CreateInquiryResponse } from './project-inquiry.model';
 import {
@@ -159,6 +160,52 @@ describe('ProjectInquiry', () => {
     expect(element.querySelector('.project-inquiry__confirmation')).toBeNull();
   });
 
+  it.each([
+    {
+      status: 429,
+      message: 'Too many inquiry attempts. Please wait before trying again.',
+    },
+    {
+      status: 503,
+      message: 'The inquiry service is temporarily unavailable. Please try again later.',
+    },
+  ])(
+    'should show the correct message for HTTP $status and preserve the form',
+    async ({ status, message }) => {
+      TestBed.inject(TranslocoService).setActiveLang('en');
+      await fixture.whenStable();
+
+      await fillRequiredFields();
+      await fillField('inquiry-description', 'I need a website for my studio.');
+      await submitForm();
+
+      inquiryResult.error(new HttpErrorResponse({ status }));
+      await fixture.whenStable();
+
+      const element = fixture.nativeElement as HTMLElement;
+
+      expect(element.querySelector('[role="alert"]')?.textContent).toContain(message);
+
+      expect(element.querySelector<HTMLInputElement>('#inquiry-email')!.value).toBe(
+        'anna@example.com',
+      );
+
+      expect(element.querySelector<HTMLTextAreaElement>('#inquiry-description')!.value).toBe(
+        'I need a website for my studio.',
+      );
+
+      expect(element.querySelector<HTMLFieldSetElement>('fieldset')!.disabled).toBe(false);
+
+      expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(
+        false,
+      );
+
+      expect(element.querySelector('.project-inquiry__confirmation')).toBeNull();
+
+      expect(api.createInquiry).toHaveBeenCalledOnce();
+    },
+  );
+
   it('should show required errors and focus the first invalid field on submit', async () => {
     const element = fixture.nativeElement as HTMLElement;
 
@@ -297,7 +344,7 @@ describe('ProjectInquiry product context', () => {
   beforeEach(async () => {
     catalog = createProductCatalogMock();
     inquiryResult = new Subject<CreateInquiryResponse>();
-    
+
     api.createInquiry.mockReset();
     api.createInquiry.mockReturnValue(inquiryResult.asObservable());
 

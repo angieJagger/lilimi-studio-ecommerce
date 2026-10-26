@@ -519,6 +519,10 @@ export class Checkout {
       return 'checkout.orderErrors.connection';
     }
 
+    if (error.status === 429) {
+      return 'checkout.orderErrors.tooManyRequests';
+    }
+
     switch (error.error?.code) {
       case 'ORDER_PRODUCT_UNAVAILABLE':
         return 'checkout.orderErrors.unavailable';
