@@ -772,7 +772,8 @@
       "connection": "Nie udało się odebrać potwierdzenia. Zamówienie mogło zostać zapisane.",
       "unavailable": "Produkt lub wybrany wariant jest już niedostępny. Wróć do koszyka i sprawdź jego zawartość.",
       "delivery": "Dostawa nie pasuje do zamówienia. Wróć do edycji danych.",
-      "validation": "Sprawdź dane zamówienia — niektóre pola są nieprawidłowe."
+      "validation": "Sprawdź dane zamówienia — niektóre pola są nieprawidłowe.",
+      "tooManyRequests": "Zbyt wiele zamówień w krótkim czasie. Odczekaj przed kolejną próbą."
     },
     "errors": {
       "nameRequired": "Podaj imię i nazwisko.",
@@ -1035,7 +1036,9 @@
       "descriptionTooLong": "Opis może mieć maksymalnie 5000 znaków.",
       "inspirationUrlTooLong": "Link może mieć maksymalnie 2048 znaków.",
       "catalogLoading": "Trwa sprawdzanie wybranego produktu. Poczekaj chwilę i ponów wysłanie.",
-      "catalogUnavailable": "Nie udało się sprawdzić wybranego produktu. Odśwież stronę i spróbuj ponownie."
+      "catalogUnavailable": "Nie udało się sprawdzić wybranego produktu. Odśwież stronę i spróbuj ponownie.",
+      "tooManyRequests": "Zbyt wiele prób wysłania zapytania. Odczekaj przed kolejną próbą.",
+      "serviceUnavailable": "Wysyłanie zapytań jest chwilowo niedostępne. Spróbuj ponownie później."
     },
 
     "submitting": "Wysyłanie…",

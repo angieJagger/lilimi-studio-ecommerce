@@ -246,6 +246,14 @@ export class ProjectInquiry {
 
   private getInquiryErrorKey(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
+      if (error.status === 429) {
+        return 'projectInquiry.errors.tooManyRequests';
+      }
+
+      if (error.status === 503) {
+        return 'projectInquiry.errors.serviceUnavailable';
+      }
+
       switch (error.error?.code) {
         case 'INQUIRY_PRODUCT_UNAVAILABLE':
           return 'projectInquiry.errors.productUnavailable';

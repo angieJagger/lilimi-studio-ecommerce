@@ -6,9 +6,12 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.ResponseEntity;
+
 import pl.lilimi.order.application.InvalidOrderDeliveryException;
 import pl.lilimi.order.application.OrderProductUnavailableException;
 import pl.lilimi.order.application.OrderSubmissionConflictException;
+import pl.lilimi.order.application.OrderRateLimitExceededException;
 
 @RestControllerAdvice(assignableTypes = OrderController.class)
 public class OrderExceptionHandler {
@@ -87,6 +90,27 @@ public class OrderExceptionHandler {
       "The idempotency key was already used for different order data.",
       "ORDER_SUBMISSION_CONFLICT"
     );
+  }
+
+  @ExceptionHandler(OrderRateLimitExceededException.class)
+  public ResponseEntity<ProblemDetail> handleRateLimit(
+    OrderRateLimitExceededException exception
+  ) {
+    var body = problem(
+      HttpStatus.TOO_MANY_REQUESTS,
+      "Order creation rate limit exceeded",
+      "Too many orders have been created from this source. Try again later.",
+      "ORDER_RATE_LIMITED"
+    );
+
+    return ResponseEntity
+      .status(HttpStatus.TOO_MANY_REQUESTS)
+      .header(
+        "Retry-After",
+        Long.toString(exception.getRetryAfterSeconds())
+      )
+      .header("Cache-Control", "no-store")
+      .body(body);
   }
   private ProblemDetail problem(
     HttpStatus status,

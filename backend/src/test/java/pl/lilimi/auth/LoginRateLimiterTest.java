@@ -8,18 +8,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import pl.lilimi.auth.domain.UserAccount;
-import pl.lilimi.auth.domain.UserRole;
-import pl.lilimi.auth.persistence.UserAccountRepository;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import pl.lilimi.PostgresTestConfiguration;
-import pl.lilimi.auth.application.LoginRateLimiter;
-import pl.lilimi.auth.persistence.LoginRateLimitRepository;
 
 import java.sql.Timestamp;
 import java.time.Clock;
@@ -30,6 +20,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
+
+import pl.lilimi.auth.domain.UserAccount;
+import pl.lilimi.auth.domain.UserRole;
+import pl.lilimi.auth.persistence.UserAccountRepository;
+import pl.lilimi.PostgresTestConfiguration;
+import pl.lilimi.auth.application.LoginRateLimiter;
+import pl.lilimi.security.persistence.RateLimitRepository;
+import pl.lilimi.security.application.RequestRateLimiter;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -45,7 +49,8 @@ import static org.mockito.Mockito.when;
 class LoginRateLimiterTest {
   private static final Instant NOW = Instant.parse("2026-10-25T12:00:00Z");
   @Autowired LoginRateLimiter limiter;
-  @Autowired LoginRateLimitRepository repository;
+  @Autowired
+  RateLimitRepository repository;
   @Autowired JdbcTemplate jdbc;
   @MockitoBean Clock clock;
   @Autowired MockMvc mvc;
@@ -54,7 +59,7 @@ class LoginRateLimiterTest {
 
   @BeforeEach
   void reset() {
-    jdbc.update("DELETE FROM login_rate_limits");
+    jdbc.update("DELETE FROM request_rate_limits");
     when(clock.instant()).thenReturn(NOW);
   }
 
@@ -74,7 +79,7 @@ class LoginRateLimiterTest {
     }
     assertThat(limiter.reserveAttempt("another@example.com", "source")).isEqualTo(10);
     assertThat(limiter.reserveAttempt("another@example.com", "different-source")).isZero();
-    assertThat(jdbc.queryForObject("SELECT count(*) FROM login_rate_limits", Integer.class))
+    assertThat(jdbc.queryForObject("SELECT count(*) FROM request_rate_limits", Integer.class))
       .isEqualTo(8);
   }
 
@@ -90,9 +95,14 @@ class LoginRateLimiterTest {
   @Test
   void shouldKeepCountersWhenServiceIsRecreated() {
     for (int i = 0; i < 3; i++) limiter.reserveAttempt("person@example.com", "source");
-    var recreated = new LoginRateLimiter(repository, clock, 3, 5, 10);
+    var recreated = new LoginRateLimiter(
+      new RequestRateLimiter(repository, clock),
+      3,
+      5,
+      10
+    );
     assertThat(recreated.reserveAttempt("person@example.com", "new-source")).isEqualTo(10);
-    assertThat(jdbc.queryForList("SELECT bucket_key FROM login_rate_limits", String.class))
+    assertThat(jdbc.queryForList("SELECT bucket_key FROM request_rate_limits", String.class))
       .allMatch(key -> key.matches("[0-9a-f]{64}"));
   }
 
@@ -110,13 +120,14 @@ class LoginRateLimiterTest {
 
   @Test
   void shouldCleanOnlyExpiredBucketsPastGracePeriod() {
-    jdbc.update("INSERT INTO login_rate_limits VALUES (?, 1, ?)",
+    jdbc.update("INSERT INTO request_rate_limits VALUES (?, 1, ?)",
       "a".repeat(64), Timestamp.from(NOW.minusSeconds(90000)));
-    jdbc.update("INSERT INTO login_rate_limits VALUES (?, 1, ?)",
+    jdbc.update("INSERT INTO request_rate_limits VALUES (?, 1, ?)",
       "b".repeat(64), Timestamp.from(NOW.minusSeconds(1)));
     limiter.reserveAttempt("person@example.com", "source");
-    limiter.removeExpiredBuckets();
-    assertThat(jdbc.queryForObject("SELECT count(*) FROM login_rate_limits", Integer.class))
+    new RequestRateLimiter(repository, clock)
+      .removeExpiredBuckets();
+    assertThat(jdbc.queryForObject("SELECT count(*) FROM request_rate_limits", Integer.class))
       .isEqualTo(3);
   }
 

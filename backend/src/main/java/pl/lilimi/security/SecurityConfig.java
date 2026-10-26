@@ -1,5 +1,6 @@
 package pl.lilimi.security;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,14 +10,14 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 import pl.lilimi.auth.persistence.UserAccountRepository;
 import pl.lilimi.auth.application.LoginRateLimiter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import pl.lilimi.security.application.PublicFormRateLimiter;
+
 
 
 @Configuration
@@ -31,12 +32,17 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
     HttpSecurity http,
     UserAccountRepository accounts,
-    LoginRateLimiter loginRateLimiter
+    LoginRateLimiter loginRateLimiter,
+    PublicFormRateLimiter publicFormRateLimiter
   ) throws Exception {
 
     http
       .addFilterBefore(new LoginRateLimitFilter(loginRateLimiter),
         UsernamePasswordAuthenticationFilter.class)
+      .addFilterBefore(
+        new PublicFormRateLimitFilter(publicFormRateLimiter),
+        LoginRateLimitFilter.class
+      )
       .addFilterAfter(
         new CredentialsVersionFilter(accounts),
         SecurityContextHolderFilter.class

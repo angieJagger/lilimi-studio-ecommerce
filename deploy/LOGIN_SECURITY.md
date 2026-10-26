@@ -1,47 +1,78 @@
-# Login rate limiting
+# Request rate limiting
 
-Migration V27 adds persistent PostgreSQL buckets. All login attempts (successful
-and failed) consume a slot before password verification. Defaults are 5 attempts
-per normalized email and 30 attempts per source address in fixed 5-minute windows.
-Nonexistent accounts use the same mechanism and responses. Counters survive
-backend restarts and are shared by backend instances using the same database.
-Rejected requests do not extend the window; there is no permanent account lock.
-An attacker can still temporarily exhaust a known account's budget. CAPTCHA/MFA
-and edge-level protection are future additional controls, not implemented here.
+Rate limits use persistent PostgreSQL counters in `request_rate_limits`.
+Migration V28 renames the table created by V27 without removing counters.
 
-HTTP 429 includes Retry-After and a generic LOGIN_RATE_LIMITED response, without
-disclosing whether the account exists or which bucket was exhausted. PostgreSQL
-failures produce 503 instead of bypassing limits. CSRF validation runs first;
-requests rejected by CSRF do not consume account buckets. Logout, browsing,
-password-reset requests and authenticated sessions are not rate limited here.
-Public-form abuse protection is a separate follow-up.
+## Limits
 
-Settings: lilimi.security.login.account-attempts (5), source-attempts (30),
-window-seconds (300, allowed 1..3600), cleanup-delay-ms (3600000). Expired buckets
-older than 24 hours are removed hourly. SHA-256 bucket keys avoid plaintext
-emails/IPs in this table, but are deterministic and are not anonymization.
+| Operation | Scope | Limit | Window |
+|---|---|---:|---:|
+| Login | Normalized email | 5 attempts | 5 minutes |
+| Login | Source address | 30 attempts | 5 minutes |
+| Inquiry | Source address | 5 attempts | 15 minutes |
+| Registration | Source address | 10 attempts | 1 hour |
+| Order creation | Source address | 10 created orders | 15 minutes |
 
-## Deployment prerequisite: trusted proxy headers
+Login limits are configurable through:
 
-The filter uses the servlet remote address, not raw forwarding headers. With
-SERVER_FORWARD_HEADERS_STRATEGY=framework, this address comes from forwarded
-headers. The reviewed Caddyfile explicitly removes Forwarded. Caddy supplies
-X-Forwarded-For itself and, without trusted_proxies configured, ignores incoming
-client-supplied X-Forwarded-* values. Apply these Caddyfile changes on
-Lightsail and validate/reload the gateway before testing the source limit.
-Backend port 8080 must not be exposed publicly. With another upstream proxy or
-CDN, configure an explicit trusted proxy chain instead of trusting arbitrary
-client headers. Without this setup source-IP limiting may be spoofed or may
-aggregate clients behind a proxy; the independent account limit still applies.
+- `lilimi.security.login.account-attempts`
+- `lilimi.security.login.source-attempts`
+- `lilimi.security.login.window-seconds`
 
-The backend image deploy workflow does not copy Caddyfile from Git onto Lightsail.
-Do not assume merging this change updates the server gateway configuration.
+Public-form limits are defined in `PublicFormRateLimiter`.
 
-## Verification
+## Behaviour
 
-Use automated tests against the isolated Testcontainers database; do not brute
-force production. After deployment check a normal login/logout and recovery of
-an exhausted test account after the window. Never log credentials, tokens or raw
-email/source values when adding telemetry.
+Login, inquiry and registration attempts consume their budget after CSRF
+validation and before authentication or controller validation.
 
-Proxy header reference: https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#defaults
+Order creation checks its budget after matching the idempotency key,
+request content and customer ownership. Replaying a saved submission
+returns its existing order without consuming another slot.
+
+Order creation and its counter update share one transaction. Failed order
+creation rolls back the counter update.
+
+The source-aware order method is used by the HTTP controller. Existing
+`submit()` methods remain available for trusted internal calls without
+source-based limiting.
+
+Rejected requests return HTTP 429 with `Retry-After` and `Cache-Control:
+no-store`. Rejected requests do not extend the fixed window.
+
+Login and public-form filters return HTTP 503 if counter storage is
+unavailable. They do not bypass protection.
+
+## Storage and cleanup
+
+Counters survive backend restarts and are shared by instances using the
+same database.
+
+Bucket keys are SHA-256 hashes of the scope and identifier. They do not
+store plaintext email addresses or IP addresses, but deterministic hashes
+are not anonymization.
+
+`RateLimitCleanup` runs hourly and removes counters that expired more than
+24 hours earlier. Its interval is configured through
+`lilimi.security.rate-limit.cleanup-delay-ms`.
+
+## Deployment
+
+The backend must not be directly accessible from the internet.
+
+With forwarded-header processing enabled, source-address protection
+depends on a correctly configured trusted gateway. The Caddy configuration
+removes incoming `Forwarded` headers and relies on Caddy's default handling
+of `X-Forwarded-*` headers.
+
+The deployment workflow does not copy the server's Caddyfile automatically.
+
+## Limitations
+
+People sharing one public IP address share source-based limits.
+
+IP limits alone do not stop distributed abuse. An attacker may temporarily
+exhaust a known account's login budget.
+
+CAPTCHA, administrator MFA and additional edge protection remain future
+work.
