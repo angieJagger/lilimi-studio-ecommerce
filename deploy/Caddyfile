@@ -1,5 +1,11 @@
 {$SITE_ADDRESS: :80} {
 	encode gzip zstd
+  header {
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -X-Powered-By
+  }
 	@api path /api /api/*
 	handle @api {
 		reverse_proxy backend:8080 {
