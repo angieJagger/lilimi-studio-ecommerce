@@ -144,7 +144,6 @@
   gap: var(--spacing-12);
 }
 
-.product-list__filter-toggle,
 .product-list__sorting {
   flex: 1;
   min-width: 0;
@@ -282,4 +281,25 @@
 .product-list__count,
 .product-list__visible-count {
   display: block;
+}
+@media (max-width: 63.999rem) {
+  .product-list__visible-count {
+    flex-basis: 100%;
+  }
+
+  .product-list__filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    padding: 0;
+  }
+
+  .product-list__filter-toggle[aria-expanded='true'] {
+    background-color: var(--surface-brand-soft);
+    border-color: var(--brand-primary);
+  }
 }

@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { primaryStudioServices, additionalStudioServices } from '../../shared/studio-services';
 
 @Component({
   selector: 'app-services-overview',
@@ -10,20 +11,6 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 })
 export class ServicesOverview {
   protected readonly transloco = inject(TranslocoService);
-
-  protected readonly services = [
-    'uxUi',
-    'webDevelopment',
-    'wordpress',
-    'graphicDesign',
-    'embroideryDigitizing',
-  ] as const;
-
-  protected readonly inquiryTypes = {
-    uxUi: 'uxUi',
-    webDevelopment: 'website',
-    wordpress: 'wordpress',
-    graphicDesign: 'graphicDesign',
-    embroideryDigitizing: 'digitizing',
-  } as const;
+  protected readonly primaryServices = primaryStudioServices;
+  protected readonly additionalServices = additionalStudioServices;
 }

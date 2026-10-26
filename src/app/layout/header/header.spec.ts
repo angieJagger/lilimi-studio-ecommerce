@@ -28,21 +28,21 @@ describe('Header', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-    it.each(['pl', 'en'])(
-      'should link to the account page without encoding the slash for %s',
-      async (language) => {
-        TestBed.inject(TranslocoService).setActiveLang(language);
-        fixture.detectChanges();
-        await fixture.whenStable();
+  it.each(['pl', 'en'])(
+    'should link to the account page without encoding the slash for %s',
+    async (language) => {
+      TestBed.inject(TranslocoService).setActiveLang(language);
+      fixture.detectChanges();
+      await fixture.whenStable();
 
-        const element = fixture.nativeElement as HTMLElement;
+      const element = fixture.nativeElement as HTMLElement;
 
-        const accountLink = element.querySelector<HTMLAnchorElement>(
-          '.site-header__navigation a[href*="account"]',
-        );
+      const accountLink = element.querySelector<HTMLAnchorElement>(
+        '.site-header__actions a[href*="account"]',
+      );
 
-        expect(accountLink).not.toBeNull();
-        expect(accountLink?.getAttribute('href')).toBe(`/${language}/account/login`);
-      },
-    );
+      expect(accountLink).not.toBeNull();
+      expect(accountLink?.getAttribute('href')).toBe(`/${language}/account/login`);
+    },
+  );
 });

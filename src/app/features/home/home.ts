@@ -1,3 +1,4 @@
+import { primaryStudioServices, additionalStudioServices } from '../../shared/studio-services';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -38,16 +39,6 @@ export class Home {
     }
   }
 
-  protected readonly offerItems = [
-    {
-      id: 'graphic',
-      titleKey: 'home.offer.graphic.title',
-      descriptionKey: 'home.offer.graphic.description',
-    },
-    {
-      id: 'web',
-      titleKey: 'home.offer.web.title',
-      descriptionKey: 'home.offer.web.description',
-    },
-  ] as const;
+  protected readonly primaryServices = primaryStudioServices;
+  protected readonly additionalServices = additionalStudioServices;
 }

@@ -22,7 +22,7 @@
 }
 
 .mobile-menu__brand {
-  color: var(--brand-primary);
+  color: var(--logo-dark);
   font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 800;
@@ -37,11 +37,12 @@
   height: 44px;
   flex-shrink: 0;
   padding: 0;
-  border: 1px solid var(--text-primary);
+  border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 24px;
+  font-size: 30px;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -69,4 +70,53 @@
 .mobile-menu button:focus-visible {
   outline: 2px solid var(--border-brand);
   outline-offset: 4px;
+}
+
+.mobile-menu {
+  opacity: 0;
+  transform: translateX(100%);
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease,
+    overlay 260ms allow-discrete,
+    display 260ms allow-discrete;
+}
+
+.mobile-menu[open] {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mobile-menu::backdrop {
+  background: rgb(31 27 45 / 18%);
+  opacity: 0;
+  transition:
+    opacity 260ms ease,
+    overlay 260ms allow-discrete,
+    display 260ms allow-discrete;
+}
+
+.mobile-menu[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .mobile-menu[open] {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  .mobile-menu[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu,
+  .mobile-menu::backdrop {
+    transition: none;
+  }
+}
+.mobile-menu__languages {
+  margin-top: var(--spacing-32);
 }

@@ -5,35 +5,74 @@
     </a>
     <nav class="site-header__navigation" [attr.aria-label]="'nav.mainNavigation' | transloco">
       @for (item of shopNavigation; track item.labelKey) {
-      <a class="site-header__link"
-        [routerLink]="['/', transloco.getActiveLang()].concat(item.path.split('/'))"
-        [queryParams]="item.queryParams"
-        [fragment]="item.fragment">
-        {{ item.labelKey | transloco }}
-      </a>
+        <a
+          class="site-header__link"
+          [routerLink]="['/', transloco.getActiveLang()].concat(item.path.split('/'))"
+          [queryParams]="item.queryParams"
+          [fragment]="item.fragment"
+        >
+          {{ item.labelKey | transloco }}
+        </a>
       }
     </nav>
     <div class="site-header__actions">
-  <button class="site-header__language" type="button" (click)="toggleLanguage()"
-    [attr.aria-label]="'language.switchLabel' | transloco" [title]="'language.switchLabel' | transloco">
-    {{ transloco.getActiveLang() === 'pl' ? 'PL' : 'EN' }}
-  </button>
-  <a class="site-header__cart" [routerLink]="['/', transloco.getActiveLang(), 'cart']" [attr.aria-label]="
-      'nav.cartWithCount' | transloco: { count: cart.itemCount() }
-    ">
-    <svg class="site-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-      <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6H18a2 2 0 0 0 2-1.6L21 7H6" />
-      <circle cx="10" cy="20" r="1" />
-      <circle cx="18" cy="20" r="1" />
-    </svg>
-    <span class="site-header__cart-count" aria-hidden="true">{{ cart.itemCount() > 99 ? '99+' : cart.itemCount() }}</span>
-  </a>
-  <button class="site-header__menu-button" type="button" [attr.aria-label]="'nav.menu' | transloco" aria-haspopup="dialog" (click)="mobileMenu.open()">
-    <svg class="site-header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  </button>
-  </div>
+      <a
+        class="site-header__account"
+        [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']"
+      >
+        {{ 'nav.accountLink' | transloco }}
+      </a>
+      <app-language-switcher class="site-header__languages" />
+      <a
+        class="site-header__cart"
+        [routerLink]="['/', transloco.getActiveLang(), 'cart']"
+        [attr.aria-label]="'nav.cartWithCount' | transloco: { count: cart.itemCount() }"
+      >
+        <svg
+          class="site-header__icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6H18a2 2 0 0 0 2-1.6L21 7H6" />
+          <circle cx="10" cy="20" r="1" />
+          <circle cx="18" cy="20" r="1" />
+        </svg>
+        <span class="site-header__cart-count" aria-hidden="true">{{
+          cart.itemCount() > 99 ? '99+' : cart.itemCount()
+        }}</span>
+      </a>
+      <a
+        class="button button--primary site-header__quote"
+        [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
+        >{{ 'studioServices.getQuote' | transloco }}</a
+      >
+      <button
+        class="site-header__menu-button"
+        type="button"
+        [attr.aria-label]="'nav.menu' | transloco"
+        aria-haspopup="dialog"
+        (click)="mobileMenu.open()"
+      >
+        <svg
+          class="site-header__icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
   </div>
 </header>
 

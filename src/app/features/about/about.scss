@@ -1,59 +1,93 @@
 .about {
-  padding-block: var(--spacing-48);
-  background-color: var(--surface-default);
+  padding-block: clamp(48px, 6vw, 80px);
 }
-
-.about__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-40);
-  max-width: 48rem;
-  margin-inline: auto;
+.about__intro {
+  display: grid;
+  gap: 40px;
+  align-items: center;
 }
-
-.about__intro,
-.about__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-16);
+.about__intro h1 {
+  max-width: 17ch;
 }
-
-.about__intro > .heading-1,
-.about__section > .heading-2 {
-  margin: 0;
-}
-
-.about__eyebrow {
-  margin: 0;
-  color: var(--brand-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.333333;
-  letter-spacing: 0.08em;
-}
-
 .about__text {
-  margin: 0;
+  margin: 24px 0 0;
   color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.8;
 }
-
-.about__cta {
+.about__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+.about__media {
+  min-width: 0;
+}
+.about__image {
+  display: block;
   width: 100%;
+  height: auto;
 }
-
-@media (min-width: 64rem) {
-  .about {
-    padding-block: var(--spacing-80);
+.about__values {
+  margin-block: 80px;
+}
+.about__values ol {
+  display: grid;
+  gap: 24px;
+  margin: 30px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.about__values li {
+  background: var(--surface-default);
+  border: 1px solid var(--border-brand-soft);
+  padding: 30px;
+  border-radius: 16px;
+}
+.about__values li > span {
+  color: var(--brand-primary);
+  font: 600 2.5rem/1.2 var(--font-heading);
+}
+.about__values h3 {
+  margin: 18px 0 14px;
+  font: 600 1.4rem/1.4 var(--font-heading);
+}
+.about__values li p {
+  margin: 0;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+.about__skills {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+  background: var(--surface-brand-soft);
+  padding: clamp(28px, 4vw, 48px);
+  border-radius: 24px;
+}
+.about__skills ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.about__skills li {
+  padding: 8px 14px;
+  border: 1px solid var(--border-brand-soft);
+  border-radius: 999px;
+  font-size: 0.875rem;
+}
+@media (min-width: 48rem) {
+  .about__intro {
+    grid-template-columns: 1.15fr 1fr;
+    gap: 56px;
   }
-
-  .about__content {
-    gap: var(--spacing-48);
+  .about__values ol {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .about__cta {
-    align-self: flex-start;
-    width: auto;
+  .about__skills {
+    grid-template-columns: 1.2fr 1fr;
   }
 }

@@ -1,5 +1,3 @@
-
-
 :root {
   --spacing-0: 0;
   --spacing-4: 4px;
@@ -21,43 +19,46 @@
   --radius-full: 999px;
 
   /*  Primitive colors */
---violet-600: #4f46a5;
---violet-800: #332e6b;
---lilac-300: #c8b6e2;
---lilac-200: #d6c9ea;
---lilac-50: #f3eff8;
---coral-500: #d5635c;
---neutral-900: #211f26;
---neutral-600: #6b6770;
---neutral-200: #ddd9e0;
---neutral-50: #faf9fb;
---white: #ffffff;
---border-soft: #ddd3ed;
+  --violet-600: #4f46a5;
+  --violet-800: #332e6b;
+  --lilac-300: #c8b6e2;
+  --lilac-200: #d6c9ea;
+  --lilac-50: #f3eefc;
+  --coral-500: #d5635c;
+  --neutral-900: #1f1b2d;
+  --neutral-600: #4a4560;
+  --neutral-200: #ddd9e0;
+  --neutral-50: #fbfafd;
+  --white: #ffffff;
+  --border-soft: #e4ddf3;
+  --ink-900: #1f1b2d;
+  --ink-800: #353042;
+  --logo-dark: #392568;
 
-/* Semantic colors*/
---brand-primary: var(--violet-600);
---brand-lilac: var(--lilac-50);
---brand-light-lilac: var(--lilac-200);
---border-brand-soft: var(--border-soft);
---accent-coral: var(--coral-500);
+  /* Semantic colors*/
+  --brand-primary: var(--violet-600);
+  --brand-lilac: var(--lilac-50);
+  --brand-light-lilac: var(--lilac-200);
+  --border-brand-soft: var(--border-soft);
+  --accent-coral: var(--coral-500);
 
---text-primary: var(--neutral-900);
---text-secondary: var(--neutral-600);
---text-inverse: var(--white);
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-inverse: var(--white);
 
---surface-page: var(--neutral-50);
---surface-default: var(--white);
---surface-brand-soft: var(--lilac-50);
---surface-inverse: var(--violet-800);
+  --surface-page: var(--neutral-50);
+  --surface-default: var(--white);
+  --surface-brand-soft: var(--lilac-50);
+  --surface-inverse: var(--violet-800);
 
---border-default: var(--neutral-200);
---border-brand: var(--violet-600);
+  --border-default: var(--neutral-200);
+  --border-brand: var(--violet-600);
 
---action-primary-background: var(--violet-600);
---action-primary-background-hover: var(--violet-800);
---action-primary-text: var(--white);
+  --action-primary-background: var(--ink-900);
+  --action-primary-background-hover: var(--ink-800);
+  --action-primary-text: var(--white);
 
-/* Font families */
---font-body: 'Manrope Variable', sans-serif;
---font-heading: 'Abhaya Libre', serif;
+  /* Font families */
+  --font-body: 'Manrope Variable', sans-serif;
+  --font-heading: 'Fraunces Variable', Georgia, serif;
 }

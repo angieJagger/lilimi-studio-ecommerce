@@ -1,54 +1,71 @@
 <section class="services-overview container" aria-labelledby="services-title">
   <header class="services-overview__intro">
-    <h1 id="services-title" class="heading-1">
-      {{ 'servicesOverview.title' | transloco }}
-    </h1>
-
-    <p>{{ 'servicesOverview.intro' | transloco }}</p>
+    <p class="studio-eyebrow">{{ 'studioServices.eyebrow' | transloco }}</p>
+    <h1 id="services-title" class="heading-1">{{ 'studioServices.pageTitle' | transloco }}</h1>
+    <p>{{ 'studioServices.intro' | transloco }}</p>
   </header>
-
-  <div class="services-overview__grid">
-    @for (service of services; track service) {
-    <article class="service-card" [attr.aria-labelledby]="'service-title-' + service">
-      <h2 [id]="'service-title-' + service">
-        {{ 'servicesOverview.items.' + service + '.title' | transloco }}
-      </h2>
-
-      <p>
-        {{ 'servicesOverview.items.' + service + '.description' | transloco }}
-      </p>
-
-      <ul>
-        @for (index of [0, 1, 2, 3]; track index) {
-        <li>
-          {{
-          'servicesOverview.items.' + service + '.examples.' + index
-          | transloco
-          }}
-        </li>
-        }
-      </ul>
-
-      <a class="button button--primary service-card__action" [routerLink]="[
-            '/',
-            transloco.getActiveLang(),
-            'project-inquiry'
-          ]" [queryParams]="{ projectType: inquiryTypes[service] }" [attr.aria-label]="
-            ('servicesOverview.inquire' | transloco) +
-            ': ' +
-            ('servicesOverview.items.' + service + '.title' | transloco)
-          ">
-        {{ 'servicesOverview.inquire' | transloco }}
-      </a>
+  @for (item of primaryServices; track item.id; let index = $index) {
+    <article class="service-row" [attr.aria-labelledby]="'service-title-' + item.id">
+      <div class="service-row__copy">
+        <span class="studio-eyebrow" aria-hidden="true">0{{ index + 1 }}</span>
+        <h2 class="heading-2" [id]="'service-title-' + item.id">
+          {{ 'studioServices.items.' + item.id + '.title' | transloco }}
+        </h2>
+        <p>{{ 'studioServices.items.' + item.id + '.description' | transloco }}</p>
+        <p>
+          <strong>{{ 'studioServices.goodFor' | transloco }}</strong>
+          {{ 'studioServices.items.' + item.id + '.audience' | transloco }}
+        </p>
+        <div class="service-row__actions">
+          <a
+            class="button button--primary service-card__action"
+            [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
+            [queryParams]="{ projectType: item.projectType }"
+            [attr.aria-label]="
+              ('studioServices.discuss' | transloco) +
+              ': ' +
+              ('studioServices.items.' + item.id + '.title' | transloco)
+            "
+            >{{ 'studioServices.discuss' | transloco }}</a
+          >
+          <span class="service-row__price">{{ 'studioServices.individualQuote' | transloco }}</span>
+        </div>
+      </div>
+      <div class="service-row__included">
+        <h3>{{ 'studioServices.included' | transloco }}</h3>
+        <ul>
+          @for (number of [0, 1, 2, 3]; track number) {
+            <li>{{ 'studioServices.items.' + item.id + '.included.' + number | transloco }}</li>
+          }
+        </ul>
+      </div>
     </article>
-    }
-  </div>
-
-  <aside class="services-overview__pricing" aria-labelledby="services-pricing-title">
-    <h2 id="services-pricing-title">
-      {{ 'servicesOverview.pricing.title' | transloco }}
-    </h2>
-
-    <p>{{ 'servicesOverview.pricing.description' | transloco }}</p>
+  }
+  <section class="studio-extras" aria-labelledby="extra-services-title">
+    <h3 id="extra-services-title">{{ 'studioServices.moreTitle' | transloco }}</h3>
+    <ul class="studio-extras__grid">
+      @for (item of additionalServices; track item.id) {
+        <li class="studio-extras__card">
+          <h4>{{ 'studioServices.items.' + item.id + '.title' | transloco }}</h4>
+          <p>{{ 'studioServices.items.' + item.id + '.description' | transloco }}</p>
+          <a
+            [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
+            [queryParams]="{ projectType: item.projectType }"
+          >
+            {{ 'studioServices.items.' + item.id + '.action' | transloco }}
+            <span aria-hidden="true">→</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+  <aside class="studio-cta" aria-labelledby="studio-cta-title">
+    <div>
+      <h2 class="heading-2" id="studio-cta-title">{{ 'studioServices.cta.title' | transloco }}</h2>
+      <p>{{ 'studioServices.cta.description' | transloco }}</p>
+    </div>
+    <a class="button" [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']">{{
+      'studioServices.cta.action' | transloco
+    }}</a>
   </aside>
 </section>

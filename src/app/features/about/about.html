@@ -1,43 +1,78 @@
-<article class="about" aria-labelledby="about-title">
-  <div class="container">
-    <div class="about__content">
-      <header class="about__intro">
-        <p class="about__eyebrow">
-          {{ 'about.eyebrow' | transloco }}
-        </p>
-
-        <h1 id="about-title" class="heading-1">
-          {{ 'about.title' | transloco }}
-        </h1>
-
-        <p class="about__text">
-          {{ 'about.intro' | transloco }}
-        </p>
-      </header>
-
-      <section class="about__section" aria-labelledby="about-story-title">
-        <h2 id="about-story-title" class="heading-2">
-          {{ 'about.storyTitle' | transloco }}
-        </h2>
-
-        <p class="about__text">
-          {{ 'about.story' | transloco }}
-        </p>
-      </section>
-
-      <section class="about__section" aria-labelledby="about-approach-title">
-        <h2 id="about-approach-title" class="heading-2">
-          {{ 'about.approachTitle' | transloco }}
-        </h2>
-
-        <p class="about__text">
-          {{ 'about.approach' | transloco }}
-        </p>
-      </section>
-
-      <a class="button button--primary about__cta" [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']">
-        {{ 'about.cta' | transloco }}
-      </a>
+<article class="about container" aria-labelledby="about-title">
+  <header class="about__intro">
+    <div>
+      <p class="studio-eyebrow">{{ 'about.eyebrow' | transloco }}</p>
+      <h1 id="about-title" class="heading-1">{{ 'about.title' | transloco }}</h1>
+      <p class="about__text">{{ 'about.intro' | transloco }}</p>
+      <div class="about__actions">
+        <a
+          class="button button--primary"
+          [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
+          >{{ 'about.cta' | transloco }}</a
+        >
+        <a
+          class="button button--secondary"
+          [routerLink]="['/', transloco.getActiveLang(), 'services']"
+          >{{ 'home.hero.viewOffer' | transloco }}</a
+        >
+      </div>
     </div>
-  </div>
+    <div class="about__media">
+      <img
+        class="about__image"
+        src="/images/lilimi-animacja.svg"
+        width="1150"
+        height="570"
+        alt=""
+      />
+    </div>
+  </header>
+  <section class="about__values" aria-labelledby="about-approach-title">
+    <p class="studio-eyebrow">{{ 'about.valuesEyebrow' | transloco }}</p>
+    <h2 id="about-approach-title" class="heading-2">{{ 'about.approachTitle' | transloco }}</h2>
+    <ol>
+      @for (value of ['quality', 'goals', 'clarity']; track value; let index = $index) {
+        <li>
+          <span aria-hidden="true">0{{ index + 1 }}</span>
+          <h3>{{ 'about.values.' + value + '.title' | transloco }}</h3>
+          <p>{{ 'about.values.' + value + '.description' | transloco }}</p>
+        </li>
+      }
+    </ol>
+  </section>
+  <section class="about__skills" aria-labelledby="about-skills-title">
+    <div>
+      <h2 id="about-skills-title" class="heading-2">{{ 'about.skillsTitle' | transloco }}</h2>
+      <p class="about__text">{{ 'about.approach' | transloco }}</p>
+    </div>
+    <div>
+      <h3 class="studio-eyebrow">{{ 'about.toolsTitle' | transloco }}</h3>
+      <ul>
+        @for (
+          tool of [
+            'Angular',
+            'TypeScript',
+            'Java',
+            'Spring Boot',
+            'WordPress',
+            'WooCommerce',
+            'Figma',
+            'PostgreSQL',
+          ];
+          track tool
+        ) {
+          <li>{{ tool }}</li>
+        }
+      </ul>
+    </div>
+  </section>
+  <aside class="studio-cta" aria-labelledby="studio-cta-title">
+    <div>
+      <h2 class="heading-2" id="studio-cta-title">{{ 'studioServices.cta.title' | transloco }}</h2>
+      <p>{{ 'studioServices.cta.description' | transloco }}</p>
+    </div>
+    <a class="button" [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']">{{
+      'studioServices.cta.action' | transloco
+    }}</a>
+  </aside>
 </article>

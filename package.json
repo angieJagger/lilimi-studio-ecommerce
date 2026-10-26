@@ -20,6 +20,7 @@
     "@angular/platform-server": "^22.2.2",
     "@angular/router": "^22.2.2",
     "@angular/ssr": "^22.2.2",
+    "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource/abhaya-libre": "^5.3.0",
     "@jsverse/transloco": "8.4.0",
