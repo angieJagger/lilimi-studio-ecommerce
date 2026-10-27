@@ -10,6 +10,7 @@ export const shopNavigation: readonly NavigationItem[] = [
     labelKey: 'nav.services',
     path: 'services',
   },
+  { labelKey: 'nav.projects', path: '', fragment: 'projects' },
   {
     labelKey: 'nav.shop',
     path: 'products',

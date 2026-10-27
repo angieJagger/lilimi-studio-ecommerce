@@ -73,13 +73,13 @@ textarea {
 
 input[aria-invalid='true'],
 textarea[aria-invalid='true'] {
-  border-color: #b42318;
+  border-color: var(--status-error);
 }
 
 .form-field__errors {
   margin: 0;
   padding-left: 20px;
-  color: #b42318;
+  color: var(--status-error);
   font-size: 0.875rem;
 }
 
@@ -150,7 +150,7 @@ section[aria-labelledby='product-price-title'] {
     margin: 0;
   }
   output {
-    color: #166534;
+    color: #8bd6ad;
     font-weight: 700;
   }
 }

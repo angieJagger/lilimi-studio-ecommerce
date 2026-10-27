@@ -55,12 +55,12 @@ input:focus-visible {
 }
 
 input[aria-invalid='true'] {
-  border-color: #a12b28;
+  border-color: var(--status-error);
 }
 
 .login-error {
   margin: var(--spacing-8) 0 0;
-  color: #a12b28;
+  color: var(--status-error);
   font-size: 0.875rem;
 }
 

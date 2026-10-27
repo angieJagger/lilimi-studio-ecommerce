@@ -87,3 +87,6 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
+
+.service-row__included { border-radius: 7px; }
+.service-row__copy > .studio-eyebrow { display: inline-grid; place-items: center; width: 35px; height: 35px; border: 1px solid var(--border-default); border-radius: 6px; }
