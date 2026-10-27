@@ -5,6 +5,7 @@
       [image]="primaryImage()"
       [locale]="locale()"
       [fallbackAlt]="productName()"
+      [fallbackText]="locale().startsWith('pl') ? 'Brak zdjęcia' : 'No image available'"
     />
   </div>
 

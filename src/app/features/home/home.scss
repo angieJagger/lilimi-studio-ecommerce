@@ -83,8 +83,9 @@
   height: 35px;
   border: 1px solid #766087;
   border-radius: 6px;
-  font-size: 10px;
-  color: var(--brand-primary);
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--text-primary);
 }
 .offer-card__title {
   font-size: 21px;
@@ -147,15 +148,26 @@
   padding-block: 68px;
   padding-inline: clamp(20px, 3vw, 40px);
   background: var(--surface-inverse);
-  border-block: 1px solid var(--border-brand-soft);
+  color: var(--text-inverse);
+  border-block: 1px solid #39333f;
 }
+
+.projects .studio-eyebrow {
+  color: var(--lilac-300);
+}
+
+.projects .heading-2 {
+  color: var(--text-inverse);
+}
+
 .projects__note {
   margin: 16px 0 0;
   max-width: 65ch;
-  color: var(--text-secondary);
+  color: var(--text-inverse-secondary);
   font-size: 13px;
   line-height: 1.8;
 }
+
 .projects__grid {
   display: grid;
   gap: 28px;
@@ -163,39 +175,54 @@
   padding: 0;
   margin: 32px 0 0;
 }
+
 .project-card {
   min-width: 0;
+  height: 100%;
+  padding: 16px;
+  background: #202025;
+  border: 1px solid #403847;
+  border-radius: 6px;
 }
+
 .project-card__placeholder {
   display: grid;
   place-items: center;
   aspect-ratio: 1.7;
-  border: 1px solid var(--border-default);
-  border-radius: 5px;
-  background: var(--surface-default);
-  color: var(--text-secondary);
+  padding: 16px;
+  background: #302c39;
+  border: 1px solid #51465d;
+  border-radius: 3px;
+  color: var(--text-inverse-secondary);
   font-size: 11px;
+  text-align: center;
 }
+
 .project-card__content {
   padding-top: 20px;
 }
+
 .project-card__label {
-  font-size: 10px;
-  color: var(--text-secondary);
   margin: 0;
+  color: var(--lilac-300);
+  font-size: 10px;
   letter-spacing: 0.05em;
 }
+
 .project-card h3 {
+  margin: 12px 0 8px;
+  color: var(--text-inverse);
   font-size: 21px;
   font-weight: 650;
-  margin: 12px 0 8px;
 }
+
 .project-card__content > p:last-child {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.75;
   margin: 0;
+  color: var(--text-inverse-secondary);
+  font-size: 13px;
+  line-height: 1.75;
 }
+
 .featured__header {
   min-width: 0;
 }

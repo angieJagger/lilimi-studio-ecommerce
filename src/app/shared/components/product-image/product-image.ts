@@ -43,6 +43,8 @@ import type { ProductImage as ImageModel } from '../../../features/products/prod
       padding: 12px;
       box-sizing: border-box;
       text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
     }
   `,
 })
