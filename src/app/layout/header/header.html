@@ -16,11 +16,14 @@
       }
     </nav>
     <div class="site-header__actions">
-      <a
-        class="site-header__account"
-        [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']"
-      >
-        {{ 'nav.accountLink' | transloco }}
+      <a class="site-header__account" [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
+        @if (session.isAdmin()) {
+        Admin
+        } @else if (session.isAuthenticated()) {
+        {{ session.user()?.firstName?.trim() || ('nav.user' | transloco) }}
+        } @else {
+        {{ 'nav.signIn' | transloco }}
+        }
       </a>
       <app-language-switcher class="site-header__languages" />
       <a

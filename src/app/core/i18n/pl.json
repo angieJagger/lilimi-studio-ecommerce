@@ -628,7 +628,9 @@
     "shop": "Sklep",
     "about": "O Lilimi",
     "contact": "Kontakt",
-    "accountLink": "Moje konto"
+    "accountLink": "Moje konto",
+    "signIn": "Zaloguj",
+    "user": "Użytkownik"
   },
 
   "servicesOverview": {

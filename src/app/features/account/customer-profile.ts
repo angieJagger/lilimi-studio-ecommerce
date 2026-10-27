@@ -13,6 +13,7 @@ import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { CustomerProfileApiService } from '../../core/customer/customer-profile-api.service';
+import { AuthSessionService } from '../../core/auth/auth-session.service';
 import type { CustomerProfile as ProfileData } from '../../core/customer/customer-profile.model';
 
 const profileValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
@@ -40,6 +41,7 @@ export class CustomerProfile {
   private readonly api = inject(CustomerProfileApiService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly session = inject(AuthSessionService);
   private version: number | null = null;
 
   protected readonly transloco = inject(TranslocoService);
@@ -256,6 +258,7 @@ export class CustomerProfile {
   }
 
   private applyProfile(profile: ProfileData): void {
+    this.session.updateCustomerName(profile.email, profile.firstName);
     this.profile.set(profile);
     this.version = profile.version;
     this.email.set(profile.email);

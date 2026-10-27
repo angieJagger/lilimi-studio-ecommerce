@@ -41,6 +41,52 @@ describe('AuthSessionService', () => {
     service.refresh().subscribe();
   }
 
+  it('should update the current customer name and trim whitespace', () => {
+    api.getCurrentUser.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    service.refresh().subscribe();
+
+    service.updateCustomerName(customer.email, '  Maria  ');
+
+    expect(service.user()).toEqual({
+      ...customer,
+      firstName: 'Maria',
+    });
+  });
+
+  it('should clear the customer name when it is empty', () => {
+    api.getCurrentUser.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    service.refresh().subscribe();
+
+    service.updateCustomerName(customer.email, '   ');
+
+    expect(service.user()?.firstName).toBeNull();
+    expect(service.isAuthenticated()).toBe(true);
+  });
+
+  it('should ignore a profile belonging to another customer', () => {
+    api.getCurrentUser.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    service.refresh().subscribe();
+
+    service.updateCustomerName('another@example.com', 'Maria');
+
+    expect(service.user()?.firstName).toBe('Anna');
+  });
+
+  it('should not change an administrator name', () => {
+    restoreAdminSession();
+
+    service.updateCustomerName(admin.email, 'Anna');
+
+    expect(service.user()).toEqual(admin);
+  });
+
+  it('should not recreate a session when updating a name after logout', () => {
+    service.updateCustomerName(customer.email, 'Anna');
+
+    expect(service.user()).toBeNull();
+    expect(service.isAuthenticated()).toBe(false);
+  });
+
   it('should start without an authenticated user', () => {
     expect(service.user()).toBeNull();
     expect(service.isAuthenticated()).toBe(false);
