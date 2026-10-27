@@ -30,9 +30,9 @@
 }
 
 .button--secondary {
-  border-color: var(--ink-900);
-  background-color: var(--surface-default);
-  color: var(--ink-900);
+  border-color: #eeebf4;
+  background-color: transparent;
+  color: var(--text-primary);
 }
 
 .button--secondary:hover {

@@ -5,9 +5,7 @@
         {{ 'home.hero.eyebrow' | transloco }}
       </p>
 
-      <h1 class="heading-1">
-        {{ 'home.hero.title' | transloco }}
-      </h1>
+      <h1 class="heading-1">{{ 'home.hero.lead' | transloco }}<br><span>{{ 'home.hero.highlight' | transloco }}</span><br>{{ 'home.hero.closing' | transloco }}</h1>
 
       <p class="hero__description">
         {{ 'home.hero.description' | transloco }}
@@ -43,18 +41,6 @@
   </div>
 </section>
 
-<section
-  class="studio-values container"
-  aria-label="{{ 'studioServices.valuesLabel' | transloco }}"
->
-  @for (value of ['reliable', 'timely', 'tailored']; track value) {
-    <div>
-      <h2>{{ 'studioServices.values.' + value + '.title' | transloco }}</h2>
-      <p>{{ 'studioServices.values.' + value + '.description' | transloco }}</p>
-    </div>
-  }
-</section>
-
 <section class="offer" id="offer" aria-labelledby="offer-title">
   <div class="container">
     <p class="studio-eyebrow">{{ 'studioServices.eyebrow' | transloco }}</p>
@@ -66,20 +52,12 @@
         <li [class.offer__wide]="item.id === 'maintenance'">
           <article class="offer-card">
             <span class="offer-card__number" aria-hidden="true">{{ index + 1 }}</span>
-            <h3 class="offer-card__title">
+            <h3 class="offer-card__title"><a [routerLink]="['/', transloco.getActiveLang(), 'services']">
               {{ 'studioServices.items.' + item.id + '.title' | transloco }}
-            </h3>
+            </a></h3>
             <p class="offer-card__description">
               {{ 'studioServices.items.' + item.id + '.description' | transloco }}
             </p>
-            <a
-              class="offer-card__action"
-              [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
-              [queryParams]="{ projectType: item.projectType }"
-            >
-              {{ 'studioServices.items.' + item.id + '.action' | transloco }}
-              <span aria-hidden="true">→</span>
-            </a>
           </article>
         </li>
       }
@@ -95,8 +73,7 @@
               [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
               [queryParams]="{ projectType: item.projectType }"
             >
-              {{ 'studioServices.items.' + item.id + '.action' | transloco }}
-              <span aria-hidden="true">→</span>
+              {{ 'studioServices.items.' + item.id + '.title' | transloco }}
             </a>
           </li>
         }
@@ -105,40 +82,29 @@
   </div>
 </section>
 
-<section class="process" aria-labelledby="process-title">
-  <div class="container">
-    <p class="process__eyebrow">
-      {{ 'home.process.eyebrow' | transloco }}
-    </p>
-
-    <h2 id="process-title" class="heading-2">
-      {{ 'home.process.title' | transloco }}
-    </h2>
-
-    <ol class="process__steps">
-      @for (step of ['choose', 'describe', 'receive']; track step; let index = $index) {
-        <li class="process__step">
-          <span class="process__number" aria-hidden="true">
-            {{ index + 1 }}
-          </span>
-
-          <div class="process__content">
-            <h3 class="process__title">
-              {{ 'home.process.steps.' + step + '.title' | transloco }}
-            </h3>
-
-            <p class="process__description">
-              {{ 'home.process.steps.' + step + '.description' | transloco }}
-            </p>
+<section class="projects container" id="projects" aria-labelledby="projects-title">
+  <p class="studio-eyebrow">{{ 'home.projects.eyebrow' | transloco }}</p>
+  <h2 id="projects-title" class="heading-2">{{ 'home.projects.title' | transloco }}</h2>
+  <p class="projects__note">{{ 'home.projects.note' | transloco }}</p>
+  <ul class="projects__grid">
+    @for (project of ['tailoring', 'bistro', 'village']; track project) {
+      <li>
+        <article class="project-card">
+          <div class="project-card__placeholder" aria-hidden="true">
+            <span>{{ 'home.projects.preview' | transloco }}</span>
           </div>
-        </li>
-      }
-    </ol>
-  </div>
+          <div class="project-card__content">
+            <p class="project-card__label">{{ 'home.projects.example' | transloco }}</p>
+            <h3>{{ 'home.projects.items.' + project + '.title' | transloco }}</h3>
+            <p>{{ 'home.projects.items.' + project + '.description' | transloco }}</p>
+          </div>
+        </article>
+      </li>
+    }
+  </ul>
 </section>
-
 <section class="featured" aria-labelledby="featured-title">
-  <div class="container">
+  <div class="container featured__layout">
     <div class="featured__header">
       <p class="featured__eyebrow">
         {{ 'home.featured.eyebrow' | transloco }}
@@ -149,9 +115,8 @@
           {{ 'home.featured.title' | transloco }}
         </h2>
 
-        <a class="featured__view-all" [routerLink]="['/', language(), 'products']">
+        <a class="button button--secondary featured__view-all" [routerLink]="['/', language(), 'products']">
           {{ 'home.featured.viewAll' | transloco }}
-          <span aria-hidden="true">→</span>
         </a>
       </div>
     </div>

@@ -66,8 +66,7 @@
   text-decoration: none;
 }
 
-.mobile-menu a:focus-visible,
-.mobile-menu button:focus-visible {
+.mobile-menu a:focus-visible {
   outline: 2px solid var(--border-brand);
   outline-offset: 4px;
 }
@@ -120,3 +119,20 @@
 .mobile-menu__languages {
   margin-top: var(--spacing-32);
 }
+
+.mobile-menu__close,
+.mobile-menu__close:hover,
+.mobile-menu__close:active,
+.mobile-menu__close:focus,
+.mobile-menu__close:focus-visible {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.mobile-menu__close:focus-visible span {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.mobile-menu { background:var(--surface-page); }
+.mobile-menu__brand { font-family:var(--font-body); font-size:20px; font-weight:650; }

@@ -225,3 +225,9 @@
     margin-left: 8px;
   }
 }
+
+.site-header { background:#151619; }
+.site-header__brand { font-family:var(--font-body); font-size:20px; font-weight:650; }
+.site-header__quote { display:none; }
+.site-header__account { border:1px solid var(--border-default); border-radius:5px; padding-inline:12px; }
+.site-header__cart-count { color:var(--action-primary-text); }

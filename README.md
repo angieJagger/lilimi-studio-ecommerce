@@ -12,12 +12,13 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 
 ## Main features
 
-- Polish and English studio website with service pages and project inquiry forms.
+- Responsive Polish and English studio website with a graphite interface, service pages and project inquiry forms.
 - API-backed catalogue, garment configuration and a persistent cart supporting digital and physical products.
 - Server-priced checkout with saved order snapshots and protection against duplicate submissions.
 - Customer accounts with email verification, password recovery, saved profiles and order history.
 - Stripe sandbox integration with hosted Checkout, payment resumption, verified webhooks and cancellation handling.
 - Administrator tools for orders, inquiries, product translations, visibility, prices and garment variants.
+- Product image galleries with uploads, replacement, primary image selection and persistent filesystem storage.
 - Order and inquiry work queues with filters, search, archive views, per-administrator read tracking and URL-preserved navigation.
 
 ## Technology
@@ -74,8 +75,9 @@ The project covers both interface design and implementation. Initial designs and
 
 ## Next steps
 
-- Product image management with persistent media storage.
+- Optimize catalogue image loading and introduce appropriately sized thumbnails.
+- Refine interface designs and update screenshots after deployment.
 - Further payment recovery, refunds and preparation for real payments.
-- Controlled digital file delivery, fulfilment notifications and off-host backups.
+- Controlled digital file delivery, fulfilment notifications and automated off-host backups.
 
 [Detailed features and implementation notes](docs/PROJECT_GUIDE.md)

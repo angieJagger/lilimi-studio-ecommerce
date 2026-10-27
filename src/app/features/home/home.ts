@@ -26,7 +26,7 @@ export class Home {
   );
 
   protected readonly featuredProducts = computed(() =>
-    ['pattern-001', 'embroidered-002'].flatMap((id) => {
+    ['pattern-001', 'embroidered-002', 'pattern-002'].flatMap((id) => {
       const product = this.catalog.productsById().get(id);
 
       return product ? [product] : [];

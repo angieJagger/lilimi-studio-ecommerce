@@ -613,6 +613,7 @@
     "openProducts": "Przejdź do produktów"
   },
   "nav": {
+    "projects": "Realizacje",
     "patterns": "Wzory haftów",
     "embroideredProducts": "Produkty haftowane",
     "digitizing": "Digitalizacja haftu",
@@ -913,13 +914,37 @@
   },
 
   "home": {
+    "projects": {
+      "title": "Strony dla lokalnych firm i społeczności",
+      "items": {
+        "bistro": {
+          "description": "Menu, godziny otwarcia i wskazówki dojazdu w jednym miejscu.",
+          "title": "Lokalny bar"
+        },
+        "tailoring": {
+          "description": "Oferta poprawek i szycia, galeria prac oraz kontakt do pracowni.",
+          "title": "Pracownia krawiecka"
+        },
+        "village": {
+          "description": "Aktualności, wydarzenia i przydatne informacje dla mieszkańców.",
+          "title": "Strona sołectwa"
+        }
+      },
+      "preview": "Miejsce na podgląd strony",
+      "eyebrow": "REALIZACJE",
+      "example": "Projekt przykładowy",
+      "note": "Przykładowe projekty wizytówek. Podglądy i opisy realizacji pojawią się tutaj w miarę rozwoju portfolio."
+    },
     "hero": {
       "eyebrow": "UX/UI • Strony internetowe •  Sklepy online • Grafika",
-      "title": "Strony i sklepy internetowe, które pracują na Twój biznes.",
-      "description": "Projektowanie, tworzenie i utrzymanie stron firmowych, sklepów WordPress i WooCommerce oraz dedykowanych rozwiązań e-commerce — od pomysłu po uruchomienie i dalszy rozwój.",
+      "title": "Twój biznes. Dobry interfejs. Twoje miejsce w sieci.",
+      "description": "Strony internetowe, sklepy i projekty UI/UX. Od projektu w Figmie po wdrożenie i dalszy rozwój.",
       "mediaPlaceholder": "Miejsce na wybraną realizację Lilimi",
-      "viewOffer": "Zobacz usługi",
-      "requestProject": "Porozmawiajmy o projekcie"
+      "viewOffer": "Zobacz zakres",
+      "requestProject": "Omówmy projekt",
+      "lead": "Twój biznes.",
+      "highlight": "Dobry interfejs.",
+      "closing": "Twoje miejsce w sieci."
     },
     "offer": {
       "title": "W czym mogę Ci pomóc?",
@@ -934,15 +959,15 @@
       }
     },
     "customOrder": {
-      "eyebrow": "Twój kolejny projekt",
-      "title": "Czego potrzebuje Twój projekt?",
-      "description": "Strony, sklepu czy poprawek? Opisz pomysł i obecny etap, aby otrzymać propozycję zakresu oraz wycenę.",
-      "cta": "Zapytaj o współpracę"
+      "eyebrow": "POROZMAWIAJMY",
+      "title": "Opowiedz, co planujesz.",
+      "description": "Kilka zdań o projekcie wystarczy na początek.",
+      "cta": "Przejdź do formularza"
     },
     "featured": {
       "eyebrow": "SKLEP LILIMI",
-      "title": "Wzory i produkty z haftem",
-      "viewAll": "Przejdź do sklepu",
+      "title": "Poza ekranem. W świecie haftu.",
+      "viewAll": "Zajrzyj do sklepu",
       "empty": "Obecnie nie ma polecanych produktów. Sprawdź pełny katalog w sklepie."
     },
     "process": {
@@ -1089,7 +1114,7 @@
   },
   "studioServices": {
     "eyebrow": "Usługi",
-    "homeTitle": "Strony i rozwiązania, które pomagają rozwijać biznes",
+    "homeTitle": "Od pomysłu do konkretnego rozwiązania.",
     "pageTitle": "Wszystko, czego potrzeba, aby zaistnieć w internecie",
     "intro": "Od przejrzystej strony firmowej po sklep internetowy — rozwiązania responsywne, łatwe w obsłudze i gotowe na dalszy rozwój.",
     "moreTitle": "Dodatkowe możliwości dla Twojego projektu",

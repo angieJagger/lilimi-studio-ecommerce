@@ -60,5 +60,18 @@
 
   /* Font families */
   --font-body: 'Manrope Variable', sans-serif;
-  --font-heading: 'Fraunces Variable', Georgia, serif;
+  --font-heading: 'Manrope Variable', sans-serif;
+}
+
+/* Approved graphite palette, shared by public pages and the admin. */
+:root {
+ color-scheme: dark;
+ --brand-primary:#b89aef; --brand:var(--brand-primary); --color-brand:var(--brand-primary);
+ --brand-lilac:#292331; --brand-light-lilac:#403150; --border-brand-soft:#38383f;
+ --text-primary:#f3f1f7; --text-secondary:#b3b0bd; --text-inverse:#17121f;
+ --surface-page:#18191d; --surface-default:#222328; --surface-brand-soft:#292331; --surface-inverse:#111215;
+ --border-default:#49444f; --border-brand:#b89aef; --logo-dark:#f3f1f7;
+ --ink-900:#111215; --ink-800:#25232b;
+ --action-primary-background:#b089e5; --action-primary-background-hover:#c4a4ef; --action-primary-text:#17121f;
+ --status-error:#ffb4ac;
 }

@@ -57,7 +57,7 @@
     }
 
     &[aria-invalid='true'] {
-      border-color: #b42318;
+      border-color: var(--status-error);
     }
 
     &:disabled {
@@ -72,7 +72,7 @@
 }
 
 .customer-login__error {
-  color: #b42318;
+  color: var(--status-error);
 }
 
 .customer-login__register {
