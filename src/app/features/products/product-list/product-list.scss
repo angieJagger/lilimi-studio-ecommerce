@@ -1,6 +1,6 @@
 .product-list {
   padding-block: var(--spacing-48);
-  background-color: var(--surface-default);
+  background-color: var(--surface-page);
 }
 
 .product-list .heading-1 {
@@ -166,7 +166,7 @@
   padding: var(--spacing-12);
   border: 1px solid var(--border-brand);
   border-radius: var(--radius-8);
-  background-color: var(--surface-default);
+  background-color: var(--surface-page);
   color: var(--text-primary);
   font: inherit;
   appearance: none;
@@ -303,3 +303,4 @@
     border-color: var(--brand-primary);
   }
 }
+.product-list__product-link { border-radius: 0; }

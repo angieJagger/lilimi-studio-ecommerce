@@ -610,6 +610,7 @@
     "openProducts": "View products"
   },
   "nav": {
+    "projects": "Work",
     "patterns": "Embroidery patterns",
     "embroideredProducts": "Embroidered products",
     "digitizing": "Embroidery digitizing",
@@ -911,13 +912,37 @@
   },
 
   "home": {
+    "projects": {
+      "title": "Websites for local businesses and communities",
+      "items": {
+        "bistro": {
+          "description": "A menu, opening hours and directions in one place.",
+          "title": "Local bistro"
+        },
+        "tailoring": {
+          "description": "Alterations and sewing services, a gallery of work and studio contact details.",
+          "title": "Tailoring studio"
+        },
+        "village": {
+          "description": "Local news, events and useful information for residents.",
+          "title": "Community website"
+        }
+      },
+      "preview": "Website preview placeholder",
+      "eyebrow": "SELECTED WORK",
+      "example": "Sample project",
+      "note": "Sample brochure website projects. Previews and project descriptions will appear here as the portfolio develops."
+    },
     "hero": {
       "eyebrow": "UX/UI • Websites • Online stores • Graphic design",
-      "title": "Websites and online stores that work for your business.",
-      "description": "Business websites, WordPress and WooCommerce stores, and custom e-commerce — designed, built and maintained from the first idea to launch and beyond.",
+      "title": "Your business. Thoughtful interfaces. Your place online.",
+      "description": "Websites, online stores and UI/UX design. From Figma to launch and ongoing development.",
       "mediaPlaceholder": "Space for a featured Lilimi project",
-      "viewOffer": "See services",
-      "requestProject": "Discuss your project"
+      "viewOffer": "Explore services",
+      "requestProject": "Discuss a project",
+      "lead": "Your business.",
+      "highlight": "Thoughtful interfaces.",
+      "closing": "Your place online."
     },
     "offer": {
       "title": "How can I help?",
@@ -932,14 +957,14 @@
       }
     },
     "customOrder": {
-      "eyebrow": "Your next project",
-      "title": "What does your project need?",
-      "description": "A website, a store or an improvement? Describe the idea and the current stage to receive a proposed scope and quote.",
-      "cta": "Discuss working together"
+      "eyebrow": "LET’S TALK",
+      "title": "Tell us what you have in mind.",
+      "description": "A few sentences about your project are enough to get started.",
+      "cta": "Open the inquiry form"
     },
     "featured": {
       "eyebrow": "LILIMI SHOP",
-      "title": "Embroidery patterns and embroidered products",
+      "title": "Beyond the screen. Into embroidery.",
       "viewAll": "Visit the shop",
       "empty": "There are no featured products available right now. Browse the full shop catalogue."
     },
@@ -1087,7 +1112,7 @@
   },
   "studioServices": {
     "eyebrow": "Services",
-    "homeTitle": "Websites and solutions that help your business grow online",
+    "homeTitle": "From an idea to a clear solution.",
     "pageTitle": "Everything needed to get your business online",
     "intro": "From a clear business website to a complete online store — designed to be responsive, manageable and ready to grow.",
     "moreTitle": "More ways to support your project",

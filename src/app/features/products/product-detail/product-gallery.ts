@@ -52,7 +52,7 @@ import type { ProductImage as ImageModel } from '../product.model';
       aspect-ratio: 1;
       padding: 16px;
       border: 1px solid var(--border-brand-soft);
-      border-radius: 8px;
+      border-radius: 0;
       background: var(--brand-lilac);
     }
     .gallery__thumbnails {
@@ -69,7 +69,7 @@ import type { ProductImage as ImageModel } from '../product.model';
       height: 72px;
       padding: 4px;
       border: 2px solid transparent;
-      border-radius: 6px;
+      border-radius: 0;
       background: var(--surface-default, #fff);
       cursor: pointer;
     }
