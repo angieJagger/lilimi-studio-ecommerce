@@ -41,7 +41,13 @@ import { TranslocoService } from '@jsverse/transloco';
       color: var(--text-primary);
       border-radius: var(--radius-4);
     }
-    .compact { padding-inline: 8px; font-weight: 600; text-decoration: none; }
+    .compact {
+      padding-inline: 8px;
+      color: var(--text-inverse);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .compact:hover { color: var(--header-link-hover); }
     .expanded {
       flex-wrap: wrap;
       justify-content: space-between;

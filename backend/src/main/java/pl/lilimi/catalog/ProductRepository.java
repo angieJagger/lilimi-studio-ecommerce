@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +17,16 @@ public interface ProductRepository extends JpaRepository<Product, String> {
   List<Product> findAllByActiveTrueOrderByIdAsc();
 
   Optional<Product> findBySlugAndActiveTrue(String slug);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("""
+  SELECT p
+  FROM Product p
+  WHERE p.id = :productId
+  """)
+  Optional<Product> findByIdForUpdate(
+    @Param("productId") String productId
+  );
 
   @Query(value = """
         SELECT

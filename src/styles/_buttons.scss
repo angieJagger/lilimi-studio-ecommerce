@@ -16,12 +16,12 @@
 }
 
 .button--primary {
-  background-color: var(--action-primary-background);
+  background-image: var(--action-primary-background);
   color: var(--action-primary-text);
 }
 
 .button--primary:hover {
-  background-color: var(--action-primary-background-hover);
+  background-image: var(--action-primary-background-hover);
 }
 
 .button:focus-visible {
@@ -30,11 +30,36 @@
 }
 
 .button--secondary {
-  border-color: #eeebf4;
+  position: relative;
+  isolation: isolate;
+  border-color: transparent;
   background-color: transparent;
-  color: var(--text-primary);
+  background-image: var(--action-primary-background);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
-.button--secondary:hover {
-  background-color: var(--surface-brand-soft);
+.button--secondary::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--action-primary-background);
+  pointer-events: none;
+
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.button--secondary:hover,
+.button--secondary:hover::before {
+  background-image: var(--action-primary-background-hover);
 }

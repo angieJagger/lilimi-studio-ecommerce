@@ -22,7 +22,7 @@
 
 .site-header__brand {
   flex-shrink: 0;
-  color: var(--logo-dark);
+  color: var(--text-inverse);
   font-family: var(--font-body);
   font-size: 20px;
   font-weight: 650;
@@ -40,7 +40,7 @@
 
 .site-header__link,
 .site-header__account {
-  color: var(--text-primary);
+  color: var(--text-inverse);
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -48,7 +48,7 @@
 }
 
 .site-header__link:hover {
-  color: var(--brand-primary);
+  color: var(#e0c3fc);
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -70,7 +70,7 @@
 }
 
 .site-header__account:hover {
-  color: var(--brand-primary);
+  color: var(#e0c3fc);
 }
 
 .site-header__menu-button,
@@ -81,7 +81,7 @@
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  color: var(--text-primary);
+  color: var(--text-inverse);
 }
 
 .site-header__menu-button {
@@ -100,7 +100,7 @@
 }
 
 .site-header__cart:hover {
-  color: var(--brand-primary);
+  color: var(#e0c3fc);
 }
 
 .site-header__icon {

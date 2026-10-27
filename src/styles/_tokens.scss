@@ -1,4 +1,7 @@
 :root {
+  color-scheme: light;
+
+  /* Odstępy */
   --spacing-0: 0;
   --spacing-4: 4px;
   --spacing-8: 8px;
@@ -12,66 +15,90 @@
   --spacing-80: 80px;
   --spacing-120: 120px;
 
+  /* Zaokrąglenia */
   --radius-0: 0;
   --radius-4: 4px;
   --radius-8: 8px;
   --radius-12: 12px;
   --radius-full: 999px;
 
-  /*  Primitive colors */
-  --violet-600: #4f46a5;
-  --violet-800: #332e6b;
+  /* Kolory bazowe */
+  --violet-600: #624478;
+  --violet-800: #453151;
   --lilac-300: #c8b6e2;
   --lilac-200: #d6c9ea;
   --lilac-50: #f3eefc;
-  --coral-500: #d5635c;
-  --neutral-900: #1f1b2d;
-  --neutral-600: #4a4560;
-  --neutral-200: #ddd9e0;
-  --neutral-50: #fbfafd;
-  --white: #ffffff;
-  --border-soft: #e4ddf3;
-  --ink-900: #1f1b2d;
-  --ink-800: #353042;
-  --logo-dark: #392568;
 
-  /* Semantic colors*/
+  --coral-500: #b85b67;
+
+  --neutral-900: #30283d;
+  --neutral-600: #5d536b;
+  --neutral-200: #cbc1d7;
+  --neutral-50: #faf7fd;
+  --white: #ffffff;
+
+  --border-soft: #cbc1d7;
+
+  /* Akcenty */
   --brand-primary: var(--violet-600);
-  --brand-lilac: var(--lilac-50);
+  --brand: var(--brand-primary);
+  --color-brand: var(--brand-primary);
+
+  --brand-lilac: #e5e7f0;
   --brand-light-lilac: var(--lilac-200);
-  --border-brand-soft: var(--border-soft);
   --accent-coral: var(--coral-500);
 
+  /* Tekst na jasnych powierzchniach */
   --text-primary: var(--neutral-900);
   --text-secondary: var(--neutral-600);
-  --text-inverse: var(--white);
 
-  --surface-page: var(--neutral-50);
-  --surface-default: var(--white);
-  --surface-brand-soft: var(--lilac-50);
-  --surface-inverse: var(--violet-800);
+  /* Tekst na ciemnych powierzchniach */
+  --text-inverse: #f4eefb;
+  --text-inverse-secondary: #c6bbd3;
 
-  --border-default: var(--neutral-200);
+  /* Powierzchnie */
+  --surface-page: linear-gradient(
+    120deg,
+    #e0c3fc 0%,
+    #8ec5fc 100%
+  );
+
+  --surface-default: #e5e7f0;
+  --surface-brand-soft: #e5e7f0;
+  --surface-inverse: #151619;
+
+  /* Istniejące odwołania w komponentach */
+  --ink-900: var(--surface-default);
+  --ink-800: #25232b;
+  --logo-dark: var(--neutral-900);
+
+  /* Obramowania i fokus */
+  --border-default: #82718f;
   --border-brand: var(--violet-600);
+  --border-brand-soft: var(--border-soft);
 
-  --action-primary-background: var(--ink-900);
-  --action-primary-background-hover: var(--ink-800);
-  --action-primary-text: var(--white);
+  /* Linki w ciemnym nagłówku */
+  --header-link-hover: #e0c3fc;
 
-  /* Font families */
+  /* Przyciski: przygaszony niebieski → śliwka */
+  --action-primary-background: linear-gradient(
+    135deg,
+    #626b96 0%,
+    #654779 100%
+  );
+
+  --action-primary-background-hover: linear-gradient(
+    135deg,
+    #535c85 0%,
+    #553963 100%
+  );
+
+  --action-primary-text: #fffaff;
+
+  /* Błędy na jasnych powierzchniach */
+  --status-error: #a32d46;
+
+  /* Typografia */
   --font-body: 'Manrope Variable', sans-serif;
   --font-heading: 'Manrope Variable', sans-serif;
-}
-
-/* Approved graphite palette, shared by public pages and the admin. */
-:root {
- color-scheme: dark;
- --brand-primary:#b89aef; --brand:var(--brand-primary); --color-brand:var(--brand-primary);
- --brand-lilac:#292331; --brand-light-lilac:#403150; --border-brand-soft:#38383f;
- --text-primary:#f3f1f7; --text-secondary:#b3b0bd; --text-inverse:#17121f;
- --surface-page:#18191d; --surface-default:#222328; --surface-brand-soft:#292331; --surface-inverse:#111215;
- --border-default:#49444f; --border-brand:#b89aef; --logo-dark:#f3f1f7;
- --ink-900:#111215; --ink-800:#25232b;
- --action-primary-background:#b089e5; --action-primary-background-hover:#c4a4ef; --action-primary-text:#17121f;
- --status-error:#ffb4ac;
 }

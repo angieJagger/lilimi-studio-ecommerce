@@ -270,7 +270,7 @@
   height: 100%;
   color: inherit;
   text-decoration: none;
-  border-radius: var(--radius-12);
+  border-radius: 0;
 
   &:focus-visible {
     outline: 2px solid var(--brand-primary);
@@ -303,4 +303,7 @@
     border-color: var(--brand-primary);
   }
 }
-.product-list__product-link { border-radius: 0; }
+
+.product-list__filter-toggle svg {
+  color: var(--brand-primary);
+}

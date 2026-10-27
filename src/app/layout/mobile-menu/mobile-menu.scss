@@ -8,7 +8,7 @@
   margin: 0;
   padding: var(--spacing-24);
   border: 0;
-  background: var(--surface-default);
+  background:var(--surface-page);
   color: var(--text-primary);
   overflow-y: auto;
 }
@@ -24,9 +24,10 @@
 .mobile-menu__brand {
   color: var(--logo-dark);
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
-  line-height: 28px;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
   text-decoration: none;
 }
 
@@ -134,5 +135,3 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-.mobile-menu { background:var(--surface-page); }
-.mobile-menu__brand { font-family:var(--font-body); font-size:20px; font-weight:650; }
