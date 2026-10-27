@@ -23,6 +23,17 @@
             </a>
           </li>
           }
+          <li>
+            <a class="mobile-menu__link" [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']" (click)="close()">
+              @if (session.isAdmin()) {
+              Admin
+              } @else if (session.isAuthenticated()) {
+              {{ session.user()?.firstName?.trim() || ('nav.user' | transloco) }}
+              } @else {
+              {{ 'nav.signIn' | transloco }}
+              }
+            </a>
+          </li>
         </ul>
     </nav>
     <app-language-switcher class="mobile-menu__languages" [expanded]="true" />

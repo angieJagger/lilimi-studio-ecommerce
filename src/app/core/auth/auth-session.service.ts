@@ -39,4 +39,22 @@ export class AuthSessionService {
   logout(): Observable<void> {
     return this.api.logout().pipe(tap(() => this.currentUser.set(null)));
   }
+
+  updateCustomerName(email: string, firstName: string | null): void {
+    this.currentUser.update((user) => {
+      if (
+        !user ||
+        user.email !== email ||
+        !user.roles.includes('CUSTOMER') ||
+        user.roles.includes('ADMIN')
+      ) {
+        return user;
+      }
+
+      return {
+        ...user,
+        firstName: firstName?.trim() || null,
+      };
+    });
+  }
 }

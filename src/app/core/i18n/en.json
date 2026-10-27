@@ -625,7 +625,9 @@
     "shop": "Shop",
     "about": "About Lilimi",
     "contact": "Contact",
-    "accountLink": "My account"
+    "accountLink": "My account",
+    "signIn": "Sign in",
+    "user": "User"
   },
 
   "servicesOverview": {

@@ -16,7 +16,10 @@ import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
 import pl.lilimi.auth.persistence.UserAccountRepository;
+import pl.lilimi.customer.domain.CustomerProfile;
+import pl.lilimi.customer.persistence.CustomerProfileRepository;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -43,6 +46,8 @@ class AuthSessionTest {
 
   @Autowired
   private PasswordEncoder passwordEncoder;
+  @Autowired
+  private CustomerProfileRepository profileRepository;
 
   @Test
   void shouldLogInAccessAdminEndpointAndLogOut() throws Exception {
@@ -73,6 +78,7 @@ class AuthSessionTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.email").value("admin-test@example.com"))
       .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
+      .andExpect(jsonPath("$.firstName").doesNotExist())
       .andExpect(jsonPath("$.password").doesNotExist())
       .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
@@ -225,6 +231,41 @@ class AuthSessionTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.email").value(email))
       .andExpect(jsonPath("$.roles[0]").value("CUSTOMER"));
+  }
+
+  @Test
+  void shouldReturnCustomerFirstName() throws Exception {
+    var account = accountRepository.saveAndFlush(new UserAccount(
+      "named-customer@example.com",
+      passwordEncoder.encode("Test-only-password-2026!"),
+      UserRole.CUSTOMER
+    ));
+
+    var profile = new CustomerProfile(account.getId());
+    profile.updateContact("Anna", "Kowalska", null);
+    profileRepository.saveAndFlush(profile);
+
+    mockMvc.perform(get("/api/auth/me")
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.firstName").value("Anna"))
+      .andExpect(jsonPath("$.roles[0]").value("CUSTOMER"))
+      .andExpect(jsonPath("$.lastName").doesNotExist());
+  }
+
+  @Test
+  void shouldReturnCustomerWithoutProfile() throws Exception {
+    var account = accountRepository.saveAndFlush(new UserAccount(
+      "customer-without-profile@example.com",
+      passwordEncoder.encode("Test-only-password-2026!"),
+      UserRole.CUSTOMER
+    ));
+
+    mockMvc.perform(get("/api/auth/me")
+        .with(user(account.getEmail()).roles("CUSTOMER")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.email").value(account.getEmail()))
+      .andExpect(jsonPath("$.firstName").doesNotExist());
   }
 
   private Cookie getCsrfCookie(MockHttpSession session)
