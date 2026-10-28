@@ -21,6 +21,9 @@
 }
 
 .site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
   color: var(--text-inverse);
   font-family: var(--font-body);
@@ -32,7 +35,6 @@
 }
 
 .site-header__navigation,
-.site-header__languages,
 .site-header__account,
 .site-header__quote {
   display: none;
@@ -47,8 +49,12 @@
   text-decoration: none;
 }
 
+.site-header__brand:hover {
+  color: var(--header-link-hover);
+}
+
 .site-header__link:hover {
-  color: var(#e0c3fc);
+  color: var(--header-link-hover);
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -70,7 +76,7 @@
 }
 
 .site-header__account:hover {
-  color: var(#e0c3fc);
+  color: var(--header-link-hover);
 }
 
 .site-header__menu-button,
@@ -100,7 +106,7 @@
 }
 
 .site-header__cart:hover {
-  color: var(#e0c3fc);
+  color: var(--header-link-hover);
 }
 
 .site-header__icon {
@@ -142,6 +148,9 @@
   }
 
   .site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
     line-height: 30px;
   }
 
@@ -167,4 +176,23 @@
   .site-header__menu-button {
     display: none;
   }
+}
+
+.site-header__brand-symbol {
+  display: block;
+  width: 28px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.site-header__languages {
+  display: inline-flex;
+}
+
+@media (max-width: 24rem) {
+  .site-header__brand {
+    font-size: 16px;
+    gap: 6px;
+  }
+  .site-header__brand-symbol { width: 24px; }
 }

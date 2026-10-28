@@ -62,7 +62,7 @@ export class AdminProductEdit {
 
   protected readonly priceForm = form(this.priceModel, (path) => {
     required(path.amount, {
-      message: 'adminProducts.price.errors.required',
+      message: 'adminProducts.edit.price.errors.required',
     });
 
     validate(path.amount, ({ value }) => {
@@ -73,7 +73,7 @@ export class AdminProductEdit {
       return this.parsePriceInGrosz(value()) === null
         ? {
             kind: 'invalidPrice',
-            message: 'adminProducts.price.errors.invalid',
+            message: 'adminProducts.edit.price.errors.invalid',
           }
         : undefined;
     });

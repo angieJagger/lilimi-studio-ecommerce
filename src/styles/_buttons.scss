@@ -18,6 +18,9 @@
 .button--primary {
   background-image: var(--action-primary-background);
   color: var(--action-primary-text);
+  box-shadow:
+    0 2px 4px rgb(48 40 61 / 10%),
+    0 5px 12px -4px rgb(48 40 61 / 22%);
 }
 
 .button--primary:hover {
@@ -34,10 +37,12 @@
   isolation: isolate;
   border-color: transparent;
   background-color: transparent;
-  background-image: var(--action-primary-background);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  background-image: none;
+  color: var(--violet-800);
+  font-weight: 650;
+  box-shadow:
+    0 2px 4px rgb(48 40 61 / 10%),
+    0 5px 12px -4px rgb(48 40 61 / 22%);
 }
 
 .button--secondary::before {
@@ -59,7 +64,61 @@
   mask-composite: exclude;
 }
 
-.button--secondary:hover,
 .button--secondary:hover::before {
   background-image: var(--action-primary-background-hover);
+}
+
+.button--secondary::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 44%,
+    rgb(255 255 255 / 10%) 47%,
+    rgb(255 255 255 / 80%) 49%,
+    rgb(255 255 255 / 80%) 51%,
+    rgb(255 255 255 / 10%) 53%,
+    transparent 56%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  opacity: 0;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .button--secondary:not(:disabled):not([aria-disabled="true"]):hover::after {
+    animation: secondary-button-reflection 1100ms ease-out;
+  }
+}
+@keyframes secondary-button-reflection {
+  0% { background-position: 100% 0; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { background-position: 0% 0; opacity: 0; }
+}
+
+.button--primary:not(:disabled):not([aria-disabled='true']):active,
+.button--secondary:not(:disabled):not([aria-disabled='true']):active {
+  box-shadow: 0 1px 3px rgb(48 40 61 / 16%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .button--primary,
+  .button--secondary {
+    transition: box-shadow 140ms ease, transform 140ms ease;
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .button--primary:not(:disabled):not([aria-disabled='true']):hover,
+  .button--secondary:not(:disabled):not([aria-disabled='true']):hover {
+    transform: scale(1.02);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .button--primary:not(:disabled):not([aria-disabled='true']):active,
+  .button--secondary:not(:disabled):not([aria-disabled='true']):active {
+    transform: translateY(1px) scale(1);
+  }
 }

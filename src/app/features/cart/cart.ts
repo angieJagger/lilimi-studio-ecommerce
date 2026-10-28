@@ -1,3 +1,5 @@
+import { ProductImage } from '../../shared/components/product-image/product-image';
+import type { ProductImage as ImageModel } from '../products/product.model';
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -6,7 +8,7 @@ import { CartService } from './cart.service';
 
 @Component({
   selector: 'app-cart',
-  imports: [RouterLink, TranslocoPipe],
+  imports: [RouterLink, TranslocoPipe, ProductImage],
   templateUrl: './cart.html',
   styleUrl: './cart.scss',
 })
@@ -32,6 +34,10 @@ export class Cart {
   );
 
   protected readonly sweatshirtLines = this.cart.sweatshirtLines;
+
+  protected primaryImage(images: readonly ImageModel[] | undefined): ImageModel | null {
+    return images?.find((image) => image.primaryImage) ?? images?.[0] ?? null;
+  }
 
   protected formatPrice(priceInGrosz: number | null): string {
     return priceInGrosz === null ? '—' : this.priceFormatter().format(priceInGrosz / 100);

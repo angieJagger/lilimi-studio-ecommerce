@@ -1,6 +1,6 @@
 .project-inquiry {
   padding-block: var(--spacing-48);
-  background-color: var(--surface-default);
+  background: transparent;
 }
 
 .project-inquiry__intro,
@@ -60,7 +60,7 @@
   padding: var(--spacing-12);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-8);
-  background-color: var(--surface-default);
+  background-color: var(--surface-field);
   color: var(--text-primary);
   font: inherit;
 }

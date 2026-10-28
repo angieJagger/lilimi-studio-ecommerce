@@ -29,27 +29,51 @@ describe('ProductGallery', () => {
     fixture.componentRef.setInput('locale', 'pl');
     await fixture.whenStable();
   });
+  it('should open the selected image and close it using the close button', async () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    dialog.showModal = () => dialog.setAttribute('open', '');
+    dialog.close = () => dialog.removeAttribute('open');
+    fixture.nativeElement.querySelector('.gallery__main').click();
+    await fixture.whenStable();
+    expect(dialog.open).toBe(true);
+    expect(dialog.querySelector('img')?.getAttribute('src')).toContain('/primary/');
+    (dialog.querySelector('.gallery__zoom-close') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(dialog.open).toBe(false);
+  });
+
+  it('should close only when the dialog background is clicked', async () => {
+    const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    dialog.showModal = () => dialog.setAttribute('open', '');
+    dialog.close = () => dialog.removeAttribute('open');
+    fixture.nativeElement.querySelector('.gallery__main').click();
+    await fixture.whenStable();
+    (dialog.querySelector('img') as HTMLImageElement).click();
+    expect(dialog.open).toBe(true);
+    dialog.click();
+    expect(dialog.open).toBe(false);
+  });
   it('should start with the primary image and accessible thumbnail buttons', () => {
     const main = fixture.nativeElement.querySelector('.gallery__main img');
     expect(main.getAttribute('src')).toContain('/primary/');
     expect(main.alt).toBe('Główne');
-    const buttons = fixture.nativeElement.querySelectorAll('button');
+    const buttons = fixture.nativeElement.querySelectorAll('.gallery__thumbnails button');
     expect(buttons).toHaveLength(2);
     expect(buttons[0].getAttribute('aria-pressed')).toBe('true');
     expect(buttons[1].getAttribute('aria-label')).toBe('Pokaż zdjęcie 2');
   });
   it('should select another image using its thumbnail', async () => {
-    fixture.nativeElement.querySelectorAll('button')[1].click();
+    fixture.nativeElement.querySelectorAll('.gallery__thumbnails button')[1].click();
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('.gallery__main img').getAttribute('src')).toContain(
       '/secondary/',
     );
-    expect(fixture.nativeElement.querySelectorAll('button')[1].getAttribute('aria-pressed')).toBe(
+    expect(fixture.nativeElement.querySelectorAll('.gallery__thumbnails button')[1].getAttribute('aria-pressed')).toBe(
       'true',
     );
   });
   it('should reset selection when navigating to another product', async () => {
-    fixture.nativeElement.querySelectorAll('button')[1].click();
+    fixture.nativeElement.querySelectorAll('.gallery__thumbnails button')[1].click();
     await fixture.whenStable();
     fixture.componentRef.setInput('slug', 'second-product');
     await fixture.whenStable();
@@ -60,7 +84,7 @@ describe('ProductGallery', () => {
   it('should hide thumbnail controls for one image and show a placeholder for none', async () => {
     fixture.componentRef.setInput('images', [primary]);
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.gallery__thumbnails button')).toBeNull();
     fixture.componentRef.setInput('images', []);
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('img')).toBeNull();

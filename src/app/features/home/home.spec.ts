@@ -21,6 +21,19 @@ describe('Home', () => {
     await fixture.whenStable();
   });
 
+  it('should link each whole service card to its matching service section', () => {
+    const cards = Array.from(
+      fixture.nativeElement.querySelectorAll('a.offer-card'),
+    ) as HTMLAnchorElement[];
+    expect(cards).toHaveLength(3);
+    for (const card of cards) {
+      const href = card.getAttribute('href')!;
+      expect(href).toMatch(/^\/pl\/services#service-/);
+      expect(card.querySelector('h3')).not.toBeNull();
+      expect(card.querySelector('a')).toBeNull();
+    }
+    expect(new Set(cards.map((card) => card.hash)).size).toBe(3);
+  });
   it('should create', () => {
     expect(component).toBeTruthy();
   });

@@ -72,9 +72,9 @@
       <fieldset class="product-edit__fields" [disabled]="isSaving() || hasBlockingSaveError()">
         @if (details.productType === 'digital') {
           <section aria-labelledby="product-price-title">
-            <h2 id="product-price-title">{{ 'adminProducts.price.title' | transloco }}</h2>
+            <h2 id="product-price-title">{{ 'adminProducts.edit.price.title' | transloco }}</h2>
             <div class="form-field">
-              <label for="product-price">{{ 'adminProducts.price.label' | transloco }}</label>
+              <label for="product-price">{{ 'adminProducts.edit.price.label' | transloco }}</label>
               <input
                 id="product-price"
                 type="text"
@@ -85,7 +85,7 @@
                   priceForm.amount().touched() && priceForm.amount().invalid() ? 'true' : null
                 "
               />
-              <p id="product-price-hint">{{ 'adminProducts.price.hint' | transloco }}</p>
+              <p id="product-price-hint">{{ 'adminProducts.edit.price.hint' | transloco }}</p>
               @if (priceForm.amount().touched() && priceForm.amount().invalid()) {
                 <ul class="form-field__errors">
                   @for (error of priceForm.amount().errors(); track $index) {

@@ -90,7 +90,7 @@
           @if (currentProduct.category === 'embroidery-patterns') {
             <div>
               <dt>{{ 'productDetail.fileFormats' | transloco }}</dt>
-              <dd>{{ currentProduct.fileFormats.join(', ') }}</dd>
+              <dd>{{ currentProduct.fileFormats.join(' · ') }}</dd>
             </div>
           } @else {
             <div>

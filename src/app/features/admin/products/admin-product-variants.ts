@@ -38,7 +38,7 @@ export class AdminProductVariants {
 
   protected readonly editForm = form(this.editModel, (path) => {
     required(path.amount, {
-      message: 'adminProducts.price.errors.required',
+      message: 'adminProducts.edit.price.errors.required',
     });
 
     validate(path.amount, ({ value }) => {
@@ -49,7 +49,7 @@ export class AdminProductVariants {
       return this.parsePrice(value()) === null
         ? {
             kind: 'invalidPrice',
-            message: 'adminProducts.price.errors.invalid',
+            message: 'adminProducts.edit.price.errors.invalid',
           }
         : undefined;
     });

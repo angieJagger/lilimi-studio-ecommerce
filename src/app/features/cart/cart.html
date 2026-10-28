@@ -51,7 +51,10 @@
         }
         @for (product of cart.patterns(); track product.id) {
         <li class="cart__item">
-          <div class="cart__media" aria-hidden="true"></div>
+          <div class="cart__media" aria-hidden="true">
+            <app-product-image [slug]="product.slug" [image]="primaryImage(product.images)"
+              [locale]="language()" [fallbackText]="'productDetail.imageUnavailable' | transloco" />
+          </div>
 
           <div class="cart__item-content">
             <h2 class="cart__item-title">
@@ -79,7 +82,12 @@
         }
         @for (line of sweatshirtLines(); track line.key) {
         <li class="cart__item">
-          <div class="cart__media" aria-hidden="true"></div>
+          <div class="cart__media" aria-hidden="true">
+            @if (line.product; as product) {
+              <app-product-image [slug]="product.slug" [image]="primaryImage(product.images)"
+                [locale]="language()" [fallbackText]="'productDetail.imageUnavailable' | transloco" />
+            }
+          </div>
 
           <div class="cart__item-content">
             <h2 class="cart__item-title">
