@@ -700,6 +700,8 @@
   },
 
   "productDetail": {
+    "enlargeImage": "Powiększ zdjęcie produktu",
+    "closeImage": "Zamknij powiększenie",
     "galleryLabel": "Zdjęcia produktu",
     "selectImage": "Pokaż zdjęcie {{ number }}",
     "detailsTitle": "Szczegóły produktu",
@@ -1077,7 +1079,7 @@
     "storyTitle": "Skąd wzięło się Lilimi?",
     "story": "Nazwa Lilimi pochodzi od imienia córki założycielki. To osobisty początek marki i nadzieja, że z czasem stanie się ona wspólnym dziełem mamy i córki.",
     "approachTitle": "Jakość, przejrzystość i Twoje cele",
-    "approach": "Rozwiązania techniczne i projektowanie łączą się dzięki Angularowi, Javie, WordPressowi i Figmie. Digitalizacja haftu uzupełnia ten warsztat o precyzję i dbałość o detale.",
+    "approach": "Każdy projekt zaczynamy od rozmowy o potrzebach i oczekiwaniach. Ustalamy zakres, omawiamy szczegóły i szukamy rozwiązania dopasowanego do Twojego pomysłu.",
     "cta": "Porozmawiajmy o projekcie",
     "valuesEyebrow": "Podstawy każdego projektu",
     "skillsTitle": "Projektowanie, kod i rzemiosło w jednym miejscu",
@@ -1099,10 +1101,9 @@
   },
 
   "contact": {
-    "title": "Porozmawiajmy o Twoim pomyśle",
-    "description": "Interesuje Cię haft, personalizowany produkt lub strona internetowa? Opisz swój pomysł w formularzu zapytania projektowego.",
-    "cta": "Przejdź do formularza",
-    "demoNotice": "Formularz działa obecnie w trybie demonstracyjnym i nie wysyła wiadomości."
+    "title": "Porozmawiajmy o Twoim projekcie",
+    "description": "Strona internetowa, sklep, grafika lub haft? Napisz wiadomość albo prześlij szczegóły przez formularz wyceny.",
+    "cta": "Opisz projekt"
   },
 
   "footer": {

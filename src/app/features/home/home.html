@@ -50,15 +50,17 @@
     <ol class="offer__grid">
       @for (item of primaryServices; track item.id; let index = $index) {
         <li [class.offer__wide]="item.id === 'maintenance'">
-          <article class="offer-card">
+          <a class="offer-card"
+            [routerLink]="['/', transloco.getActiveLang(), 'services']"
+            [fragment]="'service-' + item.id">
             <span class="offer-card__number" aria-hidden="true">{{ index + 1 }}</span>
-            <h3 class="offer-card__title"><a [routerLink]="['/', transloco.getActiveLang(), 'services']">
+            <h3 class="offer-card__title">
               {{ 'studioServices.items.' + item.id + '.title' | transloco }}
-            </a></h3>
+            </h3>
             <p class="offer-card__description">
               {{ 'studioServices.items.' + item.id + '.description' | transloco }}
             </p>
-          </article>
+          </a>
         </li>
       }
     </ol>

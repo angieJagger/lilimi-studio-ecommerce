@@ -1,5 +1,6 @@
 .hero {
-  padding-block: clamp(44px, 6vw, 92px);
+  padding-top: clamp(44px, 6vw, 92px);
+  padding-bottom: clamp(32px, 4vw, 60px);
 }
 .hero__container {
   display: grid;
@@ -28,7 +29,8 @@
 }
 .hero__description {
   max-width: 43ch;
-  color: var(--text-secondary);
+  color: #30283d;
+  font-weight: 500;
   font-size: 14px;
   line-height: 1.85;
   margin: 27px 0 32px;
@@ -51,6 +53,10 @@
 .custom-order {
   padding-block: clamp(42px, 5vw, 70px);
 }
+.offer {
+  padding-top: clamp(28px, 3vw, 46px);
+}
+
 .offer > .container {
   border-top: 1px solid var(--border-brand-soft);
   padding-top: 58px;
@@ -67,14 +73,34 @@
 }
 .offer-card {
   display: flex;
+  color: var(--text-primary);
+  text-decoration: none;
   flex-direction: column;
   align-items: flex-start;
   gap: 19px;
   height: 100%;
   padding: 26px;
-  border: 1px solid var(--border-brand-soft);
-  border-radius: 7px;
-  background: var(--surface-default);
+  border: 1px solid rgb(255 255 255 / 40%);
+  border-radius: var(--radius-12);
+  background: rgb(243 238 252 / 35%);
+  box-shadow:
+    0 2px 5px rgb(48 40 61 / 4%),
+    0 10px 22px -10px rgb(48 40 61 / 20%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .offer-card {
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
+  .offer-card:focus-within {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 26px -10px rgb(48 40 61 / 25%);
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .offer-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 26px -10px rgb(48 40 61 / 25%);
+  }
 }
 .offer-card__number {
   display: grid;
@@ -94,19 +120,16 @@
   letter-spacing: -0.025em;
   margin: 0;
 }
-.offer-card__title a {
-  color: inherit;
-  text-decoration: none;
-}
-.offer-card__title a:hover {
-  text-decoration: underline;
-  text-underline-offset: 5px;
+.offer-card:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 4px;
 }
 .offer-card__description {
   margin: 0;
   font-size: 13px;
   line-height: 1.8;
-  color: var(--text-secondary);
+  color: #30283d;
+  font-weight: 500;
 }
 .offer .studio-extras {
   margin-top: 23px;
@@ -244,7 +267,9 @@
   max-width: 14ch;
 }
 .featured__view-all {
-  font-size: 12px;
+  color: var(--violet-800);
+  font-size: 14px;
+  font-weight: 700;
 }
 .featured__layout {
   display: grid;
@@ -335,5 +360,19 @@
   }
   .projects {
     padding-block: 43px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .offer .studio-extras__card a {
+    transform-origin: left center;
+    transition: transform 160ms ease;
+  }
+  .offer .studio-extras__card a:focus-visible {
+    transform: scale(1.06);
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .offer .studio-extras__card a:hover {
+    transform: scale(1.06);
   }
 }

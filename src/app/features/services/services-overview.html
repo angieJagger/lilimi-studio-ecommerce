@@ -5,7 +5,7 @@
     <p>{{ 'studioServices.intro' | transloco }}</p>
   </header>
   @for (item of primaryServices; track item.id; let index = $index) {
-    <article class="service-row" [attr.aria-labelledby]="'service-title-' + item.id">
+    <article class="service-row" [id]="'service-' + item.id" [attr.aria-labelledby]="'service-title-' + item.id">
       <div class="service-row__copy">
         <span class="studio-eyebrow" aria-hidden="true">0{{ index + 1 }}</span>
         <h2 class="heading-2" [id]="'service-title-' + item.id">
@@ -31,14 +31,14 @@
           <span class="service-row__price">{{ 'studioServices.individualQuote' | transloco }}</span>
         </div>
       </div>
-      <div class="service-row__included">
-        <h3>{{ 'studioServices.included' | transloco }}</h3>
+      <fieldset class="service-row__included">
+        <legend><h3>{{ 'studioServices.included' | transloco }}</h3></legend>
         <ul>
           @for (number of [0, 1, 2, 3]; track number) {
             <li>{{ 'studioServices.items.' + item.id + '.included.' + number | transloco }}</li>
           }
         </ul>
-      </div>
+      </fieldset>
     </article>
   }
   <section class="studio-extras" aria-labelledby="extra-services-title">

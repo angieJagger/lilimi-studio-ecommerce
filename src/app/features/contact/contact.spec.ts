@@ -18,6 +18,14 @@ describe('Contact', () => {
     await fixture.whenStable();
   });
 
+  it('should provide a public email and localized inquiry link without the demo notice', () => {
+    const email = fixture.nativeElement.querySelector('.contact__email') as HTMLAnchorElement;
+    expect(email.getAttribute('href')).toBe('mailto:contact@lilimistudio.com');
+    expect(email.textContent).toContain('contact@lilimistudio.com');
+    expect(fixture.nativeElement.querySelector('.contact__cta').getAttribute('href')).toBe('/pl/project-inquiry');
+    expect(fixture.nativeElement.querySelector('#contact-demo-notice')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('gmail.com');
+  });
   it('should create', () => {
     expect(component).toBeTruthy();
   });

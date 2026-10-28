@@ -1,4 +1,5 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
+import { DOCUMENT, ViewportScroller } from '@angular/common';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode, inject, provideAppInitializer } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
@@ -9,6 +10,14 @@ import { provideHttpClient } from '@angular/common/http';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideAppInitializer(() => {
+      const viewport = inject(ViewportScroller);
+      const document = inject(DOCUMENT);
+      viewport.setOffset(() => [
+        0,
+        (document.querySelector('app-header')?.getBoundingClientRect().height ?? 80) + 16,
+      ]);
+    }),
     provideHttpClient(),
     provideRouter(
       routes,

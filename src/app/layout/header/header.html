@@ -1,13 +1,12 @@
 <header class="site-header">
   <div class="site-header__container container">
-    <a class="site-header__brand" [routerLink]="['/', transloco.getActiveLang()]">
-      Lilimi Studio
+    <a class="site-header__brand" [routerLink]="['/', transloco.getActiveLang()]"><img class="site-header__brand-symbol" src="/images/lilimi-symbol.png" width="128" height="105" alt="" /><span>Lilimi Studio</span>
     </a>
     <nav class="site-header__navigation" [attr.aria-label]="'nav.mainNavigation' | transloco">
       @for (item of shopNavigation; track item.labelKey) {
         <a
           class="site-header__link"
-          [routerLink]="['/', transloco.getActiveLang()].concat(item.path.split('/'))"
+          [routerLink]="['/', transloco.getActiveLang()].concat(item.path ? item.path.split('/') : [])"
           [queryParams]="item.queryParams"
           [fragment]="item.fragment"
         >

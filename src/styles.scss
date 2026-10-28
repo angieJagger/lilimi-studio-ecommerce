@@ -34,3 +34,9 @@ html:has(app-mobile-menu dialog[open]) {
 a { color: var(--brand-primary); }
 input, select, textarea { accent-color: var(--brand-primary); }
 button:disabled { cursor:not-allowed; opacity:.6; }
+
+@property --lilimi-card-frame-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 120deg;
+}

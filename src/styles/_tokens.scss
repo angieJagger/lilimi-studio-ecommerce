@@ -50,7 +50,7 @@
 
   /* Tekst na jasnych powierzchniach */
   --text-primary: var(--neutral-900);
-  --text-secondary: var(--neutral-600);
+  --text-secondary: #494052;
 
   /* Tekst na ciemnych powierzchniach */
   --text-inverse: #f4eefb;
@@ -64,6 +64,19 @@
   );
 
   --surface-default: #e5e7f0;
+  /* Poprzednia ramka: linear-gradient(120deg, #765587, #6b8cce, #5b999d) */
+  --border-service-gradient: linear-gradient(
+    120deg,
+    #bd3977 0%,
+    #8250c4 20%,
+    #386fd1 40%,
+    #238c91 60%,
+    #b88a24 80%,
+    #c35b3c 100%
+  );
+  --surface-field: #eeedf5;
+  --surface-product-content: #d8d1e5;
+  --surface-order-summary: #A2B6DF;
   --surface-brand-soft: #e5e7f0;
   --surface-inverse: #151619;
 

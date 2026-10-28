@@ -697,6 +697,8 @@
   },
 
   "productDetail": {
+    "enlargeImage": "Enlarge product image",
+    "closeImage": "Close enlarged image",
     "galleryLabel": "Product images",
     "selectImage": "Show image {{ number }}",
     "detailsTitle": "Product details",
@@ -1075,7 +1077,7 @@
     "storyTitle": "Where does Lilimi come from?",
     "story": "Lilimi takes its name from the founder's daughter. It marks the personal beginning of the brand and the hope that, over time, it will become something mother and daughter build together.",
     "approachTitle": "Quality, clarity and your goals",
-    "approach": "Engineering and design connect through Angular, Java, WordPress and Figma. Alongside software, embroidery digitizing brings the same attention to precision and detail.",
+    "approach": "Every project starts with a conversation about your needs and expectations. Together, we define the scope, discuss the details and find an approach that fits your idea.",
     "cta": "Discuss your project",
     "valuesEyebrow": "What guides each project",
     "skillsTitle": "Design, code and craft under one roof",
@@ -1097,10 +1099,9 @@
   },
 
   "contact": {
-    "title": "Let's talk about your idea",
-    "description": "Interested in embroidery, a personalised product or a website? Describe your idea using our project inquiry form.",
-    "cta": "Go to the inquiry form",
-    "demoNotice": "The form currently runs in demo mode and does not send messages."
+    "title": "Let's talk about your project",
+    "description": "A website, an online store, graphics or embroidery? Send an email or share the details through the project inquiry form.",
+    "cta": "Describe your project"
   },
 
   "footer": {

@@ -139,7 +139,7 @@ describe('ProductDetail', () => {
     const element = harness.routeNativeElement!;
     const details = element.querySelector('.product-detail__details')!;
 
-    expect(details.textContent).toContain('DST, PES, JEF');
+    expect(details.textContent).toContain('DST · PES · JEF');
     expect(details.textContent).not.toContain('Możliwość personalizacji');
 
     const links = Array.from(

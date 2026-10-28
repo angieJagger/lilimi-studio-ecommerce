@@ -1,57 +1,55 @@
 .contact {
-  padding-block: var(--spacing-48);
-  background-color: var(--surface-page);
+  padding-block: clamp(48px, 6vw, 80px);
 }
-
 .contact__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-24);
   max-width: 48rem;
   margin-inline: auto;
 }
-
-.contact__content > .heading-1 {
-  margin: 0;
-}
-
-.contact__description,
-.contact__notice {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
+.contact__content > .heading-1 { margin: 0; }
 .contact__description {
+  max-width: 62ch;
+  margin: 24px 0 0;
   color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.75;
 }
-
-.contact__panel {
+.contact__actions {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-24);
-  padding: var(--spacing-24);
-  border: 1px solid var(--border-brand-soft);
-  border-radius: var(--radius-12);
-  background-color: var(--brand-lilac);
-  color: var(--text-primary);
+  align-items: flex-start;
+  gap: 28px;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border-default);
 }
-
-.contact__cta {
-  width: 100%;
+.contact__email {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  min-height: 44px;
+  color: var(--violet-800);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 650;
+  text-decoration: none;
 }
-
-@media (min-width: 64rem) {
-  .contact {
-    padding-block: var(--spacing-80);
+.contact__email svg { flex-shrink: 0; }
+.contact__email span { overflow-wrap: anywhere; }
+.contact__email:hover span {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.contact__email:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 4px;
+}
+.contact__cta { width: 100%; }
+@media (min-width: 48rem) {
+  .contact__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
   }
-
-  .contact__panel {
-    padding: var(--spacing-32);
-  }
-
-  .contact__cta {
-    align-self: flex-start;
-    width: auto;
-  }
+  .contact__cta { width: auto; }
 }
