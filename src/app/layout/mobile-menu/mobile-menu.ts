@@ -1,13 +1,13 @@
 import { Component, ElementRef, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LanguageSwitcher } from '../language-switcher/language-switcher';
+
 import { shopNavigation } from '../navigation';
 import { AuthSessionService } from '../../core/auth/auth-session.service';
 
 @Component({
   selector: 'app-mobile-menu',
-  imports: [RouterLink, TranslocoPipe, LanguageSwitcher],
+  imports: [RouterLink, TranslocoPipe],
   templateUrl: './mobile-menu.html',
   styleUrl: './mobile-menu.scss',
 })

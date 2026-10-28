@@ -88,6 +88,6 @@ describe('ProductGallery', () => {
     fixture.componentRef.setInput('images', []);
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('img')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Zdjęcie produktu niedostępne');
+    expect(fixture.nativeElement.querySelector('.placeholder').getAttribute('aria-label')).toBe('Zdjęcie produktu niedostępne');
   });
 });
