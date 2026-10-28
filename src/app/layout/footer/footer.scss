@@ -63,3 +63,8 @@
   height: auto;
   flex-shrink: 0;
 }
+
+.site-footer__logo:hover,
+.site-footer__contact:hover {
+  color: var(--header-link-hover);
+}

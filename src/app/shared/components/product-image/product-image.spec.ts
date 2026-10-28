@@ -56,7 +56,8 @@ describe('ProductImage', () => {
   it('should show a placeholder when no image is configured', async () => {
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('img')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Image unavailable');
+    expect(fixture.nativeElement.querySelector('.placeholder').getAttribute('aria-label')).toBe('Image unavailable');
+    expect(fixture.nativeElement.querySelector('.placeholder svg')).not.toBeNull();
   });
 
   it('should recover from a failed image when its version changes', async () => {

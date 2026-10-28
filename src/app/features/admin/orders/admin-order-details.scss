@@ -24,9 +24,15 @@ h3 {
 .order-card {
   margin-bottom: var(--spacing-24);
   padding: var(--spacing-24);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-12);
-  background: var(--surface-default);
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(255 253 247 / 40%) 0%,
+    rgb(243 229 237 / 40%) 50%,
+    rgb(233 239 255 / 40%) 100%
+  );
+  box-shadow: 0 4px 8px rgb(48 40 61 / 5%), 0 14px 28px -12px rgb(48 40 61 / 20%);
   overflow-wrap: anywhere;
 }
 
@@ -106,5 +112,33 @@ address {
     border-color: #b45309;
     background: #fffbeb;
     color: #1f2937;
+  }
+}
+.order-columns {
+  gap: 0;
+  margin-bottom: var(--spacing-24);
+  padding: var(--spacing-24);
+  background: linear-gradient(180deg, rgb(255 253 247 / 40%), rgb(243 229 237 / 40%) 50%, rgb(233 239 255 / 40%));
+  box-shadow: 0 4px 8px rgb(48 40 61 / 5%), 0 14px 28px -12px rgb(48 40 61 / 20%);
+}
+.order-columns > .order-card {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.order-columns > .order-card + .order-card {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgb(98 68 120 / 25%);
+}
+@media (min-width: 700px) {
+  .order-columns > .order-card:first-child { padding-right: 28px; }
+  .order-columns > .order-card + .order-card {
+    margin-top: 0;
+    padding-top: 0;
+    padding-left: 28px;
+    border-top: 0;
+    border-left: 1px solid rgb(98 68 120 / 25%);
   }
 }
