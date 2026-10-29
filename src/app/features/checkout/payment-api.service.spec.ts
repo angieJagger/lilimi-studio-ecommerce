@@ -141,7 +141,7 @@ describe('PaymentApiService', () => {
     expect(receivedOrderId).toBe(orderId);
     expect(receivedStatus).toBe('succeeded');
   });
-  
+
   it('should initialize CSRF before resuming an existing order payment', () => {
     let received: CheckoutSessionResult | undefined;
 
