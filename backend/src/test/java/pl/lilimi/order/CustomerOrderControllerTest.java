@@ -1,6 +1,9 @@
 package pl.lilimi.order;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -8,6 +11,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
@@ -46,6 +51,17 @@ class CustomerOrderControllerTest {
 
   @Autowired
   private PaymentAttemptRepository paymentAttempts;
+
+  @Autowired
+  private JdbcTemplate jdbc;
+
+  @BeforeEach
+  void prepareDigitalPackage() {
+    DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
+  }
 
   @Test
   void shouldRejectHistoryWithoutAuthentication() throws Exception {

@@ -15,6 +15,7 @@ import {
   type PaymentStatusResult,
 } from './payment-api.service';
 import { PaymentResult } from './payment-result';
+import { DigitalOrderDownloadApiService } from '../digital-downloads/digital-order-download-api.service';
 
 describe('PaymentResult', () => {
   let fixture: ComponentFixture<PaymentResult>;
@@ -22,6 +23,11 @@ describe('PaymentResult', () => {
   let params: BehaviorSubject<ParamMap>;
 
   const attemptId = '38e96ac8-89e7-40f1-a856-086992226bdf';
+  const orderId = '93af42f1-d557-4b3d-b452-24976e049713';
+
+  const downloadsApi = {
+    getDownloads: vi.fn(),
+  };
 
   const api = {
     getStatus: vi.fn(),
@@ -34,6 +40,9 @@ describe('PaymentResult', () => {
 
     api.getStatus.mockReset();
     api.getStatus.mockReturnValue(of(result('pending')));
+
+    downloadsApi.getDownloads.mockReset();
+    downloadsApi.getDownloads.mockReturnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [PaymentResult, getTranslocoTestingModule()],
@@ -51,6 +60,10 @@ describe('PaymentResult', () => {
         {
           provide: PaymentApiService,
           useValue: api,
+        },
+        {
+          provide: DigitalOrderDownloadApiService,
+          useValue: downloadsApi,
         },
       ],
     }).compileComponents();
@@ -73,6 +86,7 @@ describe('PaymentResult', () => {
   function result(status: PaymentStatus): PaymentStatusResult {
     return {
       paymentAttemptId: attemptId,
+      orderId,
       status,
     };
   }
@@ -235,4 +249,22 @@ describe('PaymentResult', () => {
       expect(api.getStatus).toHaveBeenCalledTimes(1);
     },
   );
+
+  it('should load downloads after payment is confirmed', () => {
+    api.getStatus.mockReturnValue(of(result('succeeded')));
+
+    advance();
+
+    expect(element.querySelector('app-digital-order-downloads')).not.toBeNull();
+
+    expect(downloadsApi.getDownloads).toHaveBeenCalledExactlyOnceWith(orderId);
+  });
+
+  it('should not load downloads while payment is pending', () => {
+    advance();
+
+    expect(element.querySelector('app-digital-order-downloads')).toBeNull();
+
+    expect(downloadsApi.getDownloads).not.toHaveBeenCalled();
+  });
 });

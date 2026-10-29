@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
 import { CustomerOrderApiService } from './customer-order-api.service';
@@ -9,6 +9,7 @@ import { PaymentApiService, type CheckoutSessionResult } from '../checkout/payme
 import { PaymentRedirectService } from '../checkout/payment-redirect.service';
 import type { CustomerOrderDetails as OrderDetails } from './customer-order.model';
 import { CustomerOrderDetails } from './customer-order-details';
+import { DigitalOrderDownloadApiService } from '../digital-downloads/digital-order-download-api.service';
 
 describe('CustomerOrderDetails', () => {
   let fixture: ComponentFixture<CustomerOrderDetails>;
@@ -27,6 +28,10 @@ describe('CustomerOrderDetails', () => {
 
   const api = {
     getOrder: vi.fn(),
+  };
+
+  const downloadsApi = {
+    getDownloads: vi.fn(),
   };
 
   const order: OrderDetails = {
@@ -84,6 +89,9 @@ describe('CustomerOrderDetails', () => {
 
     paymentRedirect.redirect.mockReset();
 
+    downloadsApi.getDownloads.mockReset();
+    downloadsApi.getDownloads.mockReturnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [CustomerOrderDetails, getTranslocoTestingModule()],
       providers: [
@@ -97,6 +105,10 @@ describe('CustomerOrderDetails', () => {
         { provide: CustomerOrderApiService, useValue: api },
         { provide: PaymentApiService, useValue: payments },
         { provide: PaymentRedirectService, useValue: paymentRedirect },
+        {
+          provide: DigitalOrderDownloadApiService,
+          useValue: downloadsApi,
+        },
       ],
     }).compileComponents();
 
@@ -398,5 +410,111 @@ describe('CustomerOrderDetails', () => {
 
     expect(paymentRedirect.redirect).not.toHaveBeenCalled();
     expect(element.textContent).toContain('second-order');
+  });
+
+  it('should load downloads for a paid digital order', async () => {
+    await respond({
+      ...order,
+      payment: {
+        status: 'succeeded',
+        canPay: false,
+      },
+    });
+
+    expect(element.querySelector('app-digital-order-downloads')).not.toBeNull();
+
+    expect(downloadsApi.getDownloads).toHaveBeenCalledExactlyOnceWith(order.id);
+  });
+
+  it('should not load downloads before payment is confirmed', async () => {
+    await respond({
+      ...order,
+      payment: {
+        status: 'pending',
+        canPay: false,
+      },
+    });
+
+    expect(element.querySelector('app-digital-order-downloads')).toBeNull();
+
+    expect(downloadsApi.getDownloads).not.toHaveBeenCalled();
+  });
+
+  it('should not load downloads for a cancelled order', async () => {
+    await respond({
+      ...order,
+      status: 'cancelled',
+      payment: {
+        status: 'succeeded',
+        canPay: false,
+      },
+    });
+
+    expect(element.querySelector('app-digital-order-downloads')).toBeNull();
+
+    expect(downloadsApi.getDownloads).not.toHaveBeenCalled();
+  });
+
+  it('should not load downloads for a physical-only order', async () => {
+    await respond({
+      ...order,
+      payment: {
+        status: 'succeeded',
+        canPay: false,
+      },
+      items: [
+        {
+          ...order.items[0],
+          kind: 'sweatshirt',
+        },
+      ],
+    });
+
+    expect(element.querySelector('app-digital-order-downloads')).toBeNull();
+
+    expect(downloadsApi.getDownloads).not.toHaveBeenCalled();
+  });
+
+  it('should load downloads for a paid mixed order with courier delivery', async () => {
+    await respond({
+      ...order,
+      payment: {
+        status: 'succeeded',
+        canPay: false,
+      },
+      delivery: {
+        kind: 'courier',
+        methodId: 'dhl-courier',
+        addressLine1: 'Testowa 10',
+        addressLine2: null,
+        postalCode: '65-001',
+        city: 'Zielona Góra',
+        countryCode: 'PL',
+      },
+      items: [
+        order.items[0],
+        {
+          ...order.items[0],
+          kind: 'sweatshirt',
+          productId: 'embroidered-002',
+          productName: 'Bluza testowa',
+          patternId: 'pattern-001',
+          patternName: 'Smok',
+          fit: 'men',
+          size: 'M',
+          color: 'black',
+          embroideryOptionId: 'large-back',
+          unitPriceInGrosz: 16900,
+          lineTotalInGrosz: 16900,
+        },
+      ],
+      subtotalInGrosz: 19800,
+      deliveryPriceInGrosz: 1500,
+      totalInGrosz: 21300,
+    });
+
+    expect(element.querySelector('app-digital-order-downloads')).not.toBeNull();
+
+    expect(downloadsApi.getDownloads).toHaveBeenCalledExactlyOnceWith(order.id);
   });
 });

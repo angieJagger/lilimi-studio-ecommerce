@@ -21,6 +21,7 @@ import {
 import { AdminProductApiService } from './admin-product-api.service';
 import type { AdminProductDetails } from './admin-product.model';
 import { AdminProductImages } from './admin-product-images';
+import { AdminDigitalProductPackages } from './admin-digital-product-packages';
 
 interface ProductTranslationsModel {
   plName: string;
@@ -35,7 +36,14 @@ interface ProductPriceModel {
 
 @Component({
   selector: 'app-admin-product-edit',
-  imports: [TranslocoPipe, RouterLink, FormField, AdminProductVariants, AdminProductImages],
+  imports: [
+    TranslocoPipe,
+    RouterLink,
+    FormField,
+    AdminProductVariants,
+    AdminProductImages,
+    AdminDigitalProductPackages
+],
   templateUrl: './admin-product-edit.html',
   styleUrl: './admin-product-edit.scss',
 })

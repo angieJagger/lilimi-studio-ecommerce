@@ -5,15 +5,19 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.service.checkout.SessionService;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.api.admin.ChangeOrderStatusRequest;
 import pl.lilimi.order.application.admin.AdminOrderStatusService;
@@ -71,6 +75,7 @@ class CheckoutExpirationIntegrationTest {
   private SessionService sessions;
 
   private UUID orderId;
+  private UUID packageId;
   private UUID attemptId;
   private String sessionId;
   private Instant expiresAt;
@@ -93,13 +98,21 @@ class CheckoutExpirationIntegrationTest {
     sessionId = "cs_test_" + UUID.randomUUID();
     expiresAt = Instant.now().plusSeconds(1800);
 
-    items.saveAndFlush(OrderItem.digital(
-      order,
-      1,
-      "pattern-001",
-      "Saved pattern",
-      2900
-    ));
+    packageId = DigitalPackageTestData.createHistoricalPackage(
+      jdbc,
+      "pattern-001"
+    );
+
+    items.saveAndFlush(
+      OrderItem.digital(
+        order,
+        1,
+        "pattern-001",
+        "Saved pattern",
+        packageId,
+        2900
+      )
+    );
   }
 
   @AfterEach
@@ -134,6 +147,13 @@ class CheckoutExpirationIntegrationTest {
       "DELETE FROM orders WHERE id = ?",
       orderId
     );
+
+    if (packageId != null) {
+      jdbc.update(
+        "DELETE FROM digital_product_packages WHERE id = ?",
+        packageId
+      );
+    }
   }
 
   @Test

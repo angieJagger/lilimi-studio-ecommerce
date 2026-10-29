@@ -1,6 +1,9 @@
 package pl.lilimi.payment.checkout;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -9,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
@@ -17,6 +22,7 @@ import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderDelivery;
 import pl.lilimi.order.persistence.OrderRepository;
+
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.UUID;
@@ -53,11 +59,22 @@ class OrderPaymentControllerTest {
   @Autowired
   private OrderRepository orders;
 
+  @Autowired
+  private JdbcTemplate jdbc;
+
   @MockitoBean
   private StripeCheckoutService checkout;
 
   private final JsonMapper mapper =
     JsonMapper.builder().build();
+
+  @BeforeEach
+  void prepareDigitalPackage() {
+    DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
+  }
 
   @Test
   void shouldAllowGuestAfterSubmittingOrderInSameSession()

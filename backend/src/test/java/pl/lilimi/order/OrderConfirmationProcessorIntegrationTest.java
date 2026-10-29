@@ -3,12 +3,15 @@ package pl.lilimi.order;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.MailSendException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.api.CreateOrderRequest;
 import pl.lilimi.order.api.OrderContactRequest;
@@ -59,12 +62,30 @@ class OrderConfirmationProcessorIntegrationTest {
   private Clock clock;
 
   private final UUID key = UUID.randomUUID();
-
   private Instant now;
   private UUID orderId;
+  private UUID packageId;
+  private boolean packageCreatedByTest;
 
   @BeforeEach
   void setUp() {
+    var existingPackageIds = jdbcTemplate.queryForList(
+      """
+      SELECT id
+      FROM digital_product_packages
+      WHERE product_id = ?
+        AND current_package = TRUE
+      """,
+      UUID.class,
+      "pattern-001"
+    );
+
+    packageId = DigitalPackageTestData.currentPackageId(
+      jdbcTemplate,
+      "pattern-001"
+    );
+
+    packageCreatedByTest = existingPackageIds.isEmpty();
     now = Instant.now()
       .plusSeconds(60)
       .truncatedTo(ChronoUnit.MICROS);
@@ -87,6 +108,12 @@ class OrderConfirmationProcessorIntegrationTest {
       jdbcTemplate.update(
         "DELETE FROM orders WHERE id = ?",
         orderId
+      );
+    }
+    if (packageCreatedByTest && packageId != null) {
+      jdbcTemplate.update(
+        "DELETE FROM digital_product_packages WHERE id = ?",
+        packageId
       );
     }
   }

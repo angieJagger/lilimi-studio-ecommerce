@@ -54,7 +54,9 @@ public class SecurityConfig {
           "/api/products/**",
           "/actuator/health",
           "/api/auth/csrf",
-          "/api/payments/attempts/*"
+          "/api/payments/attempts/*",
+          "/api/orders/*/items/*/download",
+          "/api/orders/*/downloads"
         ).permitAll()
         .requestMatchers(
           HttpMethod.POST,

@@ -72,6 +72,8 @@ class PaymentStatusControllerTest {
       ))
       .andExpect(jsonPath("$.paymentAttemptId")
         .value(attempt.getId().toString()))
+      .andExpect(jsonPath("$.orderId")
+        .value(order.getId().toString()))
       .andExpect(jsonPath("$.status").value("pending"))
       .andExpect(jsonPath("$.checkoutUrl").doesNotExist());
   }
@@ -98,6 +100,8 @@ class PaymentStatusControllerTest {
     mockMvc.perform(get(url(attempt.getId()))
         .with(user(account.getEmail()).roles("CUSTOMER")))
       .andExpect(status().isOk())
+      .andExpect(jsonPath("$.orderId")
+        .value(order.getId().toString()))
       .andExpect(jsonPath("$.status").value("succeeded"));
   }
 

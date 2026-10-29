@@ -1,0 +1,118 @@
+:host {
+  display: block;
+  margin-top: var(--spacing-32);
+}
+
+.digital-packages {
+  min-width: 0;
+}
+
+.digital-packages__item {
+  margin-top: var(--spacing-16);
+  padding: var(--spacing-24);
+  background: linear-gradient(
+    180deg,
+    rgb(255 253 247 / 40%) 0%,
+    rgb(243 229 237 / 40%) 50%,
+    rgb(233 239 255 / 40%) 100%
+  );
+  box-shadow:
+    0 4px 8px rgb(48 40 61 / 5%),
+    0 14px 28px -12px rgb(48 40 61 / 20%);
+  overflow-wrap: anywhere;
+}
+
+.digital-packages__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-12);
+  margin-bottom: var(--spacing-24);
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+.digital-packages__current {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgb(98 68 120 / 12%);
+  color: var(--violet-800);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.digital-packages__metadata {
+  display: grid;
+  gap: var(--spacing-16);
+  margin: 0;
+
+  > div {
+    min-width: 0;
+  }
+
+  dt {
+    margin-bottom: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.digital-packages__feedback p {
+  color: var(--status-error);
+}
+
+@media (min-width: 48rem) {
+  .digital-packages__metadata {
+    grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  }
+}
+
+.digital-packages__upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-12);
+  margin-bottom: var(--spacing-32);
+
+  label {
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    font: inherit;
+  }
+
+  input:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 4px;
+  }
+}
+
+.digital-packages__hint {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.digital-packages__error {
+  margin: 0;
+  color: var(--status-error);
+  line-height: 1.5;
+}
+
+.digital-packages__success {
+  color: var(--text-primary);
+  font-weight: 600;
+}

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.domain.*;
 import pl.lilimi.order.persistence.OrderItemRepository;
@@ -29,6 +31,9 @@ class OrderRepositoryTest {
   @Autowired
   private EntityManager entityManager;
 
+  @Autowired
+  private JdbcTemplate jdbc;
+
   @Test
   void shouldSaveAndReadDigitalOrderWithItem() {
     var order = new Order(
@@ -45,11 +50,17 @@ class OrderRepositoryTest {
 
     orderRepository.saveAndFlush(order);
 
+    var packageId = DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
+
     var item = OrderItem.digital(
       order,
       1,
       "pattern-001",
       "Leśny smok",
+      packageId,
       2900
     );
 
@@ -89,6 +100,7 @@ class OrderRepositoryTest {
     assertThat(savedItem.getPosition()).isEqualTo(1);
     assertThat(savedItem.getKind()).isEqualTo("digital");
     assertThat(savedItem.getProductId()).isEqualTo("pattern-001");
+    assertThat(savedItem.getDigitalPackageId()).isEqualTo(packageId);
     assertThat(savedItem.getProductName()).isEqualTo("Leśny smok");
     assertThat(savedItem.getQuantity()).isEqualTo(1);
     assertThat(savedItem.getUnitPriceInGrosz()).isEqualTo(2900);
@@ -119,11 +131,17 @@ class OrderRepositoryTest {
 
     orderRepository.saveAndFlush(order);
 
+    var packageId = DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
+
     var digitalItem = OrderItem.digital(
       order,
       1,
       "pattern-001",
       "Forest Dragon embroidery pattern",
+      packageId,
       2900
     );
 

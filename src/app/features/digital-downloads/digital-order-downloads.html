@@ -1,0 +1,45 @@
+<section class="digital-downloads" aria-labelledby="digital-downloads-title">
+  <h2 id="digital-downloads-title">
+    {{ 'digitalDownloads.title' | transloco }}
+  </h2>
+
+  @if (isLoading()) {
+  <output>{{ 'digitalDownloads.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+  <div>
+    <p role="alert">{{ message | transloco }}</p>
+
+    <button class="button button--secondary" type="button" (click)="retry()">
+      {{ 'digitalDownloads.retry' | transloco }}
+    </button>
+  </div>
+  } @else {
+  <ul class="digital-downloads__list">
+    @for (file of downloads(); track file.itemId) {
+    <li class="digital-downloads__item">
+      <div class="digital-downloads__description">
+        <h3>{{ file.productName }}</h3>
+
+        <p>{{ file.filename }}</p>
+
+        <p class="digital-downloads__metadata">
+          {{ 'digitalDownloads.version' | transloco }}
+          {{ file.packageVersion }}
+          ·
+          {{ file.byteSize / 1024 | number: '1.0-1' }} KiB
+        </p>
+      </div>
+
+      <a class="button button--primary" [href]="api.downloadUrl(orderId(), file.itemId)" [attr.aria-label]="
+              'digitalDownloads.downloadProduct'
+                | transloco: { name: file.productName }
+            ">
+        {{ 'digitalDownloads.download' | transloco }}
+      </a>
+    </li>
+    } @empty {
+    <li>{{ 'digitalDownloads.empty' | transloco }}</li>
+    }
+  </ul>
+  }
+</section>

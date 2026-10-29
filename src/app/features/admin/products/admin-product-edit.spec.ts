@@ -6,6 +6,7 @@ import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { AdminProductApiService } from './admin-product-api.service';
 import { AdminProductImageApiService } from './admin-product-image-api.service';
+import { AdminDigitalProductPackageApiService } from './admin-digital-product-package-api.service';
 import { AdminProductEdit } from './admin-product-edit';
 import type { AdminProductDetails } from './admin-product.model';
 
@@ -23,6 +24,10 @@ describe('AdminProductEdit', () => {
     saveProduct: vi.fn(),
     updateDigitalPrice: vi.fn(),
     getVariants: vi.fn(),
+  };
+
+  const packagesApi = {
+    getPackages: vi.fn(),
   };
 
   const product: AdminProductDetails = {
@@ -85,6 +90,9 @@ describe('AdminProductEdit', () => {
       }),
     );
 
+    packagesApi.getPackages.mockReset();
+    packagesApi.getPackages.mockReturnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [AdminProductEdit, getTranslocoTestingModule()],
       providers: [
@@ -95,6 +103,10 @@ describe('AdminProductEdit', () => {
         },
         { provide: AdminProductApiService, useValue: api },
         { provide: AdminProductImageApiService, useValue: imageApi },
+        {
+          provide: AdminDigitalProductPackageApiService,
+          useValue: packagesApi,
+        },
       ],
     }).compileComponents();
 

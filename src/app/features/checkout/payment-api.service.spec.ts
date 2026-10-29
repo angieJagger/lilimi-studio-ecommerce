@@ -118,9 +118,11 @@ describe('PaymentApiService', () => {
   it('should read payment status without initializing CSRF', () => {
     const attemptId = '38e96ac8-89e7-40f1-a856-086992226bdf';
 
+    let receivedOrderId: string | undefined;
     let receivedStatus: string | undefined;
 
     service.getStatus(attemptId).subscribe((result) => {
+      receivedOrderId = result.orderId;
       receivedStatus = result.status;
     });
 
@@ -132,11 +134,14 @@ describe('PaymentApiService', () => {
 
     request.flush({
       paymentAttemptId: attemptId,
+      orderId,
       status: 'succeeded',
     });
 
+    expect(receivedOrderId).toBe(orderId);
     expect(receivedStatus).toBe('succeeded');
   });
+  
   it('should initialize CSRF before resuming an existing order payment', () => {
     let received: CheckoutSessionResult | undefined;
 
