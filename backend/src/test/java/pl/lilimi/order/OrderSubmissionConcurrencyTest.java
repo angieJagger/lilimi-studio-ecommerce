@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.api.CreateOrderRequest;
 import pl.lilimi.order.api.OrderContactRequest;
@@ -34,6 +36,24 @@ class OrderSubmissionConcurrencyTest {
   @Test
   void shouldCreateOnlyOneOrderForConcurrentSubmissions()
     throws Exception {
+
+    var existingPackageIds = jdbcTemplate.queryForList(
+      """
+      SELECT id
+      FROM digital_product_packages
+      WHERE product_id = ?
+        AND current_package = TRUE
+      """,
+      UUID.class,
+      "pattern-001"
+    );
+
+    var packageId = DigitalPackageTestData.currentPackageId(
+      jdbcTemplate,
+      "pattern-001"
+    );
+
+    boolean packageCreatedByTest = existingPackageIds.isEmpty();
 
     var key = UUID.randomUUID();
 
@@ -111,6 +131,13 @@ class OrderSubmissionConcurrencyTest {
       }
 
       cleanUp(key);
+
+      if (packageCreatedByTest) {
+        jdbcTemplate.update(
+          "DELETE FROM digital_product_packages WHERE id = ?",
+          packageId
+        );
+      }
     }
   }
 

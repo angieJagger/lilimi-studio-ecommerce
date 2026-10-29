@@ -480,6 +480,48 @@
       "reloadNotice": "Copy the entered price before reloading if you want to keep it. Reloading will close the form."
     }
   },
+  "adminDigitalPackages": {
+    "title": "Digital product packages",
+    "loading": "Loading packages…",
+    "retry": "Try again",
+    "refreshHistory": "Refresh package history",
+    "version": "Version",
+    "current": "Current",
+    "filename": "Filename",
+    "size": "Size",
+    "createdAt": "Added",
+    "empty": "This product does not have a ZIP package yet.",
+    "uploadLabel": "New ZIP package",
+    "uploadHint": "A ZIP up to 10 MiB containing at least one non-empty DST, PES or JEF file. PDF or TXT instructions may also be included. Uploading creates a new current version; previous versions remain in the history.",
+    "upload": "Upload package",
+    "uploading": "Uploading…",
+    "uploaded": "The package has been saved as the current version.",
+    "errors": {
+      "errors": {
+        "loadFailed": "Could not load the package history. Please try again.",
+        "zipRequired": "Choose a file with the ZIP extension.",
+        "emptyFile": "The selected file is empty.",
+        "tooLarge": "The package must not exceed 10 MiB.",
+        "invalidPackage": "The ZIP package is invalid. Check its contents and the allowed file formats.",
+        "uploadConflict": "The package cannot be saved for this product in its current state. Refresh the page and check the product details.",
+        "uploadFailed": "The package save could not be confirmed. Refresh the history and check whether a new version was created before uploading again."
+      }
+    }
+  },
+  "digitalDownloads": {
+    "title": "Downloads",
+    "loading": "Loading files…",
+    "retry": "Try again",
+    "version": "Version",
+    "download": "Download ZIP",
+    "downloadProduct": "Download ZIP: {{name}}",
+    "empty": "This order has no assigned files available for download.",
+    "errors": {
+      "accessDenied": "The files for this order cannot be accessed. Sign in to the account used for the purchase. For a guest purchase, use the same browser with the purchase session still active.",
+      "unavailable": "The files are unavailable. The order must be paid and must not be cancelled.",
+      "loadFailed": "Could not load the file list. Please try again."
+    }
+  },
   "emailVerification": {
     "title": "Verify your email address",
     "description": "Click the button to verify the email address of your Lilimi Studio account.",

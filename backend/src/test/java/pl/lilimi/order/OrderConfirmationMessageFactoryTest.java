@@ -33,6 +33,7 @@ class OrderConfirmationMessageFactoryTest {
       1,
       "pattern-001",
       "Leśny smok",
+      UUID.randomUUID(),
       2900
     );
 
@@ -69,6 +70,7 @@ class OrderConfirmationMessageFactoryTest {
       1,
       "pattern-001",
       "Forest dragon",
+      UUID.randomUUID(),
       2900
     );
 
@@ -152,6 +154,7 @@ class OrderConfirmationMessageFactoryTest {
       1,
       "pattern-001",
       "Name saved at checkout",
+      UUID.randomUUID(),
       3333
     );
 
@@ -178,6 +181,7 @@ class OrderConfirmationMessageFactoryTest {
       1,
       "pattern-001",
       "First line\nSecond line",
+      UUID.randomUUID(),
       2900
     );
 

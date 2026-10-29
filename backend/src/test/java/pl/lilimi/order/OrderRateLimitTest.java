@@ -2,11 +2,14 @@ package pl.lilimi.order;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.api.CreateOrderRequest;
 import pl.lilimi.order.api.OrderContactRequest;
@@ -51,6 +54,11 @@ class OrderRateLimitTest {
     jdbc.update("DELETE FROM order_items");
     jdbc.update("DELETE FROM orders");
     jdbc.update("DELETE FROM request_rate_limits");
+
+    DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
 
     when(clock.instant()).thenReturn(NOW);
   }

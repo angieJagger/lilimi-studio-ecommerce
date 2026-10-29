@@ -33,6 +33,9 @@ public class OrderItem {
   @Column(name = "product_id", length = 64, nullable = false)
   private String productId;
 
+  @Column(name = "digital_package_id", updatable = false)
+  private UUID digitalPackageId;
+
   @Column(name = "product_name", length = 200, nullable = false)
   private String productName;
 
@@ -102,9 +105,16 @@ public class OrderItem {
     int position,
     String productId,
     String productName,
+    UUID digitalPackageId,
     long unitPriceInGrosz
   ) {
-    return new OrderItem(
+    if (digitalPackageId == null) {
+      throw new IllegalArgumentException(
+        "Digital order item requires a package"
+      );
+    }
+
+    var item = new OrderItem(
       order,
       position,
       "digital",
@@ -113,6 +123,10 @@ public class OrderItem {
       1,
       unitPriceInGrosz
     );
+
+    item.digitalPackageId = digitalPackageId;
+
+    return item;
   }
 
   public static OrderItem sweatshirt(
@@ -167,6 +181,10 @@ public class OrderItem {
 
   public String getProductId() {
     return productId;
+  }
+
+  public UUID getDigitalPackageId() {
+    return digitalPackageId;
   }
 
   public String getProductName() {

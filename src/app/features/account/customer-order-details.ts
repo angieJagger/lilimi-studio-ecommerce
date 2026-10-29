@@ -18,10 +18,11 @@ import { CustomerOrderApiService } from './customer-order-api.service';
 import { PaymentApiService } from '../checkout/payment-api.service';
 import { PaymentRedirectService } from '../checkout/payment-redirect.service';
 import type { CustomerOrderDetails as OrderDetails } from './customer-order.model';
+import { DigitalOrderDownloads } from '../digital-downloads/digital-order-downloads';
 
 @Component({
   selector: 'app-customer-order-details',
-  imports: [TranslocoPipe, RouterLink],
+  imports: [TranslocoPipe, RouterLink, DigitalOrderDownloads],
   templateUrl: './customer-order-details.html',
   styleUrl: './customer-order-details.scss',
 })
@@ -83,6 +84,10 @@ export class CustomerOrderDetails {
         this.order.set(order);
         this.isLoading.set(false);
       });
+  }
+
+  protected hasDigitalItems(details: OrderDetails): boolean {
+    return details.items.some((item) => item.kind === 'digital');
   }
 
   protected retry(): void {

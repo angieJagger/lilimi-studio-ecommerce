@@ -483,6 +483,48 @@
       "reloadNotice": "Przed odświeżeniem skopiuj wpisaną cenę, jeśli chcesz ją zachować. Odświeżenie zamknie formularz."
     }
   },
+  "adminDigitalPackages": {
+    "title": "Paczki produktu cyfrowego",
+    "loading": "Ładowanie paczek…",
+    "retry": "Spróbuj ponownie",
+    "refreshHistory": "Odśwież historię paczek",
+    "version": "Wersja",
+    "current": "Aktualna",
+    "filename": "Nazwa pliku",
+    "size": "Rozmiar",
+    "createdAt": "Dodano",
+    "empty": "Ten produkt nie ma jeszcze paczki ZIP.",
+    "uploadLabel": "Nowa paczka ZIP",
+    "uploadHint": "ZIP do 10 MiB z co najmniej jednym niepustym plikiem DST, PES lub JEF. Może zawierać również instrukcje PDF lub TXT. Wysłanie tworzy nową aktualną wersję; poprzednie pozostają w historii.",
+    "upload": "Wyślij paczkę",
+    "uploading": "Wysyłanie…",
+    "uploaded": "Paczka została zapisana jako aktualna wersja.",
+    "errors": {
+      "errors": {
+        "loadFailed": "Nie udało się pobrać historii paczek. Spróbuj ponownie.",
+        "zipRequired": "Wybierz plik z rozszerzeniem ZIP.",
+        "emptyFile": "Wybrany plik jest pusty.",
+        "tooLarge": "Paczka może mieć maksymalnie 10 MiB.",
+        "invalidPackage": "Paczka ZIP jest nieprawidłowa. Sprawdź jej zawartość i dozwolone formaty plików.",
+        "uploadConflict": "Nie można zapisać paczki dla tego produktu w jego obecnym stanie. Odśwież stronę i sprawdź dane produktu.",
+        "uploadFailed": "Nie udało się potwierdzić zapisu paczki. Odśwież historię i sprawdź, czy powstała nowa wersja, zanim wyślesz plik ponownie."
+      }
+    }
+  },
+  "digitalDownloads": {
+    "title": "Pliki do pobrania",
+    "loading": "Ładowanie plików…",
+    "retry": "Spróbuj ponownie",
+    "version": "Wersja",
+    "download": "Pobierz ZIP",
+    "downloadProduct": "Pobierz ZIP: {{name}}",
+    "empty": "To zamówienie nie ma przypisanych plików do pobrania.",
+    "errors": {
+      "accessDenied": "Nie można uzyskać dostępu do plików tego zamówienia. Zaloguj się na konto użyte przy zakupie. Przy zakupie bez konta użyj tej samej przeglądarki z aktywną sesją zakupu.",
+      "unavailable": "Pliki nie są dostępne. Zamówienie musi być opłacone i nie może być anulowane.",
+      "loadFailed": "Nie udało się pobrać listy plików. Spróbuj ponownie."
+    }
+  },
   "emailVerification": {
     "title": "Potwierdź adres e-mail",
     "description": "Kliknij przycisk, aby potwierdzić adres e-mail swojego konta Lilimi Studio.",

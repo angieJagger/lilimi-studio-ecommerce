@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
 import pl.lilimi.auth.persistence.UserAccountRepository;
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
@@ -65,7 +66,7 @@ class AdminOrderControllerTest {
   private UserAccountRepository accounts;
 
   @BeforeEach
-  void ensureAdministratorExists() {
+  void prepareTestData() {
     if (accounts.findByEmail("admin@example.com").isEmpty()) {
       accounts.saveAndFlush(
         new UserAccount(
@@ -75,6 +76,10 @@ class AdminOrderControllerTest {
         )
       );
     }
+    DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
   }
 
   private Order saveOrder(

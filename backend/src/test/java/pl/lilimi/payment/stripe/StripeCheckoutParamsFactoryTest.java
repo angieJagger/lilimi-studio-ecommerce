@@ -36,6 +36,7 @@ class StripeCheckoutParamsFactoryTest {
       1,
       "pattern-001",
       "Leśny smok",
+      UUID.randomUUID(),
       2900
     );
 
@@ -177,7 +178,7 @@ class StripeCheckoutParamsFactoryTest {
     var attempt = attempt(order, 1900, false);
 
     var item = OrderItem.digital(
-      order, 1, "pattern-001", "Leśny smok", 2900
+      order, 1, "pattern-001", "Leśny smok", UUID.randomUUID(), 2900
     );
 
     assertThatThrownBy(() ->
@@ -197,7 +198,7 @@ class StripeCheckoutParamsFactoryTest {
     var attempt = attempt(order, 2900, false);
 
     var item = OrderItem.digital(
-      otherOrder, 1, "pattern-001", "Leśny smok", 2900
+      otherOrder, 1, "pattern-001", "Leśny smok", UUID.randomUUID(), 2900
     );
 
     assertThatThrownBy(() ->
@@ -213,7 +214,7 @@ class StripeCheckoutParamsFactoryTest {
     var attempt = attempt(order, 2900, false);
 
     var item = OrderItem.digital(
-      order, 1, "pattern-001", "Leśny smok", 1900
+      order, 1, "pattern-001", "Leśny smok", UUID.randomUUID(), 1900
     );
 
     assertThatThrownBy(() ->
@@ -231,7 +232,7 @@ class StripeCheckoutParamsFactoryTest {
     var attempt = attempt(order, 2900, true);
 
     var item = OrderItem.digital(
-      order, 1, "pattern-001", "Leśny smok", 2900
+      order, 1, "pattern-001", "Leśny smok", UUID.randomUUID(), 2900
     );
 
     assertThatThrownBy(() ->
@@ -250,7 +251,7 @@ class StripeCheckoutParamsFactoryTest {
     );
 
     var item = OrderItem.digital(
-      order, 1, "pattern-001", "Leśny smok", 2900
+      order, 1, "pattern-001", "Leśny smok", UUID.randomUUID(), 2900
     );
 
     assertThatThrownBy(() ->

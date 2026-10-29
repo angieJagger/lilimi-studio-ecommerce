@@ -2,12 +2,16 @@ package pl.lilimi.order;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.api.CreateOrderRequest;
 import pl.lilimi.order.api.OrderContactRequest;
@@ -35,6 +39,29 @@ class OrderConfirmationQueueTest {
   private PlatformTransactionManager transactionManager;
 
   private final UUID key = UUID.randomUUID();
+  private UUID packageId;
+  private boolean packageCreatedByTest;
+
+  @BeforeEach
+  void prepareDigitalPackage() {
+    var existingPackageIds = jdbcTemplate.queryForList(
+      """
+      SELECT id
+      FROM digital_product_packages
+      WHERE product_id = ?
+        AND current_package = TRUE
+      """,
+      UUID.class,
+      "pattern-001"
+    );
+
+    packageId = DigitalPackageTestData.currentPackageId(
+      jdbcTemplate,
+      "pattern-001"
+    );
+
+    packageCreatedByTest = existingPackageIds.isEmpty();
+  }
 
   @AfterEach
   void cleanUp() {
@@ -65,6 +92,13 @@ class OrderConfirmationQueueTest {
       jdbcTemplate.update(
         "DELETE FROM orders WHERE id = ?",
         orderId
+      );
+    }
+
+    if (packageCreatedByTest && packageId != null) {
+      jdbcTemplate.update(
+        "DELETE FROM digital_product_packages WHERE id = ?",
+        packageId
       );
     }
   }

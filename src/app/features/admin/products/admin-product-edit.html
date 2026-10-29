@@ -189,6 +189,9 @@
         </button>
       </div>
     </form>
+    @if (details.productType === 'digital') {
+    <app-admin-digital-product-packages [productId]="details.id" />
+    }
     @if (details.productType === 'sweatshirt' || details.productType === 'tshirt') {
       <app-admin-product-variants [productId]="details.id" />
     }

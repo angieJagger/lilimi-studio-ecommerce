@@ -128,6 +128,14 @@
     }
   </ul>
 
+  @if (
+  details.payment?.status === 'succeeded'
+  && details.status !== 'cancelled'
+  && hasDigitalItems(details)
+  ) {
+  <app-digital-order-downloads [orderId]="details.id" />
+  }
+
   <h2>{{ 'customerOrderDetails.contact' | transloco }}</h2>
   <p>{{ details.contact.fullName }}</p>
   <p>{{ details.contact.email }}</p>

@@ -23,10 +23,11 @@ import {
   type PaymentStatus,
   type PaymentStatusResult,
 } from './payment-api.service';
+import { DigitalOrderDownloads } from '../digital-downloads/digital-order-downloads';
 
 @Component({
   selector: 'app-payment-result',
-  imports: [RouterLink, TranslocoPipe],
+  imports: [RouterLink, TranslocoPipe, DigitalOrderDownloads],
   template: `
     <section class="checkout" aria-labelledby="payment-result-title">
       <div class="container">
@@ -56,6 +57,12 @@ import {
 
         <p>{{ 'paymentResult.notice' | transloco }}</p>
 
+        @if (status() === 'succeeded') {
+          @if (orderId(); as paidOrderId) {
+            <app-digital-order-downloads [orderId]="paidOrderId" />
+          }
+        }
+
         <div class="checkout__actions">
           <a class="button button--secondary" [routerLink]="['/', language(), 'account/orders']">
             {{ 'paymentResult.orders' | transloco }}
@@ -78,9 +85,24 @@ export class PaymentResult {
   private readonly refreshRequests = new Subject<void>();
 
   protected readonly status = signal<PaymentStatus | null>(null);
+  protected readonly orderId = signal<string | null>(null);
   protected readonly errorKey = signal<string | null>(null);
   protected readonly isChecking = signal(false);
   protected readonly validAttempt = signal(false);
+
+  constructor() {
+    this.route.queryParamMap
+      .pipe(
+        switchMap((params) =>
+          this.refreshRequests.pipe(
+            startWith(undefined),
+            switchMap(() => this.checkStatus(params.get('attempt'))),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
+  }
 
   private readonly queryParams = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
@@ -112,20 +134,6 @@ export class PaymentResult {
     }
   });
 
-  constructor() {
-    this.route.queryParamMap
-      .pipe(
-        switchMap((params) =>
-          this.refreshRequests.pipe(
-            startWith(undefined),
-            switchMap(() => this.checkStatus(params.get('attempt'))),
-          ),
-        ),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
-  }
-
   protected refresh(): void {
     if (!this.isChecking() && !this.terminal()) {
       this.refreshRequests.next();
@@ -133,6 +141,7 @@ export class PaymentResult {
   }
 
   private checkStatus(attemptId: string | null): Observable<PaymentStatusResult> {
+    this.orderId.set(null);
     this.status.set(null);
     this.errorKey.set(null);
 
@@ -153,7 +162,10 @@ export class PaymentResult {
     return timer(0, 3000).pipe(
       exhaustMap(() => this.payments.getStatus(attemptId).pipe(timeout(10000))),
       take(21),
-      tap((result) => this.status.set(result.status)),
+      tap((result) => {
+        this.orderId.set(result.orderId);
+        this.status.set(result.status);
+      }),
       takeWhile((result) => result.status === 'created' || result.status === 'pending', true),
       catchError((error: unknown) => {
         const unavailable =

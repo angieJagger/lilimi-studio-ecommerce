@@ -1,11 +1,16 @@
 package pl.lilimi.order;
 
 import jakarta.persistence.EntityManager;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
+
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.api.*;
 import pl.lilimi.order.application.InvalidOrderDeliveryException;
@@ -15,8 +20,10 @@ import pl.lilimi.order.domain.OrderItem;
 import pl.lilimi.order.domain.OrderStatus;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.DigitalPackageTestData;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,6 +44,19 @@ class OrderServiceTest {
 
   @Autowired
   private EntityManager entityManager;
+
+  @Autowired
+  private JdbcTemplate jdbc;
+
+  private UUID currentPackageId;
+
+  @BeforeEach
+  void prepareDigitalPackage() {
+    currentPackageId = DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
+  }
 
   @Test
   void shouldCreateMixedOrderWithPricesFromCatalog() {
@@ -61,6 +81,8 @@ class OrderServiceTest {
     var savedItems = orderItemRepository
       .findByOrder_IdOrderByPositionAsc(orderId);
 
+    assertThat(savedItems.getFirst().getDigitalPackageId()).isEqualTo(currentPackageId);
+    assertThat(savedItems.get(1).getDigitalPackageId()).isNull();
     assertThat(savedOrder.getStatus()).isEqualTo(OrderStatus.NEW);
     assertThat(savedOrder.getCreatedAt()).isNotNull();
     assertThat(savedOrder.getContact().getFullName())
@@ -137,6 +159,56 @@ class OrderServiceTest {
 
     assertThat(orderRepository.count()).isEqualTo(ordersBefore);
     assertThat(orderItemRepository.count()).isEqualTo(itemsBefore);
+  }
+
+  @Test
+  void shouldKeepPurchasedPackageWhenCurrentPackageChanges() {
+    var request = new CreateOrderRequest(
+      "pl",
+      contact(),
+      new OrderDeliveryRequest.Digital(),
+      List.of(digital())
+    );
+
+    var firstOrder = orderService.createOrder(request);
+
+    entityManager.flush();
+    entityManager.clear();
+
+    jdbc.update(
+      """
+      UPDATE digital_product_packages
+      SET current_package = FALSE
+      WHERE id = ?
+      """,
+      currentPackageId
+    );
+
+    var nextPackageId = DigitalPackageTestData.currentPackageId(
+      jdbc,
+      "pattern-001"
+    );
+
+    var secondOrder = orderService.createOrder(request);
+
+    entityManager.flush();
+    entityManager.clear();
+
+    var firstOrderItems = orderItemRepository
+      .findByOrder_IdOrderByPositionAsc(firstOrder.getId());
+
+    var secondOrderItems = orderItemRepository
+      .findByOrder_IdOrderByPositionAsc(secondOrder.getId());
+
+    assertThat(nextPackageId).isNotEqualTo(currentPackageId);
+
+    assertThat(firstOrderItems)
+      .extracting(OrderItem::getDigitalPackageId)
+      .containsExactly(currentPackageId);
+
+    assertThat(secondOrderItems)
+      .extracting(OrderItem::getDigitalPackageId)
+      .containsExactly(nextPackageId);
   }
 
   private OrderContactRequest contact() {

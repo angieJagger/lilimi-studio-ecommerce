@@ -48,6 +48,7 @@ public class PaymentStatusService {
 
     return new PaymentStatusResult(
       attempt.getId(),
+      attempt.getOrderId(),
       attempt.getStatus().getValue()
     );
   }

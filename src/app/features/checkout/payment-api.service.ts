@@ -13,10 +13,13 @@ export type PaymentStatus =
 
 export interface PaymentStatusResult {
   paymentAttemptId: string;
+  orderId: string;
   status: PaymentStatus;
 }
 
-export interface CheckoutSessionResult extends PaymentStatusResult {
+export interface CheckoutSessionResult {
+  paymentAttemptId: string;
+  status: PaymentStatus;
   checkoutUrl: string | null;
 }
 

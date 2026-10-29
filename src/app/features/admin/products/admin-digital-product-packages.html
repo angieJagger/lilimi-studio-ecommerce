@@ -1,0 +1,108 @@
+<section class="digital-packages" aria-labelledby="digital-packages-title">
+  <h2 id="digital-packages-title">
+    {{ 'adminDigitalPackages.title' | transloco }}
+  </h2>
+
+  <div class="digital-packages__upload">
+    <label for="digital-package-file">
+      {{ 'adminDigitalPackages.uploadLabel' | transloco }}
+    </label>
+
+    <p id="digital-package-hint" class="digital-packages__hint">
+      {{ 'adminDigitalPackages.uploadHint' | transloco }}
+    </p>
+
+    <input #packageFile id="digital-package-file" type="file" accept=".zip" [disabled]="isUploading() || isLoading()"
+      [attr.aria-invalid]="fileErrorKey() ? 'true' : null" [attr.aria-describedby]="
+        fileErrorKey()
+          ? 'digital-package-hint digital-package-file-error'
+          : 'digital-package-hint'
+      " (change)="selectFile($event)" />
+
+    @if (fileErrorKey(); as message) {
+    <p id="digital-package-file-error" class="digital-packages__error" role="alert">
+      {{ message | transloco }}
+    </p>
+    }
+
+    <button class="button button--primary" type="button" [disabled]="
+  !selectedFile() ||
+  isUploading() ||
+  isLoading() ||
+  requiresHistoryRefresh()
+" [attr.aria-busy]="isUploading()" (click)="uploadPackage(packageFile)">
+      {{
+      (isUploading()
+      ? 'adminDigitalPackages.uploading'
+      : 'adminDigitalPackages.upload'
+      ) | transloco
+      }}
+    </button>
+
+    @if (uploadErrorKey(); as message) {
+    <p class="digital-packages__error" role="alert">
+      {{ message | transloco }}
+    </p>
+    }
+
+    @if (requiresHistoryRefresh()) {
+    <button class="button button--secondary" type="button" [disabled]="isLoading() || isUploading()" (click)="retry()">
+      {{ 'adminDigitalPackages.refreshHistory' | transloco }}
+    </button>
+    }
+
+    @if (uploadSucceeded()) {
+    <output class="digital-packages__success">
+      {{ 'adminDigitalPackages.uploaded' | transloco }}
+    </output>
+    }
+  </div>
+
+  @if (isLoading()) {
+  <output>{{ 'adminDigitalPackages.loading' | transloco }}</output>
+  } @else if (errorKey(); as message) {
+  <div class="digital-packages__feedback">
+    <p role="alert">{{ message | transloco }}</p>
+
+    <button class="button button--secondary" type="button" (click)="retry()">
+      {{ 'adminDigitalPackages.retry' | transloco }}
+    </button>
+  </div>
+  } @else {
+  @for (package of packages(); track package.id) {
+  <article class="digital-packages__item">
+    <div class="digital-packages__heading">
+      <h3>
+        {{ 'adminDigitalPackages.version' | transloco }}
+        {{ package.packageVersion }}
+      </h3>
+
+      @if (package.currentPackage) {
+      <span class="digital-packages__current">
+        {{ 'adminDigitalPackages.current' | transloco }}
+      </span>
+      }
+    </div>
+
+    <dl class="digital-packages__metadata">
+      <div>
+        <dt>{{ 'adminDigitalPackages.filename' | transloco }}</dt>
+        <dd>{{ package.originalFilename }}</dd>
+      </div>
+
+      <div>
+        <dt>{{ 'adminDigitalPackages.size' | transloco }}</dt>
+        <dd>{{ package.byteSize / 1024 | number: '1.0-1' }} KiB</dd>
+      </div>
+
+      <div>
+        <dt>{{ 'adminDigitalPackages.createdAt' | transloco }}</dt>
+        <dd>{{ package.createdAt | date: 'yyyy-MM-dd HH:mm' }}</dd>
+      </div>
+    </dl>
+  </article>
+  } @empty {
+  <p>{{ 'adminDigitalPackages.empty' | transloco }}</p>
+  }
+  }
+</section>

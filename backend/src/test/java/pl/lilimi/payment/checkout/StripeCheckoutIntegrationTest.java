@@ -5,9 +5,11 @@ import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.stripe.service.checkout.SessionService;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -18,6 +20,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
+import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
@@ -68,6 +72,8 @@ class StripeCheckoutIntegrationTest {
 
   private UUID orderId;
 
+  private UUID packageId;
+
   @BeforeEach
   void createOrder() {
     var order = orders.saveAndFlush(
@@ -86,12 +92,18 @@ class StripeCheckoutIntegrationTest {
 
     orderId = order.getId();
 
+    packageId = DigitalPackageTestData.createHistoricalPackage(
+      jdbc,
+      "pattern-001"
+    );
+
     items.saveAndFlush(
       OrderItem.digital(
         order,
         1,
         "pattern-001",
         "Saved pattern",
+        packageId,
         2900
       )
     );
@@ -115,6 +127,12 @@ class StripeCheckoutIntegrationTest {
       "DELETE FROM orders WHERE id = ?",
       orderId
     );
+    if (packageId != null) {
+      jdbc.update(
+        "DELETE FROM digital_product_packages WHERE id = ?",
+        packageId
+      );
+    }
   }
 
   @Test

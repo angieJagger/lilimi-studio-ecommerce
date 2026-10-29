@@ -12,6 +12,7 @@ import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderItem;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.catalog.digital.DigitalProductPackageRepository;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -24,17 +25,20 @@ public class OrderService {
   private final OrderDeliveryService deliveryService;
   private final OrderRepository orderRepository;
   private final OrderItemRepository orderItemRepository;
+  private final DigitalProductPackageRepository digitalPackages;
 
   public OrderService(
     OrderPricingService pricingService,
     OrderDeliveryService deliveryService,
     OrderRepository orderRepository,
-    OrderItemRepository orderItemRepository
+    OrderItemRepository orderItemRepository,
+    DigitalProductPackageRepository digitalPackages
   ) {
     this.pricingService = pricingService;
     this.deliveryService = deliveryService;
     this.orderRepository = orderRepository;
     this.orderItemRepository = orderItemRepository;
+    this.digitalPackages = digitalPackages;
   }
 
   @Transactional
@@ -93,6 +97,7 @@ public class OrderService {
             position,
             digital.productId(),
             pricedItem.productName(),
+            currentPackageId(digital.productId()),
             pricedItem.unitPriceInGrosz()
           );
 
@@ -119,6 +124,15 @@ public class OrderService {
     orderItemRepository.saveAll(orderItems);
 
     return order;
+  }
+
+  private UUID currentPackageId(String productId) {
+    return digitalPackages
+      .findByProductIdAndCurrentPackageTrue(productId)
+      .orElseThrow(() ->
+        new OrderProductUnavailableException(productId)
+      )
+      .getId();
   }
 
   private String optionalText(String value) {
