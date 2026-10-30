@@ -35,7 +35,7 @@
   @if (result.totalElements === 0) {
   <p>{{ 'customerOrders.empty' | transloco }}</p>
 
-  <a [routerLink]="['/', transloco.getActiveLang(), 'shop']">
+  <a [routerLink]="['/', transloco.getActiveLang(), 'products']">
     {{ 'customerOrders.browseShop' | transloco }}
   </a>
   } @else {
@@ -75,10 +75,12 @@
         <div>
           <dt>{{ 'orderPayment.title' | transloco }}</dt>
           <dd>
-            {{
-            ('orderPayment.statuses.' + (order.payment?.status ?? 'unknown'))
-            | transloco
-            }}
+            <span class="payment-status" [attr.data-status]="order.payment?.status ?? 'unknown'">
+              {{
+              ('orderPayment.statuses.' + (order.payment?.status ?? 'unknown'))
+              | transloco
+              }}
+            </span>
           </dd>
         </div>
 

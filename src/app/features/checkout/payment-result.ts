@@ -38,7 +38,13 @@ import { DigitalOrderDownloads } from '../digital-downloads/digital-order-downlo
         @if (errorKey(); as error) {
           <p role="alert">{{ error | transloco }}</p>
         } @else {
-          <output>{{ statusKey() | transloco }}</output>
+          <output
+            class="payment-status"
+            [attr.data-status]="status() ?? 'unknown'"
+            aria-live="polite"
+          >
+            {{ statusKey() | transloco }}
+          </output>
         }
 
         @if (cancelled() && !terminal()) {
@@ -64,7 +70,7 @@ import { DigitalOrderDownloads } from '../digital-downloads/digital-order-downlo
         }
 
         <div class="checkout__actions">
-          <a class="button button--secondary" [routerLink]="['/', language(), 'account/orders']">
+          <a class="button button--secondary" [routerLink]="['/', language(), 'account', 'orders']">
             {{ 'paymentResult.orders' | transloco }}
           </a>
 

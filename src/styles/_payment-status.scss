@@ -1,0 +1,21 @@
+.payment-status {
+  font-weight: 700;
+
+  &[data-status='succeeded'] {
+    color: #17643b;
+  }
+
+  &[data-status='unpaid'],
+  &[data-status='failed'],
+  &[data-status='expired'] {
+    color: #9b2638;
+  }
+
+  &[data-status='pending'] {
+    color: #754500;
+  }
+
+  &[data-status='unknown'] {
+    color: var(--text-secondary);
+  }
+}
