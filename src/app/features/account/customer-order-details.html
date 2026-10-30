@@ -52,10 +52,12 @@
     <div>
   <dt>{{ 'orderPayment.title' | transloco }}</dt>
   <dd>
-    {{
+    <span class="payment-status" [attr.data-status]="details.payment?.status ?? 'unknown'">
+      {{
       ('orderPayment.statuses.' + (details.payment?.status ?? 'unknown'))
-        | transloco
-    }}
+      | transloco
+      }}
+    </span>
   </dd>
 </div>
   </dl>

@@ -100,7 +100,7 @@ describe('CustomerOrders', () => {
     expect(element.textContent).toContain('Nie masz jeszcze zamówień złożonych z tego konta.');
     expect(element.querySelector('.customer-orders__list')).toBeNull();
     expect(element.querySelector('.customer-orders__pagination')).toBeNull();
-    expect(element.querySelector('a[href="/pl/shop"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/pl/products"]')).not.toBeNull();
   });
 
   it('should retry after a loading failure', async () => {

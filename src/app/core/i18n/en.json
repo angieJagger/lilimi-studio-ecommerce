@@ -100,8 +100,8 @@
     "lineTotal": "Item total",
     "contact": "Contact details",
     "delivery": "Delivery",
-    "digitalDelivery": "Digital products — no courier delivery. Automatic file downloads are not available yet.",
-    "paymentSummary": "Amount summary",
+    "digitalDelivery": "Digital products — files available to download after payment is confirmed.",
+    "paymentSummary": "summary",
     "subtotal": "Products",
     "deliveryCost": "Delivery cost",
     "errors": {
@@ -900,11 +900,11 @@
     "sessionClosed": "The previous attempt ended or expired. Click again to start a new payment for this order.",
     "stateChanged": "The order or payment state changed. We refreshed the order details.",
     "statuses": {
-      "unpaid": "Payment not started",
+      "unpaid": "Unpaid",
       "pending": "Awaiting confirmation",
-      "succeeded": "Payment confirmed",
-      "failed": "Last attempt unsuccessful",
-      "expired": "Payment session expired",
+      "succeeded": "Confirmed",
+      "failed": "Failed",
+      "expired": "Session expired",
       "unknown": "Status unavailable"
     }
   },

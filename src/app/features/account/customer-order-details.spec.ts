@@ -287,7 +287,10 @@ describe('CustomerOrderDetails', () => {
       },
     });
 
-    expect(element.textContent).toContain('Zapłata potwierdzona');
+    const paymentStatus = element.querySelector<HTMLElement>('.payment-status');
+
+    expect(paymentStatus?.textContent?.trim()).toBe('Potwierdzona');
+    expect(paymentStatus?.dataset['status']).toBe('succeeded');
     expect(paymentButton()).toBeNull();
     expect(payments.resumeCheckout).not.toHaveBeenCalled();
   });

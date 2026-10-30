@@ -100,8 +100,8 @@
     "lineTotal": "Razem za produkt",
     "contact": "Dane kontaktowe",
     "delivery": "Dostawa",
-    "digitalDelivery": "Produkty cyfrowe — bez dostawy kurierskiej. Automatyczne pobieranie plików nie jest jeszcze dostępne.",
-    "paymentSummary": "Podsumowanie kwot",
+    "digitalDelivery": "Produkty cyfrowe — pliki dostępne do pobrania po potwierdzeniu płatności.",
+    "paymentSummary": "Podsumowanie",
     "subtotal": "Produkty",
     "deliveryCost": "Koszt dostawy",
     "errors": {
@@ -902,11 +902,11 @@
     "sessionClosed": "Poprzednia próba zakończyła się lub wygasła. Kliknij ponownie, aby rozpocząć nową płatność dla tego zamówienia.",
     "stateChanged": "Stan zamówienia lub płatności uległ zmianie. Odświeżyliśmy szczegóły zamówienia.",
     "statuses": {
-      "unpaid": "Nie rozpoczęto płatności",
-      "pending": "Oczekuje na potwierdzenie",
-      "succeeded": "Zapłata potwierdzona",
-      "failed": "Ostatnia próba nieudana",
-      "expired": "Sesja płatności wygasła",
+      "unpaid": "Nieopłacona",
+      "pending": "Oczekująca na potwierdzenie",
+      "succeeded": "Potwierdzona",
+      "failed": "Nieudana",
+      "expired": "Sesja wygasła",
       "unknown": "Status niedostępny"
     }
   },
