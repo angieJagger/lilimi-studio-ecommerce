@@ -12,6 +12,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import pl.lilimi.PostgresTestConfiguration;
+import pl.lilimi.DigitalPackageTestData;
+import pl.lilimi.order.domain.OrderItem;
+import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderDelivery;
@@ -61,12 +64,15 @@ class StripeWebhookProcessorIntegrationTest {
   private AdminOrderStatusService orderStatus;
   @Autowired
   private CheckoutExpirationQueue expirationQueue;
+  @Autowired
+  private OrderItemRepository items;
 
   private final List<String> eventIds = new ArrayList<>();
 
   private UUID orderId;
   private UUID attemptId;
   private String sessionId;
+  private UUID packageId;
   private Instant expiresAt;
 
   @BeforeEach
@@ -113,6 +119,17 @@ class StripeWebhookProcessorIntegrationTest {
     }
 
     if (orderId != null) {
+
+      jdbc.update(
+        "DELETE FROM digital_download_emails WHERE order_id = ?",
+        orderId
+      );
+
+      jdbc.update(
+        "DELETE FROM order_items WHERE order_id = ?",
+        orderId
+      );
+
       jdbc.update(
         """
         DELETE FROM checkout_expiration_tasks
@@ -132,6 +149,13 @@ class StripeWebhookProcessorIntegrationTest {
       jdbc.update(
         "DELETE FROM orders WHERE id = ?",
         orderId
+      );
+    }
+
+    if (packageId != null) {
+      jdbc.update(
+        "DELETE FROM digital_product_packages WHERE id = ?",
+        packageId
       );
     }
   }
@@ -399,6 +423,96 @@ class StripeWebhookProcessorIntegrationTest {
       String.class,
       attemptId
     )).isEqualTo("PAYMENT_AFTER_CANCELLATION");
+  }
+
+  @Test
+  void shouldQueueDownloadEmailOnceForRepeatedPaymentEvent()
+    throws Exception {
+
+    addDigitalItemWithPackage();
+
+    var event = event(
+      "checkout.session.completed",
+      "complete",
+      "paid",
+      2900,
+      "pi_test_download_email"
+    );
+
+    processor.process(event);
+    processor.process(event);
+
+    Long count = jdbc.queryForObject(
+      """
+      SELECT COUNT(*)
+      FROM digital_download_emails
+      WHERE order_id = ?
+      """,
+      Long.class,
+      orderId
+    );
+
+    String status = jdbc.queryForObject(
+      """
+      SELECT status
+      FROM digital_download_emails
+      WHERE order_id = ?
+      """,
+      String.class,
+      orderId
+    );
+
+    assertThat(savedAttempt().getStatus())
+      .isEqualTo(PaymentAttemptStatus.SUCCEEDED);
+    assertThat(count).isEqualTo(1L);
+    assertThat(status).isEqualTo("pending");
+  }
+
+  @Test
+  void shouldNotQueueDownloadEmailWithoutAssignedPackage()
+    throws Exception {
+
+    var event = event(
+      "checkout.session.completed",
+      "complete",
+      "paid",
+      2900,
+      "pi_test_without_package"
+    );
+
+    processor.process(event);
+
+    Long count = jdbc.queryForObject(
+      """
+      SELECT COUNT(*)
+      FROM digital_download_emails
+      WHERE order_id = ?
+      """,
+      Long.class,
+      orderId
+    );
+
+    assertThat(savedAttempt().getStatus())
+      .isEqualTo(PaymentAttemptStatus.SUCCEEDED);
+    assertThat(count).isZero();
+  }
+
+  private void addDigitalItemWithPackage() {
+    packageId = DigitalPackageTestData.createHistoricalPackage(
+      jdbc,
+      "pattern-001"
+    );
+
+    var order = orders.findById(orderId).orElseThrow();
+
+    items.saveAndFlush(OrderItem.digital(
+      order,
+      1,
+      "pattern-001",
+      "Leśny smok",
+      packageId,
+      2900
+    ));
   }
 
   private void assertInvalid(Event event) {

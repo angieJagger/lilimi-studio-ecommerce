@@ -522,6 +522,18 @@
       "loadFailed": "Could not load the file list. Please try again."
     }
   },
+  "downloadLink": {
+    "title": "Your downloads",
+    "description": "Digital files assigned to your paid order.",
+    "downloading": "Downloading…",
+    "help": "If you need help, contact:",
+    "errors": {
+      "invalidLink": "This link is invalid, expired or revoked. If you have an account, check the files in your order details. You can also contact Lilimi Studio.",
+      "unavailable": "Downloads are unavailable. The order may have been cancelled or payment has not been confirmed.",
+      "loadFailed": "We could not load your files. Please try again.",
+      "downloadFailed": "We could not download the file. Please try again."
+    }
+    },
   "emailVerification": {
     "title": "Verify your email address",
     "description": "Click the button to verify the email address of your Lilimi Studio account.",

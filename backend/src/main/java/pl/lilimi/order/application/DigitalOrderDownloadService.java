@@ -31,6 +31,7 @@ public class DigitalOrderDownloadService {
   private final PaymentAttemptRepository payments;
   private final DigitalProductPackageRepository packages;
   private final DigitalProductPackageStorage storage;
+  private final DigitalDownloadTokenVerifier tokenVerifier;
 
   public DigitalOrderDownloadService(
     OrderPaymentAccessService access,
@@ -38,7 +39,8 @@ public class DigitalOrderDownloadService {
     OrderItemRepository items,
     PaymentAttemptRepository payments,
     DigitalProductPackageRepository packages,
-    DigitalProductPackageStorage storage
+    DigitalProductPackageStorage storage,
+    DigitalDownloadTokenVerifier tokenVerifier
   ) {
     this.access = access;
     this.orders = orders;
@@ -46,6 +48,7 @@ public class DigitalOrderDownloadService {
     this.payments = payments;
     this.packages = packages;
     this.storage = storage;
+    this.tokenVerifier = tokenVerifier;
   }
 
   public DigitalOrderDownload download(
@@ -56,6 +59,24 @@ public class DigitalOrderDownloadService {
   ) {
     requirePaidOrder(orderId, authentication, session);
 
+    return loadDownload(orderId, itemId);
+  }
+
+  public DigitalOrderDownload downloadWithToken(
+    String rawToken,
+    UUID itemId
+  ) {
+    UUID orderId = tokenVerifier.requireOrderId(rawToken);
+
+    requirePaidOrder(orderId);
+
+    return loadDownload(orderId, itemId);
+  }
+
+  private DigitalOrderDownload loadDownload(
+    UUID orderId,
+    UUID itemId
+  ) {
     var item = items.findByIdAndOrder_Id(itemId, orderId)
       .orElseThrow(DigitalOrderDownloadService::notFound);
 
@@ -98,6 +119,22 @@ public class DigitalOrderDownloadService {
   ) {
     requirePaidOrder(orderId, authentication, session);
 
+    return loadDownloads(orderId);
+  }
+
+  public List<DigitalOrderDownloadResponse> findDownloadsWithToken(
+    String rawToken
+  ) {
+    UUID orderId = tokenVerifier.requireOrderId(rawToken);
+
+    requirePaidOrder(orderId);
+
+    return loadDownloads(orderId);
+  }
+
+  private List<DigitalOrderDownloadResponse> loadDownloads(
+    UUID orderId
+  ) {
     return items.findByOrder_IdOrderByPositionAsc(orderId)
       .stream()
       .filter(item ->
@@ -130,7 +167,10 @@ public class DigitalOrderDownloadService {
     HttpSession session
   ) {
     access.requireAccess(orderId, authentication, session);
+    requirePaidOrder(orderId);
+  }
 
+  private void requirePaidOrder(UUID orderId) {
     var order = orders.findById(orderId)
       .orElseThrow(DigitalOrderDownloadService::notFound);
 

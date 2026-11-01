@@ -36,4 +36,5 @@ public interface OrderRepository
   Optional<Order> findByIdForUpdate(
     @Param("id") UUID id
   );
+
 }
