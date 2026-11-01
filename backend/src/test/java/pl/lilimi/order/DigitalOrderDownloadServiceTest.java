@@ -15,6 +15,7 @@ import pl.lilimi.catalog.digital.DigitalProductPackage;
 import pl.lilimi.catalog.digital.DigitalProductPackageRepository;
 import pl.lilimi.catalog.digital.DigitalProductPackageStorage;
 import pl.lilimi.order.application.DigitalOrderDownloadService;
+import pl.lilimi.order.application.DigitalDownloadTokenVerifier;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderItem;
 import pl.lilimi.order.domain.OrderStatus;
@@ -56,6 +57,9 @@ class DigitalOrderDownloadServiceTest {
 
   @Mock
   private DigitalProductPackageStorage storage;
+
+  @Mock
+  private DigitalDownloadTokenVerifier tokenVerifier;
 
   @InjectMocks
   private DigitalOrderDownloadService service;
@@ -299,6 +303,173 @@ class DigitalOrderDownloadServiceTest {
             .isEqualTo("DIGITAL_DOWNLOAD_UNAVAILABLE");
         }
       );
+  }
+
+  @Test
+  void shouldRejectInvalidTokenBeforeReadingOrder() {
+    String rawToken = "invalid";
+
+    when(tokenVerifier.requireOrderId(rawToken))
+      .thenThrow(new ResponseStatusException(
+        HttpStatus.NOT_FOUND,
+        "DIGITAL_DOWNLOAD_LINK_INVALID"
+      ));
+
+    assertThatThrownBy(() ->
+      service.downloadWithToken(rawToken, ITEM_ID)
+    )
+      .isInstanceOfSatisfying(
+        ResponseStatusException.class,
+        exception ->
+          assertThat(exception.getStatusCode().value())
+            .isEqualTo(404)
+      );
+
+    verifyNoInteractions(
+      access,
+      orders,
+      payments,
+      items,
+      packages,
+      storage
+    );
+  }
+
+  @Test
+  void shouldRejectTokenDownloadWhenOrderIsCancelled() {
+    String rawToken = "a".repeat(43);
+
+    when(tokenVerifier.requireOrderId(rawToken))
+      .thenReturn(ORDER_ID);
+
+    prepareOrder(OrderStatus.CANCELLED);
+
+    assertThatThrownBy(() ->
+      service.downloadWithToken(rawToken, ITEM_ID)
+    )
+      .isInstanceOfSatisfying(
+        ResponseStatusException.class,
+        exception -> {
+          assertThat(exception.getStatusCode().value())
+            .isEqualTo(409);
+          assertThat(exception.getReason())
+            .isEqualTo("ORDER_CANCELLED");
+        }
+      );
+
+    verifyNoInteractions(access, payments, items, packages, storage);
+  }
+
+  @Test
+  void shouldRejectTokenDownloadWhenPaymentIsNotConfirmed() {
+    String rawToken = "a".repeat(43);
+
+    when(tokenVerifier.requireOrderId(rawToken))
+      .thenReturn(ORDER_ID);
+
+    prepareOrder(OrderStatus.NEW);
+
+    when(payments.existsByOrderIdAndStatus(
+      ORDER_ID,
+      PaymentAttemptStatus.SUCCEEDED
+    )).thenReturn(false);
+
+    assertThatThrownBy(() ->
+      service.downloadWithToken(rawToken, ITEM_ID)
+    )
+      .isInstanceOfSatisfying(
+        ResponseStatusException.class,
+        exception -> {
+          assertThat(exception.getStatusCode().value())
+            .isEqualTo(409);
+          assertThat(exception.getReason())
+            .isEqualTo("ORDER_NOT_PAID");
+        }
+      );
+
+    verifyNoInteractions(access, items, packages, storage);
+  }
+
+  @Test
+  void shouldRejectForeignItemWhenDownloadingWithToken() {
+    String rawToken = "a".repeat(43);
+    UUID foreignItemId = UUID.randomUUID();
+
+    when(tokenVerifier.requireOrderId(rawToken))
+      .thenReturn(ORDER_ID);
+
+    prepareOrder(OrderStatus.NEW);
+
+    when(payments.existsByOrderIdAndStatus(
+      ORDER_ID,
+      PaymentAttemptStatus.SUCCEEDED
+    )).thenReturn(true);
+
+    when(items.findByIdAndOrder_Id(foreignItemId, ORDER_ID))
+      .thenReturn(Optional.empty());
+
+    assertThatThrownBy(() ->
+      service.downloadWithToken(rawToken, foreignItemId)
+    )
+      .isInstanceOfSatisfying(
+        ResponseStatusException.class,
+        exception ->
+          assertThat(exception.getStatusCode().value())
+            .isEqualTo(404)
+      );
+
+    verify(items).findByIdAndOrder_Id(foreignItemId, ORDER_ID);
+    verifyNoInteractions(access, packages, storage);
+  }
+
+  @Test
+  void shouldDownloadAssignedPackageWithValidToken() throws Exception {
+    String rawToken = "a".repeat(43);
+
+    when(tokenVerifier.requireOrderId(rawToken))
+      .thenReturn(ORDER_ID);
+
+    prepareOrder(OrderStatus.NEW);
+
+    when(payments.existsByOrderIdAndStatus(
+      ORDER_ID,
+      PaymentAttemptStatus.SUCCEEDED
+    )).thenReturn(true);
+
+    var item = mock(OrderItem.class);
+
+    when(item.getKind()).thenReturn("digital");
+    when(item.getProductId()).thenReturn("pattern-001");
+    when(item.getDigitalPackageId()).thenReturn(PACKAGE_ID);
+
+    when(items.findByIdAndOrder_Id(ITEM_ID, ORDER_ID))
+      .thenReturn(Optional.of(item));
+
+    var digitalPackage = mock(DigitalProductPackage.class);
+
+    when(digitalPackage.getProductId()).thenReturn("pattern-001");
+    when(digitalPackage.getStorageKey()).thenReturn("purchased.zip");
+    when(digitalPackage.getOriginalFilename()).thenReturn("dragon.zip");
+    when(digitalPackage.getByteSize()).thenReturn(3L);
+
+    when(packages.findById(PACKAGE_ID))
+      .thenReturn(Optional.of(digitalPackage));
+
+    var resource = new ByteArrayResource(new byte[] {1, 2, 3});
+
+    when(storage.load("purchased.zip")).thenReturn(resource);
+
+    var result = service.downloadWithToken(rawToken, ITEM_ID);
+
+    assertThat(result.resource()).isSameAs(resource);
+    assertThat(result.filename()).isEqualTo("dragon.zip");
+    assertThat(result.byteSize()).isEqualTo(3);
+
+    verify(tokenVerifier).requireOrderId(rawToken);
+    verifyNoInteractions(access);
+
+    verify(packages, never())
+      .findByProductIdAndCurrentPackageTrue(anyString());
   }
 
   private void prepareOrder(OrderStatus status) {

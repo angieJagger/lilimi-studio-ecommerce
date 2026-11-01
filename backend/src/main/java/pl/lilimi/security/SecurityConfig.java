@@ -56,7 +56,10 @@ public class SecurityConfig {
           "/api/auth/csrf",
           "/api/payments/attempts/*",
           "/api/orders/*/items/*/download",
-          "/api/orders/*/downloads"
+          "/api/orders/*/downloads",
+          "/api/orders/*/downloads",
+          "/api/digital-downloads",
+          "/api/digital-downloads/items/*/download"
         ).permitAll()
         .requestMatchers(
           HttpMethod.POST,

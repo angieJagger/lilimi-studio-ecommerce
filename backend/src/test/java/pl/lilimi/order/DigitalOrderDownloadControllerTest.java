@@ -21,16 +21,19 @@ import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
 import pl.lilimi.auth.persistence.UserAccountRepository;
 import pl.lilimi.catalog.digital.DigitalProductPackageStorage;
+import pl.lilimi.order.application.DigitalDownloadTokenIssuer;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderDelivery;
 import pl.lilimi.order.domain.OrderItem;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.order.persistence.DigitalDownloadTokenRepository;
 import pl.lilimi.payment.access.GuestOrderAccessService;
 import pl.lilimi.payment.domain.PaymentAttemptStatus;
 import pl.lilimi.payment.persistence.PaymentAttemptRepository;
 
+import java.time.Clock;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
@@ -65,6 +68,15 @@ class DigitalOrderDownloadControllerTest {
 
   @Autowired
   private UserAccountRepository accounts;
+
+  @Autowired
+  private DigitalDownloadTokenIssuer tokenIssuer;
+
+  @Autowired
+  private DigitalDownloadTokenRepository downloadTokens;
+
+  @Autowired
+  private Clock clock;
 
   @MockitoBean
   private PaymentAttemptRepository payments;
@@ -318,6 +330,83 @@ class DigitalOrderDownloadControllerTest {
     mvc.perform(get("/api/orders/" + orderId + "/downloads")
         .session(session))
       .andExpect(status().isConflict());
+
+    verifyNoInteractions(storage);
+  }
+
+  @Test
+  void shouldDownloadWithIssuedTokenWithoutSession() throws Exception {
+    when(payments.existsByOrderIdAndStatus(
+      orderId,
+      PaymentAttemptStatus.SUCCEEDED
+    )).thenReturn(true);
+
+    var issued = tokenIssuer.issue(orderId);
+    downloadTokens.flush();
+
+    byte[] bytes = new byte[128];
+
+    when(storage.load(packageId + ".zip"))
+      .thenReturn(new ByteArrayResource(bytes));
+
+    mvc.perform(get(
+        "/api/digital-downloads/items/" + itemId + "/download"
+      )
+        .header("X-Digital-Download-Token", issued.rawToken()))
+      .andExpect(status().isOk())
+      .andExpect(content().contentType("application/zip"))
+      .andExpect(content().bytes(bytes))
+      .andExpect(header().string("Cache-Control", "no-store"));
+  }
+
+  @Test
+  void shouldRejectIssuedTokenAfterRevocation() throws Exception {
+    when(payments.existsByOrderIdAndStatus(
+      orderId,
+      PaymentAttemptStatus.SUCCEEDED
+    )).thenReturn(true);
+
+    var issued = tokenIssuer.issue(orderId);
+
+    var codec = new pl.lilimi.order.application.DigitalDownloadTokenCodec();
+
+    var saved = downloadTokens
+      .findByTokenHash(codec.hash(issued.rawToken()))
+      .orElseThrow();
+
+    saved.revoke(clock.instant());
+    downloadTokens.flush();
+
+    mvc.perform(get(
+        "/api/digital-downloads/items/" + itemId + "/download"
+      )
+        .header("X-Digital-Download-Token", issued.rawToken()))
+      .andExpect(status().isNotFound());
+
+    verifyNoInteractions(storage);
+  }
+
+  @Test
+  void shouldListAssignedPackagesWithIssuedToken() throws Exception {
+    when(payments.existsByOrderIdAndStatus(
+      orderId,
+      PaymentAttemptStatus.SUCCEEDED
+    )).thenReturn(true);
+
+    var issued = tokenIssuer.issue(orderId);
+    downloadTokens.flush();
+
+    mvc.perform(get("/api/digital-downloads")
+        .header("X-Digital-Download-Token", issued.rawToken()))
+      .andExpect(status().isOk())
+      .andExpect(header().string("Cache-Control", "no-store"))
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(jsonPath("$[0].itemId").value(itemId.toString()))
+      .andExpect(jsonPath("$[0].productName").value("Leśny smok"))
+      .andExpect(jsonPath("$[0].filename").value("test-package.zip"))
+      .andExpect(jsonPath("$[0].byteSize").value(128))
+      .andExpect(jsonPath("$[0].storageKey").doesNotExist())
+      .andExpect(jsonPath("$[0].rawToken").doesNotExist());
 
     verifyNoInteractions(storage);
   }

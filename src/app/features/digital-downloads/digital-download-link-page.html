@@ -1,0 +1,68 @@
+<section class="download-link container" aria-labelledby="download-link-title">
+  <h1 id="download-link-title">
+    {{ 'downloadLink.title' | transloco }}
+  </h1>
+
+  <p>{{ 'downloadLink.description' | transloco }}</p>
+
+  @if (isLoading()) {
+  <output aria-live="polite">
+    {{ 'digitalDownloads.loading' | transloco }}
+  </output>
+  } @else if (errorKey(); as error) {
+  <div class="download-link__message" role="alert">
+    <p>{{ error | transloco }}</p>
+
+    @if (error === 'downloadLink.errors.loadFailed') {
+    <button class="button button--secondary" type="button" (click)="retry()">
+      {{ 'digitalDownloads.retry' | transloco }}
+    </button>
+    }
+  </div>
+  } @else {
+  <ul class="download-link__files">
+    @for (file of files(); track file.itemId) {
+    <li class="download-link__file">
+      <div class="download-link__description">
+        <h2>{{ file.productName }}</h2>
+
+        <p>{{ file.filename }}</p>
+
+        <p class="download-link__metadata">
+          {{ 'digitalDownloads.version' | transloco }}
+          {{ file.packageVersion }}
+          ·
+          {{ file.byteSize / 1024 | number: '1.0-1' }} KiB
+        </p>
+      </div>
+
+      <button class="button button--primary" type="button" [disabled]="downloadingItemId() !== null"
+        [attr.aria-busy]="downloadingItemId() === file.itemId" [attr.aria-label]="
+                'digitalDownloads.downloadProduct'
+                  | transloco: { name: file.productName }
+              " (click)="download(file)">
+        {{
+        (downloadingItemId() === file.itemId
+        ? 'downloadLink.downloading'
+        : 'digitalDownloads.download'
+        ) | transloco
+        }}
+      </button>
+    </li>
+    } @empty {
+    <li>{{ 'digitalDownloads.empty' | transloco }}</li>
+    }
+  </ul>
+  }
+
+  @if (downloadErrorKey(); as error) {
+  <p role="alert">{{ error | transloco }}</p>
+  }
+
+  <p class="download-link__help">
+    {{ 'downloadLink.help' | transloco }}
+    <a href="mailto:contact@lilimistudio.com">
+      contact@lilimistudio.com
+    </a>
+  </p>
+</section>

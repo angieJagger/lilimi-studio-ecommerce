@@ -525,6 +525,18 @@
       "loadFailed": "Nie udało się pobrać listy plików. Spróbuj ponownie."
     }
   },
+  "downloadLink": {
+    "title": "Twoje pliki do pobrania",
+    "description": "Pliki cyfrowe przypisane do opłaconego zamówienia.",
+    "downloading": "Pobieranie…",
+    "help": "Jeśli potrzebujesz pomocy, napisz na:",
+    "errors": {
+      "invalidLink": "Link jest nieprawidłowy, wygasł lub został unieważniony. Jeśli masz konto, sprawdź pliki w szczegółach zamówienia. Możesz też skontaktować się z Lilimi Studio.",
+      "unavailable": "Pobieranie jest niedostępne. Zamówienie mogło zostać anulowane lub płatność nie jest potwierdzona.",
+      "loadFailed": "Nie udało się wczytać listy plików. Spróbuj ponownie.",
+      "downloadFailed": "Nie udało się pobrać pliku. Spróbuj ponownie."
+    }
+  },
   "emailVerification": {
     "title": "Potwierdź adres e-mail",
     "description": "Kliknij przycisk, aby potwierdzić adres e-mail swojego konta Lilimi Studio.",

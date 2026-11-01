@@ -15,4 +15,9 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, UUID> {
     UUID itemId,
     UUID orderId
   );
+
+  boolean existsByOrder_IdAndKindAndDigitalPackageIdIsNotNull(
+    UUID orderId,
+    String kind
+  );
 }

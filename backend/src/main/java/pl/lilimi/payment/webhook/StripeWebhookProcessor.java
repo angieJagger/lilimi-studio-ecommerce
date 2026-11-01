@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.order.persistence.DigitalDownloadEmailRepository;
+import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.domain.OrderStatus;
 import pl.lilimi.payment.domain.PaymentAttempt;
 import pl.lilimi.payment.domain.PaymentAttemptStatus;
@@ -32,17 +34,23 @@ public class StripeWebhookProcessor {
   private final PaymentAttemptRepository attempts;
   private final StripeWebhookEventRepository events;
   private final CheckoutExpirationQueue expirationQueue;
+  private final DigitalDownloadEmailRepository downloadEmails;
+  private final OrderItemRepository items;
 
   public StripeWebhookProcessor(
     OrderRepository orders,
     PaymentAttemptRepository attempts,
     StripeWebhookEventRepository events,
-    CheckoutExpirationQueue expirationQueue
+    CheckoutExpirationQueue expirationQueue,
+    DigitalDownloadEmailRepository downloadEmails,
+    OrderItemRepository items
   ) {
     this.orders = orders;
     this.attempts = attempts;
     this.events = events;
     this.expirationQueue = expirationQueue;
+    this.downloadEmails = downloadEmails;
+    this.items = items;
   }
 
   @Transactional
@@ -134,6 +142,17 @@ public class StripeWebhookProcessor {
     }
 
     attempts.saveAndFlush(attempt);
+
+    if (
+      attempt.getStatus() == PaymentAttemptStatus.SUCCEEDED
+        && order.getStatus() != OrderStatus.CANCELLED
+        && items.existsByOrder_IdAndKindAndDigitalPackageIdIsNotNull(
+        orderId,
+        "digital"
+      )
+    ) {
+      downloadEmails.enqueue(orderId);
+    }
 
     if (
       order.getStatus() == OrderStatus.CANCELLED
