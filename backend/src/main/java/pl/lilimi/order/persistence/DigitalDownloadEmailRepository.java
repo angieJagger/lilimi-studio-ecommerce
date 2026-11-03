@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +32,55 @@ public class DigitalDownloadEmailRepository {
         """,
       orderId
     );
+  }
+
+  public boolean enqueueAgain(
+    UUID orderId,
+    Instant now,
+    Duration cooldown
+  ) {
+    Objects.requireNonNull(orderId);
+    Objects.requireNonNull(now);
+    Objects.requireNonNull(cooldown);
+
+    if (cooldown.isZero() || cooldown.isNegative()) {
+      throw new IllegalArgumentException(
+        "Download email cooldown must be positive"
+      );
+    }
+
+    int updated = jdbc.update("""
+      INSERT INTO digital_download_emails (
+          order_id,
+          created_at,
+          next_attempt_at,
+          last_requested_at
+      )
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT (order_id) DO UPDATE
+      SET status = 'pending',
+          attempts = 0,
+          next_attempt_at = EXCLUDED.next_attempt_at,
+          last_requested_at = EXCLUDED.last_requested_at,
+          sent_at = NULL,
+          last_error_code = NULL
+      WHERE digital_download_emails.status <> 'pending'
+        AND GREATEST(
+          digital_download_emails.last_requested_at,
+          COALESCE(
+            digital_download_emails.sent_at,
+            digital_download_emails.last_requested_at
+          )
+        ) <= ?
+      """,
+      orderId,
+      Timestamp.from(now),
+      Timestamp.from(now),
+      Timestamp.from(now),
+      Timestamp.from(now.minus(cooldown))
+    );
+
+    return updated == 1;
   }
 
   public Optional<PendingEmail> lockNext(Instant now) {

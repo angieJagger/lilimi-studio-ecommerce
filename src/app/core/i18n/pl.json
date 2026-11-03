@@ -537,6 +537,26 @@
       "downloadFailed": "Nie udało się pobrać pliku. Spróbuj ponownie."
     }
   },
+  "resendDownloadLink": {
+    "title": "Wyślij nowy link do plików",
+    "description": "Podaj numer zamówienia i adres e-mail użyty przy zakupie.",
+    "orderId": "Numer zamówienia",
+    "orderHint": "Znajdziesz go w wiadomości potwierdzającej zamówienie.",
+    "email": "E-mail podany przy zakupie",
+    "submit": "Wyślij nowy link",
+    "sending": "Wysyłanie…",
+    "confirmation": "Jeśli dane pasują do opłaconego zamówienia z plikami cyfrowymi, wyślemy wiadomość z linkiem. Jeśli wiadomość już oczekuje na wysłanie lub ostatnią wysłano niedawno, kolejne zlecenie nie zostanie dodane.",
+    "checkSpam": "Sprawdź również folder spam. Nowy link będzie ważny przez 7 dni. Wcześniejsze linki zachowują swój termin ważności.",
+    "accountOrders": "Sprawdź zamówienia na swoim koncie",
+    "errors": {
+      "orderId": "Podaj prawidłowy numer zamówienia.",
+      "email": "Podaj prawidłowy adres e-mail.",
+      "rateLimited": "Zbyt wiele prób. Odczekaj kilka minut i spróbuj ponownie.",
+      "invalidData": "Sprawdź numer zamówienia i adres e-mail.",
+      "session": "Odśwież stronę i spróbuj ponownie.",
+      "failed": "Nie udało się zlecić wysyłki. Spróbuj ponownie później."
+    }
+  },
   "emailVerification": {
     "title": "Potwierdź adres e-mail",
     "description": "Kliknij przycisk, aby potwierdzić adres e-mail swojego konta Lilimi Studio.",

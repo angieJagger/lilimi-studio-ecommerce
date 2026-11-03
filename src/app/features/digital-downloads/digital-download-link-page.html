@@ -59,6 +59,17 @@
   <p role="alert">{{ error | transloco }}</p>
   }
 
+  <p>
+    <a [routerLink]="[
+        '/',
+        transloco.getActiveLang(),
+        'downloads',
+        'resend'
+      ]">
+      {{ 'resendDownloadLink.title' | transloco }}
+    </a>
+  </p>
+
   <p class="download-link__help">
     {{ 'downloadLink.help' | transloco }}
     <a href="mailto:contact@lilimistudio.com">

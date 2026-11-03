@@ -116,4 +116,44 @@ class PublicFormRateLimiterTest {
     assertThat(limiter.reserveRegistration(SOURCE))
       .isZero();
   }
+
+  @Test
+  void shouldAllowFiveDownloadLinkRequestsAndRejectSixth() {
+    for (int attempt = 0; attempt < 5; attempt++) {
+      assertThat(limiter.reserveDownloadLink(SOURCE)).isZero();
+    }
+
+    assertThat(limiter.reserveDownloadLink(SOURCE))
+      .isEqualTo(900);
+  }
+
+  @Test
+  void shouldRestoreDownloadLinkBudgetAfterFifteenMinutes() {
+    for (int attempt = 0; attempt < 5; attempt++) {
+      limiter.reserveDownloadLink(SOURCE);
+    }
+
+    when(clock.instant()).thenReturn(NOW.plusSeconds(899));
+
+    assertThat(limiter.reserveDownloadLink(SOURCE))
+      .isEqualTo(1);
+
+    when(clock.instant()).thenReturn(NOW.plusSeconds(900));
+
+    assertThat(limiter.reserveDownloadLink(SOURCE)).isZero();
+  }
+
+  @Test
+  void shouldKeepDownloadLinkBudgetSeparateFromOtherForms() {
+    for (int attempt = 0; attempt < 5; attempt++) {
+      limiter.reserveDownloadLink(SOURCE);
+    }
+
+    assertThat(limiter.reserveDownloadLink(SOURCE)).isPositive();
+    assertThat(limiter.reserveInquiry(SOURCE)).isZero();
+    assertThat(limiter.reserveRegistration(SOURCE)).isZero();
+
+    assertThat(limiter.reserveDownloadLink("203.0.113.20"))
+      .isZero();
+  }
 }

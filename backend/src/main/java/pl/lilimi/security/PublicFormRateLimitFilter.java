@@ -30,6 +30,12 @@ public class PublicFormRateLimitFilter
       "/api/auth/register"
     );
 
+  private final PathPatternRequestMatcher downloadLink =
+    PathPatternRequestMatcher.withDefaults().matcher(
+      HttpMethod.POST,
+      "/api/digital-downloads/resend"
+    );
+
   public PublicFormRateLimitFilter(
     PublicFormRateLimiter limiter
   ) {
@@ -41,7 +47,8 @@ public class PublicFormRateLimitFilter
     HttpServletRequest request
   ) {
     return !inquiry.matches(request)
-      && !registration.matches(request);
+      && !registration.matches(request)
+      && !downloadLink.matches(request);
   }
 
   @Override
@@ -55,9 +62,13 @@ public class PublicFormRateLimitFilter
     try {
       String source = request.getRemoteAddr();
 
-      retryAfter = inquiry.matches(request)
-        ? limiter.reserveInquiry(source)
-        : limiter.reserveRegistration(source);
+      if (inquiry.matches(request)) {
+        retryAfter = limiter.reserveInquiry(source);
+      } else if (registration.matches(request)) {
+        retryAfter = limiter.reserveRegistration(source);
+      } else {
+        retryAfter = limiter.reserveDownloadLink(source);
+      }
     } catch (DataAccessException exception) {
       logger.error("Public form rate limit storage is unavailable");
 

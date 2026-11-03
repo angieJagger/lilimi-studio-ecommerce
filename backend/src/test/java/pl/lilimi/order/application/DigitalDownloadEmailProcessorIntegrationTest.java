@@ -68,6 +68,9 @@ class DigitalDownloadEmailProcessorIntegrationTest {
   @Autowired
   private JdbcTemplate jdbc;
 
+  @Autowired
+  private ResendDigitalDownloadLinkService resendService;
+
   @MockitoBean
   private DigitalDownloadMailService mailService;
 
@@ -263,5 +266,64 @@ class DigitalDownloadEmailProcessorIntegrationTest {
     assertThat(((Number) sentAttempt.get("attempts")).intValue())
       .isEqualTo(2);
     assertThat(sentAttempt.get("last_error_code")).isNull();
+  }
+
+  @Test
+  void shouldResendAfterCooldownAndKeepPreviousTokenValid() {
+    assertThat(processor.processNext()).isTrue();
+
+    // Too early: no additional email should be queued.
+    resendService.request(orderId, "customer@example.com");
+
+    assertThat(processor.processNext()).isFalse();
+
+    when(clock.instant()).thenReturn(now.plusSeconds(301));
+
+    resendService.request(orderId, "customer@example.com");
+
+    assertThat(processor.processNext()).isTrue();
+
+    var messages = ArgumentCaptor.forClass(
+      DigitalDownloadEmailMessage.class
+    );
+
+    verify(mailService, times(2)).send(messages.capture());
+
+    var pattern = Pattern.compile(
+      "https://lilimistudio\\.com/pl/downloads#token=([A-Za-z0-9_-]{43})"
+    );
+
+    var firstLink = pattern.matcher(
+      messages.getAllValues().get(0).text()
+    );
+    var secondLink = pattern.matcher(
+      messages.getAllValues().get(1).text()
+    );
+
+    assertThat(firstLink.find()).isTrue();
+    assertThat(secondLink.find()).isTrue();
+
+    String firstToken = firstLink.group(1);
+    String secondToken = secondLink.group(1);
+
+    assertThat(secondToken).isNotEqualTo(firstToken);
+
+    assertThat(tokenVerifier.requireOrderId(firstToken))
+      .isEqualTo(orderId);
+
+    assertThat(tokenVerifier.requireOrderId(secondToken))
+      .isEqualTo(orderId);
+
+    Long tokenCount = jdbc.queryForObject(
+      """
+      SELECT COUNT(*)
+      FROM digital_download_tokens
+      WHERE order_id = ?
+      """,
+      Long.class,
+      orderId
+    );
+
+    assertThat(tokenCount).isEqualTo(2L);
   }
 }

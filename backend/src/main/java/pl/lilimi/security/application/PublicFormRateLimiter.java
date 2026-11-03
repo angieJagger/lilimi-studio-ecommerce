@@ -18,8 +18,22 @@ public class PublicFormRateLimiter {
   private static final Duration ORDER_WINDOW =
     Duration.ofMinutes(15);
 
+  private static final int DOWNLOAD_LINK_ATTEMPTS = 5;
+
+  private static final Duration DOWNLOAD_LINK_WINDOW =
+    Duration.ofMinutes(15);
+
   public PublicFormRateLimiter(RequestRateLimiter limiter) {
     this.limiter = limiter;
+  }
+
+  public long reserveDownloadLink(String source) {
+    return limiter.reserve(
+      "download-link-source",
+      source,
+      DOWNLOAD_LINK_ATTEMPTS,
+      DOWNLOAD_LINK_WINDOW
+    );
   }
 
   public long reserveInquiry(String source) {

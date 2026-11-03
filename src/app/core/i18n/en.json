@@ -533,7 +533,27 @@
       "loadFailed": "We could not load your files. Please try again.",
       "downloadFailed": "We could not download the file. Please try again."
     }
-    },
+  },
+  "resendDownloadLink": {
+    "title": "Request a new download link",
+    "description": "Enter your order reference and the email address used at checkout.",
+    "orderId": "Order reference",
+    "orderHint": "You can find it in your order confirmation email.",
+    "email": "Email used at checkout",
+    "submit": "Send a new link",
+    "sending": "Sending…",
+    "confirmation": "If the details match a paid order containing digital files, we will email a download link. If an email is already queued or one was sent recently, no additional request will be queued.",
+    "checkSpam": "Please also check your spam folder. The new link will be valid for 7 days. Earlier links keep their original expiry dates.",
+    "accountOrders": "Check orders in your account",
+    "errors": {
+      "orderId": "Enter a valid order reference.",
+      "email": "Enter a valid email address.",
+      "rateLimited": "Too many attempts. Please wait a few minutes and try again.",
+      "invalidData": "Check your order reference and email address.",
+      "session": "Refresh the page and try again.",
+      "failed": "We could not request the email. Please try again later."
+    }
+  },
   "emailVerification": {
     "title": "Verify your email address",
     "description": "Click the button to verify the email address of your Lilimi Studio account.",
