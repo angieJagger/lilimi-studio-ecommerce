@@ -12,7 +12,7 @@ Angular 22 · Java 21 · Spring Boot 4 · PostgreSQL 17
 
 This guide describes the current source checkout. Features on an unmerged branch may not yet be available on the public demo. Configuration examples contain placeholders, never deployment secrets.
 
-> **Demo application under active development.** Orders and project inquiries are stored in the database. The deployed demo uses Brevo for account verification, password reset and order confirmation emails; the local development profile uses Mailpit. Stripe Checkout is implemented and tested in a sandbox; payments are disabled by default and real payments are not supported by the current configuration. Order fulfilment and digital file delivery are not implemented. Use fictional delivery details, an email address you control and Stripe test payment details only.
+> **Demo application under active development.** Orders and project inquiries are stored in the database. The deployed demo uses Brevo for account and order emails, including digital download links; local development uses Mailpit. Stripe sandbox payments and digital ZIP delivery are enabled on the deployed demo. Payments and download-email scheduling remain opt-in in application configuration. Real payments and automated physical fulfilment are not supported. Use fictional delivery details, an email address you control and Stripe test payment details only.
 
 ![Lilimi Studio homepage](screenshots/home-desktop.png)
 
@@ -94,7 +94,20 @@ The integration currently accepts sandbox API keys and test-mode events only. Pa
 
 Manual sandbox checks cover guest payments, signed-in customer payments with delivery, returning without payment, a declined card followed by a successful retry in the same Checkout session, and 3D Secure authentication. Additional checks cover automatic session expiration after administrator cancellation and rejection of cancellation for a paid order.
 
-Remaining work includes guest payment recovery flows, operational recovery and reconciliation, refunds, and preparation for real payments. Automatic fulfilment and digital file delivery remain outside the current implementation.
+Remaining work includes further guest payment recovery flows, operational recovery and reconciliation, refunds, physical fulfilment and preparation for real payments. Digital ZIP delivery after confirmed payment is implemented.
+
+### Digital packages and download links
+
+- Administrators upload private ZIP packages and view their version history. Digital checkout requires an assigned package; each order item retains the purchased version.
+- Paid, non-cancelled orders expose downloads on the payment result page and in customer order details. Mixed orders also support digital downloads.
+- Payment webhooks enqueue download emails transactionally, with one automatic queue entry per order. Workers retry SMTP delivery up to five times. SMTP and database commits are not atomic; duplicate delivery remains possible after a failure.
+- Email links work without authentication or the original guest session. Tokens are generated from 32 random bytes, stored as SHA-256 hashes and valid for seven days by default.
+- Links carry the token in a URL fragment. The browser supplies it to list/download requests in the `X-Digital-Download-Token` header. API responses use `Cache-Control: no-store`.
+- Every download rechecks token or session access, payment confirmation, cancellation and the association between the order item and assigned package.
+- The resend form requires the order reference and checkout email and returns a generic acknowledgement. A five-minute per-order cooldown and five requests per source address per 15 minutes limit repeated requests. Pending SMTP retries are not reset.
+- Resending issues a new token during email processing; previous links keep their original expiry dates.
+
+Download-email scheduling is enabled with `DIGITAL_DOWNLOAD_EMAILS_ENABLED=true`. The default token validity is `DIGITAL_DOWNLOAD_TOKEN_VALIDITY=P7D`; the resend cooldown is configurable through `lilimi.digital-downloads.resend-cooldown` (default `PT5M`). The public base URL must point to the frontend. The cloud webhook signing secret and the local Stripe CLI signing secret are separate values.
 
 ### Project inquiries
 
@@ -199,7 +212,7 @@ The interface supports mobile browsing, product configuration, checkout, and adm
 - [UI designs — Figma (Polish)](https://www.figma.com/design/sIEFBWbYgUeox8HFAzdfSK/Lilimi-Studio---UX-UI-Design?node-id=1-2&t=JX1Vs5xUUwrYHqwn-1)
 - [Sitemap and user flows — FigJam (Polish)](https://www.figma.com/board/cihOaxBQda1CJVEy0FxpWV/Lilimi-Studio---Sitemap---User-Flows?node-id=0-1&t=cGEjnJFJ3WfLNDon-1)
 
-These files document the initial concept and planned journeys. Some designs and screenshots reflect earlier stages of the application.
+These design files document the initial concept and planned journeys and may reflect earlier stages. The application screenshots are captured from the deployed version.
 
 ## Engineering decisions
 
@@ -487,6 +500,13 @@ docker compose down
 | POST | `/api/orders/{orderId}/payment-session/resume` | Resume an active sandbox payment or prepare a new attempt after a failed or expired attempt |
 | GET | `/api/payments/attempts/{attemptId}` | Read payment status after checking access to the associated order |
 | POST | `/api/payments/stripe/webhook` | Receive and verify Stripe payment events |
+| GET | `/api/orders/{orderId}/downloads` | List assigned files after checking session access and payment |
+| GET | `/api/orders/{orderId}/items/{itemId}/download` | Download an assigned package after checking session access and payment |
+| GET | `/api/digital-downloads` | List files using the download-token header |
+| GET | `/api/digital-downloads/items/{itemId}/download` | Download a file using the download-token header |
+| POST | `/api/digital-downloads/resend` | Request another download email; requires CSRF and is rate-limited |
+| GET | `/api/admin/products/{productId}/digital-packages` | Administrator package version history |
+| POST | `/api/admin/products/{productId}/digital-packages` | Upload a new private ZIP package version |
 | POST | `/api/project-inquiries` | Submit a project inquiry |
 | GET | `/api/admin/orders` | Paginated order list with optional view, status, creation date and search filters |
 | GET | `/api/admin/orders/{id}` | Order details |
@@ -604,7 +624,7 @@ Uploads support JPEG, PNG and WebP, with a 10 MiB limit per file, a maximum dime
 
 Public product responses include an `images` array with the primary image first, localized alternative text, dimensions and the product version. Catalog images are loaded in a batch, rather than one database query per product. The home page, catalog and related-product cards show only the primary image. Product details show the full gallery with selectable thumbnail buttons. Browser-facing image URLs use `PUBLIC_MEDIA_BASE_URL` (default `/api`), independently of the backend origin used for SSR requests. Their version query changes after product edits; ETags and mandatory cache revalidation prevent stale images and ensure hidden or unavailable products return `404`, including on conditional requests. Missing images retain a placeholder. The public endpoint does not expose storage keys or filesystem paths.
 
-The deployment media volume and media backup remain separate integration steps. Existing administrator image endpoints remain available, but the editor uses the unified save endpoint.
+The deployed application persists product images and private digital packages in the media volume. Backup and recovery procedures must include both the database and media files. Existing administrator image endpoints remain available, but the editor uses the unified save endpoint.
 
 ## Verification
 
@@ -657,12 +677,12 @@ Recovery procedures are documented in [deploy/RECOVERY.md](../deploy/RECOVERY.md
 
 ## Next milestones
 
-- Configure persistent product media storage and media backups for deployment.
+- Automate and monitor media backups, including private digital packages.
 - Extend guest payment recovery, reconciliation and operational recovery.
 - Prepare real payment configuration and refund handling.
-- Implement controlled delivery of purchased digital files and order fulfilment.
+- Complete physical order fulfilment workflows.
 - Add order status notification emails.
 - Store deployment backups outside the application server.
 - Update remaining demo copy, visual assets, and portfolio work.
 
-The application demonstrates customer, shop and administrator workflows, including locally verified Stripe sandbox payments. Real payments, automatic fulfilment and digital file delivery are not available.
+The application demonstrates customer, shop and administrator workflows, including deployed Stripe sandbox payments and email-based digital downloads. Real payments and automated physical fulfilment remain outside the current implementation.

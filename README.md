@@ -8,17 +8,20 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 
 ![Lilimi Studio homepage](docs/screenshots/home-desktop.png)
 
-> Demo application under active development. Stripe payments are tested in a sandbox and disabled on the public demo. Real payments, automatic fulfilment and digital file delivery are not available.
+> Demo application under active development. Stripe sandbox payments and digital ZIP delivery are available on the public demo. No real money is charged. Physical order fulfilment and refunds are not automated. Use Stripe test payment details and an email address you control.
 
 ## Main features
 
-- Responsive Polish and English studio website with a graphite interface, service pages and project inquiry forms.
+- Responsive Polish and English studio website with service pages and project inquiry forms.
 - API-backed catalogue, garment configuration and a persistent cart supporting digital and physical products.
 - Server-priced checkout with saved order snapshots and protection against duplicate submissions.
 - Customer accounts with email verification, password recovery, saved profiles and order history.
 - Stripe sandbox integration with hosted Checkout, payment resumption, verified webhooks and cancellation handling.
 - Administrator tools for orders, inquiries, product translations, visibility, prices and garment variants.
 - Product image galleries with uploads, replacement, primary image selection and persistent filesystem storage.
+- Private, versioned digital ZIP packages; each purchased digital item retains its assigned package version.
+- Downloads after confirmed payment, from the payment result page, customer order details or an emailed link without signing in.
+- Download links expire after seven days. Resend requests use CSRF protection, per-source rate limits and a per-order cooldown; earlier links keep their original expiry dates.
 - Order and inquiry work queues with filters, search, archive views, per-administrator read tracking and URL-preserved navigation.
 
 ## Technology
@@ -36,9 +39,21 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 - **The server owns pricing.** Orders retain snapshots of purchased products, configurations and prices.
 - **Retries must not duplicate operations.** Order submission and Stripe session creation use idempotency keys.
 - **Payment confirmation comes from verified webhooks.** Browser redirects cannot mark an order as paid; webhook deduplication and payment updates share a transaction.
-- **External calls stay outside database transactions.** Email and payment session expiration use persisted queues with bounded retries.
+- **Email delivery can be retried.** Payment confirmation and the download-email queue entry commit together. Workers process persisted queue entries with bounded retries. SMTP delivery is not atomic with the database commit, so a failure can result in a duplicate email.
+- **Download access is checked on every request.** Session ownership or an expiring token is required, together with confirmed payment, a non-cancelled order and an item belonging to that order. Raw download tokens are not stored in the token table.
+- **A product update does not replace a purchased file.** Downloads use the package version pinned to the order item, rather than the latest upload.
 - **Tests use PostgreSQL.** Integration tests exercise migrations, constraints and concurrency against Testcontainers databases.
 - **Deployments use verified commits.** CI runs tests, dependency audits and image scans before publishing images tagged with the full commit SHA.
+
+## Digital purchase flow
+
+1. Checkout calculates prices on the server and snapshots the purchased items and digital package versions.
+2. The buyer completes a Stripe sandbox Checkout session.
+3. A verified webhook confirms payment and queues the download email in the same database transaction.
+4. A worker issues a seven-day token and sends a Polish or English email through the configured SMTP provider.
+5. The email link opens a download page that works without the original checkout session. The browser passes the token to the API in a header.
+
+A resend form accepts the order reference and checkout email, returning the same acknowledgement whether or not the details match. The default cooldown is five minutes per order, with five requests per source address per 15 minutes. Existing links remain valid until their original expiry.
 
 ## Run locally
 
@@ -66,7 +81,9 @@ Backend, from `backend`, with Docker running:
 
 ## Design and implementation
 
-The project covers both interface design and implementation. Initial designs and user flows are available in the technical guide; some designs and screenshots reflect earlier development stages.
+The project covers both interface design and implementation. README screenshots are captured from the deployed application; the initial Figma designs and user flows may reflect earlier development stages.
+
+[Mobile homepage](docs/screenshots/home-mobile.png) · [Product configurator](docs/screenshots/configurator-desktop.png) · [Cart](docs/screenshots/cart-desktop.png)
 
 - [Code tour](docs/PROJECT_GUIDE.md#code-tour)
 - [Architecture](docs/PROJECT_GUIDE.md#architecture)
@@ -76,8 +93,9 @@ The project covers both interface design and implementation. Initial designs and
 ## Next steps
 
 - Optimize catalogue image loading and introduce appropriately sized thumbnails.
-- Refine interface designs and update screenshots after deployment.
+- Refine interface designs and replace remaining sample portfolio content.
 - Further payment recovery, refunds and preparation for real payments.
-- Controlled digital file delivery, fulfilment notifications and automated off-host backups.
+- Physical fulfilment workflows, order status notifications and automated off-host backups.
+- Assess multi-instance readiness and test load balancing locally before provisioning additional cloud infrastructure.
 
 [Detailed features and implementation notes](docs/PROJECT_GUIDE.md)

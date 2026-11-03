@@ -66,6 +66,7 @@ public class SecurityConfig {
           "/api/orders",
           "/api/orders/*/payment-session",
           "/api/orders/*/payment-session/resume",
+          "/api/digital-downloads/resend",
           "/api/payments/stripe/webhook",
           "/api/project-inquiries",
           "/api/auth/register",

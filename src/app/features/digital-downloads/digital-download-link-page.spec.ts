@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
@@ -38,6 +38,7 @@ describe('DigitalDownloadLinkPage', () => {
     await TestBed.configureTestingModule({
       imports: [DigitalDownloadLinkPage, getTranslocoTestingModule()],
       providers: [
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {

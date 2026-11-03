@@ -117,4 +117,66 @@ describe('DigitalDownloadLinkApiService', () => {
 
     expect(receivedStatus).toBe(404);
   });
+
+  it('should initialize CSRF before requesting a new download link', () => {
+    const orderId = '93af42f1-d557-4b3d-b452-24976e049713';
+    const email = 'customer@example.com';
+    const resendUrl = '/api/digital-downloads/resend';
+
+    let completed = false;
+
+    service.resend(orderId, email).subscribe({
+      complete: () => {
+        completed = true;
+      },
+    });
+
+    http.expectNone(resendUrl);
+
+    const csrf = http.expectOne('/api/auth/csrf');
+
+    expect(csrf.request.method).toBe('GET');
+
+    csrf.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    const request = http.expectOne(resendUrl);
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ orderId, email });
+    expect(request.request.headers.has('X-Digital-Download-Token')).toBe(false);
+
+    request.flush(null, {
+      status: 202,
+      statusText: 'Accepted',
+    });
+
+    expect(completed).toBe(true);
+  });
+
+  it('should not request a new link when CSRF initialization fails', () => {
+    let receivedStatus: number | undefined;
+
+    service.resend('93af42f1-d557-4b3d-b452-24976e049713', 'customer@example.com').subscribe({
+      next: () => {
+        throw new Error('Expected CSRF initialization to fail');
+      },
+      error: (error) => {
+        receivedStatus = error.status;
+      },
+    });
+
+    http.expectOne('/api/auth/csrf').flush(
+      {},
+      {
+        status: 503,
+        statusText: 'Service Unavailable',
+      },
+    );
+
+    http.expectNone('/api/digital-downloads/resend');
+    expect(receivedStatus).toBe(503);
+  });
 });

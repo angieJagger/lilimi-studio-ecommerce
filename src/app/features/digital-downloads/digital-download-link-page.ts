@@ -2,15 +2,15 @@ import { DOCUMENT, DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { afterNextRender, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { distinctUntilChanged, finalize } from 'rxjs';
 import { DigitalDownloadLinkApiService } from './digital-download-link-api.service';
 import type { DigitalOrderDownload } from './digital-order-download.model';
 
 @Component({
   selector: 'app-digital-download-link-page',
-  imports: [TranslocoPipe, DecimalPipe],
+  imports: [TranslocoPipe, DecimalPipe, RouterLink],
   templateUrl: './digital-download-link-page.html',
   styleUrl: './digital-download-link-page.scss',
 })
@@ -25,6 +25,7 @@ export class DigitalDownloadLinkPage {
   protected readonly errorKey = signal<string | null>(null);
   protected readonly downloadErrorKey = signal<string | null>(null);
   protected readonly downloadingItemId = signal<string | null>(null);
+  protected readonly transloco = inject(TranslocoService);
 
   private rawToken: string | null = null;
   private requestNumber = 0;

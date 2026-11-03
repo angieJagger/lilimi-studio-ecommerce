@@ -54,6 +54,13 @@ const shopRoutes: Routes = [
       import('./features/products/product-detail/product-detail').then((m) => m.ProductDetail),
   },
   {
+    path: 'downloads/resend',
+    loadComponent: () =>
+      import('./features/digital-downloads/resend-digital-download-link').then(
+        (m) => m.ResendDigitalDownloadLink,
+      ),
+  },
+  {
     path: 'downloads',
     loadComponent: () =>
       import('./features/digital-downloads/digital-download-link-page').then(
