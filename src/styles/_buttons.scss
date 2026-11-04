@@ -5,7 +5,7 @@
   min-height: 48px;
   padding: var(--spacing-12) var(--spacing-24);
   border: 1px solid transparent;
-  border-radius: var(--radius-8);
+  border-radius: var(--radius-12);
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 600;
@@ -16,15 +16,30 @@
 }
 
 .button--primary {
-  background-image: var(--action-primary-background);
-  color: var(--action-primary-text);
+  --primary-frame-color: #e5d5f8;
+  --primary-hover-fill:
+    linear-gradient(155deg, rgb(177 149 255 / 23%) 0%, rgb(177 149 255 / 6%) 27%, transparent 44%),
+    linear-gradient(155deg, #503c63, #38294a);
+
+  position: relative;
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(155deg, rgb(177 149 255 / 18%) 0%, rgb(177 149 255 / 6%) 27%, transparent 44%),
+    linear-gradient(155deg, #463557, #30243f);
+  color: #fff;
   box-shadow:
-    0 2px 4px rgb(48 40 61 / 10%),
-    0 5px 12px -4px rgb(48 40 61 / 22%);
+    0 10px 28px -8px rgb(15 82 186 / 60%),
+    inset 0 -3px 7px rgb(182 112 255 / 42%),
+    inset 0 -12px 20px rgb(48 36 63 / 35%);
 }
 
 .button--primary:hover {
-  background-image: var(--action-primary-background-hover);
+  box-shadow:
+    0 14px 36px -6px rgb(91 106 188 / 45%),
+    inset 0 -4px 9px rgb(199 132 255 / 58%),
+    inset 0 -12px 22px rgb(48 36 63 / 45%);
+  background-image:
+    var(--primary-hover-fill);
 }
 
 .button:focus-visible {
@@ -36,22 +51,23 @@
   position: relative;
   isolation: isolate;
   border-color: transparent;
-  background-color: transparent;
+  background-color: rgb(255 255 255 / 18%);
   background-image: none;
-  color: var(--violet-800);
+  color: #453255;
   font-weight: 650;
   box-shadow:
     0 2px 4px rgb(48 40 61 / 10%),
     0 5px 12px -4px rgb(48 40 61 / 22%);
 }
 
+.button--primary::before,
 .button--secondary::before {
   content: '';
   position: absolute;
   inset: -1px;
-  padding: 1px;
+  padding: 2px;
   border-radius: inherit;
-  background: var(--action-primary-background);
+  background: linear-gradient(125deg, #51dbea, #8277dc 48%, #c093ed 80%, #a77bd8);
   pointer-events: none;
 
   -webkit-mask:
@@ -64,8 +80,14 @@
   mask-composite: exclude;
 }
 
+.button--primary::before {
+  inset: -1px;
+  padding: 1px;
+  background: var(--primary-frame-color);
+}
+
 .button--secondary:hover::before {
-  background-image: var(--action-primary-background-hover);
+  background-image: linear-gradient(125deg, #75f0fa, #8b7ae9 48%, #d5a5ff 80%, #b58ae8);
 }
 
 .button--secondary::after {

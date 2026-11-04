@@ -16,3 +16,16 @@ lilimi.public-base-url=http://localhost:4200
 
 # Process order confirmation emails locally through Mailpit
 lilimi.mail.order-confirmation.enabled=true
+
+
+lilimi.mail.digital-downloads.enabled=true
+
+# Stripe Sandbox (optional)
+# To test payments, set enabled=true in application-local.properties.
+# Use the sk_test_ key from your Stripe Sandbox and the whsec_ secret from stripe listen.
+lilimi.payments.stripe.enabled=false
+lilimi.payments.stripe.api-key=
+lilimi.payments.stripe.webhook-secret=
+
+springdoc.api-docs.enabled=true
+springdoc.swagger-ui.enabled=true

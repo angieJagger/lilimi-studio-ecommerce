@@ -1,6 +1,8 @@
 package pl.lilimi.security;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -33,7 +35,8 @@ public class SecurityConfig {
     HttpSecurity http,
     UserAccountRepository accounts,
     LoginRateLimiter loginRateLimiter,
-    PublicFormRateLimiter publicFormRateLimiter
+    PublicFormRateLimiter publicFormRateLimiter,
+    Environment environment
   ) throws Exception {
 
     http
@@ -47,7 +50,19 @@ public class SecurityConfig {
         new CredentialsVersionFilter(accounts),
         SecurityContextHolderFilter.class
       )
-      .authorizeHttpRequests(authorize -> authorize
+      .authorizeHttpRequests(authorize -> {
+        if (environment.acceptsProfiles(Profiles.of("local"))) {
+          authorize.requestMatchers(
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml"
+          ).permitAll();
+        }
+
+        authorize
+
         .requestMatchers(
           HttpMethod.GET,
           "/api/products",
@@ -93,8 +108,8 @@ public class SecurityConfig {
           "/api/account/profile"
         ).hasRole("CUSTOMER")
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-        .anyRequest().denyAll()
-      )
+          .anyRequest().denyAll();
+      })
       .csrf(csrf -> csrf
         .spa()
         .ignoringRequestMatchers(
@@ -140,7 +155,6 @@ public class SecurityConfig {
           response.setStatus(403)
         )
       );
-
     return http.build();
   }
 }

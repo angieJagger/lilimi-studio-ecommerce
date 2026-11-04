@@ -4,6 +4,7 @@
 @use './styles/utilities';
 @use './styles/typography';
 @use './styles/buttons';
+@use './styles/forms';
 @use './styles/studio';
 @use './styles/payment-status';
 
@@ -41,3 +42,5 @@ button:disabled { cursor:not-allowed; opacity:.6; }
   inherits: false;
   initial-value: 120deg;
 }
+
+@include forms.glass-forms;
