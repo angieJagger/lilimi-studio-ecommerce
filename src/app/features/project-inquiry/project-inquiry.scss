@@ -33,7 +33,11 @@
   gap: var(--spacing-24);
   margin-top: var(--spacing-40);
   padding: var(--spacing-24);
-  border: 1px solid var(--border-brand);
+  border: 1px solid rgb(255 255 255 / 50%);
+  border-top-color: rgb(255 255 255 / 75%);
+  background: linear-gradient(145deg, rgb(248 242 255 / 48%), rgb(228 238 255 / 26%));
+  box-shadow: 0 12px 28px -16px rgb(48 40 91 / 32%);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-12);
 }
 
@@ -60,7 +64,8 @@
   padding: var(--spacing-12);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-8);
-  background-color: var(--surface-field);
+  background-color: rgb(249 246 255 / 38%);
+  box-shadow: inset 0 1px 3px rgb(65 45 105 / 9%);
   color: var(--text-primary);
   font: inherit;
 }
@@ -79,7 +84,7 @@
 .form-field > input:focus-visible,
 .form-field > select:focus-visible,
 .form-field > textarea:focus-visible {
-  outline: 2px solid var(--brand-primary);
+  outline: 2px solid #7046a0;
   outline-offset: 2px;
 }
 
