@@ -63,6 +63,19 @@ For development, run Angular and Spring Boot separately with PostgreSQL and Mail
 
 [Local development setup](docs/PROJECT_GUIDE.md#run-locally)
 
+### Local API documentation
+
+Start the backend with the `local` Spring profile, then open
+[Swagger UI](http://localhost:8080/swagger-ui.html). The OpenAPI JSON is available
+at [localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs).
+
+To try the API without signing in, run `GET /api/products`. For an example
+that requires order access, see the endpoints for listing downloadable files
+and downloading a ZIP from a paid order.
+
+Swagger UI and the OpenAPI endpoints are disabled by default and enabled
+in the local configuration.
+
 ## Verification
 
 Frontend, from the repository root:
