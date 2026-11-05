@@ -199,7 +199,7 @@ describe('AdminOrders', () => {
     expect(element.querySelector('table')).toBeNull();
 
     expect(element.querySelector<HTMLAnchorElement>('a')?.getAttribute('href')).toBe(
-      '/pl/admin/login',
+      '/pl/account/login',
     );
   });
 

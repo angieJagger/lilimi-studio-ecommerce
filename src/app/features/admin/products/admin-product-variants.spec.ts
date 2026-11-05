@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { getTranslocoTestingModule } from '../../../testing/transloco-testing';
 import { AdminProductApiService } from './admin-product-api.service';
@@ -16,6 +16,8 @@ describe('AdminProductVariants', () => {
   const api = {
     getVariants: vi.fn(),
     updateVariant: vi.fn(),
+    getEmbroiderySelections: vi.fn(),
+    getVariantMatrix: vi.fn(),
   };
 
   const variant: AdminGarmentVariant = {
@@ -48,6 +50,17 @@ describe('AdminProductVariants', () => {
     api.updateVariant.mockReset();
     api.getVariants.mockReturnValue(result.asObservable());
     api.updateVariant.mockReturnValue(saveResult.asObservable());
+    api.getEmbroiderySelections.mockReset();
+    api.getEmbroiderySelections.mockReturnValue(
+      of([
+        {
+          patternId: variant.patternId,
+          embroideryOptionId: variant.embroideryOptionId,
+        },
+      ]),
+    );
+    api.getVariantMatrix.mockReset();
+    api.getVariantMatrix.mockReturnValue(of([variant]));
 
     await TestBed.configureTestingModule({
       imports: [AdminProductVariants, getTranslocoTestingModule()],
@@ -94,8 +107,111 @@ describe('AdminProductVariants', () => {
     await fixture.whenStable();
   }
 
+    it('should show the matrix for a complete filter selection', async () => {
+      await respond();
+
+      api.getVariants.mockReturnValue(of(page));
+
+      const selections = [
+        { selector: '#variant-fit-filter', value: variant.fit },
+        { selector: '#variant-pattern-filter', value: variant.patternId },
+        {
+          selector: '#variant-option-filter',
+          value: variant.embroideryOptionId,
+        },
+      ];
+
+      for (const selection of selections) {
+        const select = element.querySelector<HTMLSelectElement>(selection.selector)!;
+
+        select.value = selection.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+
+        await fixture.whenStable();
+      }
+
+      expect(api.getVariantMatrix).toHaveBeenCalledExactlyOnceWith(variant.productId, {
+        fit: variant.fit,
+        patternId: variant.patternId,
+        embroideryOptionId: variant.embroideryOptionId,
+      });
+
+      const matrix = element.querySelector('.variants__matrix');
+
+      expect(matrix).not.toBeNull();
+      expect(matrix?.querySelector('tbody th')?.textContent).toContain(variant.size);
+      expect(matrix?.querySelector('thead')?.textContent).toContain('Granatowy');
+      expect(element.querySelector('.variants__pagination')).toBeNull();
+
+      matrix!.querySelector<HTMLButtonElement>('.variants__matrix-cell')!.click();
+
+      await fixture.whenStable();
+
+      expect(element.querySelector('#variant-edit-form')).not.toBeNull();
+      expect(element.querySelector<HTMLInputElement>('#variant-price')?.value).toBe('149.00');
+    });
+
+    it('should request the first page with the selected fit', async () => {
+      await respond();
+
+      const filteredResult = new Subject<AdminGarmentVariantPage>();
+      api.getVariants.mockReturnValue(filteredResult.asObservable());
+
+      const select = element.querySelector<HTMLSelectElement>('#variant-fit-filter')!;
+
+      select.value = 'women';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+
+      await fixture.whenStable();
+
+      expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 0, 20, { fit: 'women' });
+
+      filteredResult.next({
+        ...page,
+        totalElements: 1,
+        totalPages: 1,
+      });
+      filteredResult.complete();
+
+      await fixture.whenStable();
+
+      expect(select.value).toBe('women');
+      expect(element.querySelector('tbody')?.textContent).toContain(variant.patternId);
+    });
+
+      it('should clear the embroidery option when the pattern changes', async () => {
+        await respond();
+
+        api.getVariants.mockReturnValue(of(page));
+
+        const optionSelect = element.querySelector<HTMLSelectElement>('#variant-option-filter')!;
+
+        optionSelect.value = variant.embroideryOptionId;
+        optionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+        await fixture.whenStable();
+
+        expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 0, 20, {
+          embroideryOptionId: variant.embroideryOptionId,
+        });
+
+        const patternSelect = element.querySelector<HTMLSelectElement>('#variant-pattern-filter')!;
+
+        patternSelect.value = variant.patternId;
+        patternSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+        await fixture.whenStable();
+
+        expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 0, 20, {
+          patternId: variant.patternId,
+          embroideryOptionId: undefined,
+        });
+
+        expect(optionSelect.value).toBe('');
+      });
+
   it('should request the first page and show loading', () => {
-    expect(api.getVariants).toHaveBeenCalledExactlyOnceWith(variant.productId, 0);
+    expect(api.getVariants).toHaveBeenCalledExactlyOnceWith(variant.productId, 0, 20, {});
 
     expect(element.querySelector('output')).not.toBeNull();
     expect(element.querySelector('table')).toBeNull();
@@ -194,6 +310,7 @@ describe('AdminProductVariants', () => {
       expect(element.querySelector('#variant-price-errors')).not.toBeNull();
     },
   );
+
     it('should request the next page and then return to the previous page', async () => {
       await respond();
 
@@ -204,7 +321,7 @@ describe('AdminProductVariants', () => {
 
       await fixture.whenStable();
 
-      expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 1);
+      expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 1, 20, {});
 
       await respond({
         ...page,
@@ -218,7 +335,7 @@ describe('AdminProductVariants', () => {
 
       await fixture.whenStable();
 
-      expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 0);
+      expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 0, 20, {});
 
       await respond();
     });
@@ -285,7 +402,7 @@ describe('AdminProductVariants', () => {
 
         await fixture.whenStable();
 
-        expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 0);
+        expect(api.getVariants).toHaveBeenLastCalledWith(variant.productId, 0, 20, {});
 
         const refreshed: AdminGarmentVariant = {
           ...variant,

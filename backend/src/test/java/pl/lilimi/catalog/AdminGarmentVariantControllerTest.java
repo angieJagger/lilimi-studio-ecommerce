@@ -17,6 +17,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.is;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,6 +64,71 @@ class AdminGarmentVariantControllerTest {
       ))
       .andExpect(jsonPath("$.items[0].currency").value("PLN"));
   }
+
+  @Test
+  void shouldFilterVariantsByFitPatternAndEmbroideryOption() throws Exception {
+    var variant = variants.findAllByProductId(
+      "embroidered-002",
+      PageRequest.of(0, 1)
+    ).getContent().getFirst();
+
+    mockMvc.perform(
+        get("/api/admin/products/embroidered-002/variants")
+          .with(user("admin@example.com").roles("ADMIN"))
+          .param("fit", variant.getFit())
+          .param("patternId", variant.getPatternId())
+          .param("embroideryOptionId", variant.getEmbroideryOptionId())
+          .param("size", "1")
+          .accept(MediaType.APPLICATION_JSON)
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items.length()").value(1))
+      .andExpect(jsonPath("$.items[*].fit").value(
+        everyItem(is(variant.getFit()))
+      ))
+      .andExpect(jsonPath("$.items[*].patternId").value(
+        everyItem(is(variant.getPatternId()))
+      ))
+      .andExpect(jsonPath("$.items[*].embroideryOptionId").value(
+        everyItem(is(variant.getEmbroideryOptionId()))
+      ))
+      .andExpect(jsonPath("$.page").value(0))
+      .andExpect(jsonPath("$.size").value(1));
+  }
+
+  @Test
+  void shouldReturnEmbroiderySelectionsForAdmin() throws Exception {
+    var variant = variants.findAllByProductId(
+      "embroidered-002",
+      PageRequest.of(0, 1)
+    ).getContent().getFirst();
+
+    mockMvc.perform(
+        get(
+          "/api/admin/products/embroidered-002/variants/embroidery-selections"
+        )
+          .with(user("admin@example.com").roles("ADMIN"))
+          .accept(MediaType.APPLICATION_JSON)
+      )
+      .andExpect(status().isOk())
+      .andExpect(jsonPath(
+        "$[?(@.patternId == '" + variant.getPatternId()
+          + "' && @.embroideryOptionId == '"
+          + variant.getEmbroideryOptionId() + "')]"
+      ).isNotEmpty());
+  }
+
+  @Test
+  void shouldRejectCustomerAccessToEmbroiderySelections() throws Exception {
+    mockMvc.perform(
+        get(
+          "/api/admin/products/embroidered-002/variants/embroidery-selections"
+        )
+          .with(user("customer@example.com").roles("CUSTOMER"))
+      )
+      .andExpect(status().isForbidden());
+  }
+
 
   @Test
   void shouldIncludeInactiveVariantsOfHiddenProduct() throws Exception {

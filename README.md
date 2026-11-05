@@ -17,7 +17,7 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 - Server-priced checkout with saved order snapshots and protection against duplicate submissions.
 - Customer accounts with email verification, password recovery, saved profiles and order history.
 - Stripe sandbox integration with hosted Checkout, payment resumption, verified webhooks and cancellation handling.
-- Administrator tools for orders, inquiries, product translations, visibility, prices and garment variants.
+- Administrator tools for orders, inquiries, product translations, visibility and prices; garment variants can be filtered by fit, embroidery pattern and option, then edited in a size-by-colour matrix.
 - Product image galleries with uploads, replacement, primary image selection and persistent filesystem storage.
 - Private, versioned digital ZIP packages; each purchased digital item retains its assigned package version.
 - Downloads after confirmed payment, from the payment result page, customer order details or an emailed link without signing in.
@@ -110,5 +110,6 @@ The project covers both interface design and implementation. README screenshots 
 - Further payment recovery, refunds and preparation for real payments.
 - Physical fulfilment workflows, order status notifications and automated off-host backups.
 - Assess multi-instance readiness and test load balancing locally before provisioning additional cloud infrastructure.
+- Add private file attachments to project inquiries for logos, artwork and visual references.
 
 [Detailed features and implementation notes](docs/PROJECT_GUIDE.md)

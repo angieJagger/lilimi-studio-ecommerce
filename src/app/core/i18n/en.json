@@ -477,7 +477,12 @@
       "save": "Save variant",
       "saving": "Saving…",
       "cancel": "Cancel",
-      "reloadNotice": "Copy the entered price before reloading if you want to keep it. Reloading will close the form."
+      "reloadNotice": "Copy the entered price before reloading if you want to keep it. Reloading will close the form.",
+      "allFits": "All fits",
+      "allPatterns": "All patterns",
+      "allOptions": "All embroidery options",
+      "matrix": "Variants by size and colour",
+      "missingCombination": "No variant"
     }
   },
   "adminDigitalPackages": {

@@ -67,7 +67,7 @@ describe('adminGuard', () => {
 
     const result = await checkAccess('/pl/admin/orders');
 
-    expectLoginRedirect(result, '/pl/admin/login');
+    expectLoginRedirect(result, '/pl/account/login');
   });
 
   it('should redirect an anonymous user to English login', async () => {
@@ -75,7 +75,7 @@ describe('adminGuard', () => {
 
     const result = await checkAccess('/en/admin/orders');
 
-    expectLoginRedirect(result, '/en/admin/login');
+    expectLoginRedirect(result, '/en/account/login');
   });
 
   it('should redirect a customer without administrator access', async () => {
@@ -88,7 +88,7 @@ describe('adminGuard', () => {
 
     const result = await checkAccess('/pl/admin/orders');
 
-    expectLoginRedirect(result, '/pl/admin/login');
+    expectLoginRedirect(result, '/pl/account/login');
   });
 
   it('should redirect to login when the session check fails', async () => {
@@ -104,6 +104,6 @@ describe('adminGuard', () => {
 
     const result = await checkAccess('/en/admin/orders');
 
-    expectLoginRedirect(result, '/en/admin/login');
+    expectLoginRedirect(result, '/en/account/login');
   });
 });

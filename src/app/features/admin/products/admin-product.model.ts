@@ -68,6 +68,17 @@ export interface AdminGarmentVariant {
   readonly active: boolean;
 }
 
+export interface AdminGarmentVariantFilters {
+  readonly fit?: AdminGarmentVariant['fit'];
+  readonly patternId?: string;
+  readonly embroideryOptionId?: string;
+}
+
+export interface AdminEmbroiderySelection {
+  readonly patternId: string;
+  readonly embroideryOptionId: string;
+}
+
 export interface AdminGarmentVariantPage {
   readonly items: readonly AdminGarmentVariant[];
   readonly page: number;

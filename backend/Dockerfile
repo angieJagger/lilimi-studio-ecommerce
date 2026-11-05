@@ -8,6 +8,7 @@ RUN mvn -B -DskipTests package
 FROM eclipse-temurin:21-jre-jammy
 RUN groupadd --system app && useradd --system --gid app app \
     && apt-get update \
+    && apt-get install -y --no-install-recommends --only-upgrade apt libapt-pkg6.0 \
     && apt-get install -y --no-install-recommends curl libssl3 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
