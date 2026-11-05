@@ -119,11 +119,6 @@ const shopRoutes: Routes = [
       import('./features/account/customer-profile').then((m) => m.CustomerProfile),
   },
   {
-    path: 'admin/login',
-    loadComponent: () =>
-      import('./features/auth/admin-login/admin-login').then((m) => m.AdminLogin),
-  },
-  {
     path: 'admin',
     canActivate: [adminGuard],
     canActivateChild: [adminGuard],

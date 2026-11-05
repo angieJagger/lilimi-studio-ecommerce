@@ -14,6 +14,7 @@ import pl.lilimi.catalog.admin.application.AdminGarmentVariantQueryService;
 import pl.lilimi.catalog.admin.application.AdminGarmentVariantUpdateService;
 
 import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/products/{productId}/variants")
@@ -34,9 +35,26 @@ public class AdminGarmentVariantController {
   public AdminGarmentVariantPageResponse findVariants(
     @PathVariable String productId,
     @RequestParam(defaultValue = "0") @Min(0) int page,
-    @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+    @RequestParam(required = false) String fit,
+    @RequestParam(required = false) String patternId,
+    @RequestParam(required = false) String embroideryOptionId
   ) {
-    return queryService.findVariants(productId, page, size);
+    return queryService.findVariants(
+      productId,
+      page,
+      size,
+      fit,
+      patternId,
+      embroideryOptionId
+    );
+  }
+
+  @GetMapping("/embroidery-selections")
+  public List<AdminEmbroiderySelectionResponse> findEmbroiderySelections(
+    @PathVariable String productId
+  ) {
+    return queryService.findEmbroiderySelections(productId);
   }
 
   @PatchMapping("/{variantId}")

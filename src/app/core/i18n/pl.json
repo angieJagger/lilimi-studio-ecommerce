@@ -480,7 +480,12 @@
       "save": "Zapisz wariant",
       "saving": "Trwa zapis…",
       "cancel": "Anuluj",
-      "reloadNotice": "Przed odświeżeniem skopiuj wpisaną cenę, jeśli chcesz ją zachować. Odświeżenie zamknie formularz."
+      "reloadNotice": "Przed odświeżeniem skopiuj wpisaną cenę, jeśli chcesz ją zachować. Odświeżenie zamknie formularz.",
+      "allFits": "Wszystkie kroje",
+      "allPatterns": "Wszystkie wzory",
+      "allOptions": "Wszystkie opcje haftu",
+      "matrix": "Warianty według rozmiaru i koloru",
+      "missingCombination": "Brak wariantu"
     }
   },
   "adminDigitalPackages": {

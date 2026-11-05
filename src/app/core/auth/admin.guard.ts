@@ -8,7 +8,7 @@ export const adminGuard: CanActivateFn = (_route, state) => {
   const router = inject(Router);
 
   const language = state.url.split('/')[1] === 'en' ? 'en' : 'pl';
-  const loginUrl = router.createUrlTree(['/', language, 'admin', 'login']);
+    const loginUrl = router.createUrlTree(['/', language, 'account', 'login']);
 
   return session.refresh().pipe(
     map((user) => (user?.roles.includes('ADMIN') ? true : loginUrl)),

@@ -3,23 +3,79 @@
     {{ 'adminProducts.variants.title' | transloco }}
   </h2>
 
+    <div class="variants__field">
+      <label for="variant-fit-filter">
+        {{ 'adminProducts.variants.fit' | transloco }}
+      </label>
+
+      <select id="variant-fit-filter" [value]="filters().fit ?? ''"
+        [disabled]="isLoading() || isSaving() || selectedVariant() !== null" (change)="changeFit($event)">
+        <option value="">
+          {{ 'adminProducts.variants.allFits' | transloco }}
+        </option>
+        <option value="children">
+          {{ 'adminProducts.variants.fits.children' | transloco }}
+        </option>
+        <option value="women">
+          {{ 'adminProducts.variants.fits.women' | transloco }}
+        </option>
+        <option value="men">
+          {{ 'adminProducts.variants.fits.men' | transloco }}
+        </option>
+      </select>
+    </div>
+
+      <div class="variants__field">
+        <label for="variant-pattern-filter">
+          {{ 'adminProducts.variants.pattern' | transloco }}
+        </label>
+
+        <select id="variant-pattern-filter" [value]="filters().patternId ?? ''"
+          [disabled]="isLoading() || isSaving() || selectedVariant() !== null" (change)="changePattern($event)">
+          <option value="">
+            {{ 'adminProducts.variants.allPatterns' | transloco }}
+          </option>
+
+          @for (patternId of availablePatterns(); track patternId) {
+          <option [value]="patternId">{{ patternId }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="variants__field">
+        <label for="variant-option-filter">
+          {{ 'adminProducts.variants.option' | transloco }}
+        </label>
+
+        <select id="variant-option-filter" [value]="filters().embroideryOptionId ?? ''"
+          [disabled]="isLoading() || isSaving() || selectedVariant() !== null" (change)="changeEmbroideryOption($event)">
+          <option value="">
+            {{ 'adminProducts.variants.allOptions' | transloco }}
+          </option>
+
+          @for (optionId of availableEmbroideryOptions(); track optionId) {
+          <option [value]="optionId">{{ optionId }}</option>
+          }
+        </select>
+      </div>
+
   @if (selectedVariant(); as variant) {
   <form id="variant-edit-form" novalidate (submit)="saveVariant($event)" [attr.aria-busy]="isSaving()">
     <fieldset [disabled]="isSaving() || saveErrorKey() !== null">
       <legend>{{ 'adminProducts.variants.edit' | transloco }}</legend>
-  
+
       <p>
         {{ variant.patternId }} · {{ variant.embroideryOptionId }} ·
         {{ 'adminProducts.variants.fits.' + variant.fit | transloco }} ·
         {{ variant.size }} ·
         {{ 'adminProducts.variants.colors.' + variant.color | transloco }}
       </p>
-  
+
       <div class="variants__field">
         <label for="variant-price">
           {{ 'adminProducts.edit.price.label' | transloco }}
         </label>
-  
+
         <input id="variant-price" type="text" inputmode="decimal" [formField]="editForm.amount" [attr.aria-invalid]="
               editForm.amount().touched() && editForm.amount().invalid()
                 ? 'true'
@@ -29,7 +85,7 @@
                 ? 'variant-price-errors'
                 : null
             " />
-  
+
         @if (editForm.amount().touched() && editForm.amount().invalid()) {
         <ul id="variant-price-errors" class="variants__errors">
           @for (error of editForm.amount().errors(); track $index) {
@@ -38,14 +94,14 @@
         </ul>
         }
       </div>
-  
+
       <label class="variants__checkbox">
         <input type="checkbox" [formField]="editForm.active" />
         {{ 'adminProducts.variants.available' | transloco }}
       </label>
-  
+
       <p>{{ 'adminProducts.variants.availabilityHint' | transloco }}</p>
-  
+
       <div class="variants__actions">
         <button type="submit">
           {{
@@ -56,7 +112,7 @@
           ) | transloco
           }}
         </button>
-  
+
         <button type="button" (click)="cancelEdit()">
           {{ 'adminProducts.variants.cancel' | transloco }}
         </button>
@@ -64,19 +120,97 @@
     </fieldset>
   </form>
   }
-  
+
   @if (saveErrorKey(); as message) {
   <div class="variants__feedback">
     <p role="alert">{{ message | transloco }}</p>
     <p>{{ 'adminProducts.variants.reloadNotice' | transloco }}</p>
-  
+
     <button type="button" [disabled]="isSaving()" (click)="retry()">
       {{ 'adminProducts.reload' | transloco }}
     </button>
   </div>
   }
 
-  @if (isLoading()) {
+    @if (hasMatrixSelection()) {
+    @if (isMatrixLoading()) {
+    <output>{{ 'adminProducts.loading' | transloco }}</output>
+    } @else if (matrixErrorKey(); as message) {
+    <p role="alert">{{ message | transloco }}</p>
+
+    <button class="button button--secondary" type="button" [disabled]="isLoading() || isSaving()" (click)="retry()">
+      {{ 'adminProducts.reload' | transloco }}
+    </button>
+    } @else if (matrixRows().length === 0) {
+    <p>{{ 'adminProducts.variants.empty' | transloco }}</p>
+    } @else {
+    <div class="variants__table" role="region" [attr.aria-label]="'adminProducts.variants.matrix' | transloco" tabindex="0">
+      <table class="variants__matrix">
+        <caption>
+          {{ 'adminProducts.variants.matrix' | transloco }}
+        </caption>
+
+        <thead>
+          <tr>
+            <th scope="col">
+              {{ 'adminProducts.variants.size' | transloco }}
+            </th>
+
+            @for (color of matrixColors(); track color) {
+            <th scope="col">
+              {{ 'adminProducts.variants.colors.' + color | transloco }}
+            </th>
+            }
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (row of matrixRows(); track row.size) {
+          <tr>
+            <th scope="row">{{ row.size }}</th>
+
+            @for (cell of row.cells; track cell.color) {
+            <td>
+              @if (cell.variant; as variant) {
+              <button class="variants__matrix-cell" type="button" [disabled]="
+                              isLoading() ||
+                              isSaving() ||
+                              selectedVariant() !== null
+                            " (click)="editVariant(variant)">
+                <span>
+                  {{ variant.priceInGrosz / 100 | currency:'PLN':'code':'1.2-2' }}
+                </span>
+
+                <span>
+                  {{
+                  (
+                  variant.active
+                  ? 'adminProducts.variants.active'
+                  : 'adminProducts.variants.inactive'
+                  ) | transloco
+                  }}
+                </span>
+
+                <span>
+                  {{ 'adminProducts.variants.edit' | transloco }}
+                  · {{ row.size }}
+                  · {{ 'adminProducts.variants.colors.' + cell.color | transloco }}
+                </span>
+              </button>
+              } @else {
+              <span>
+                {{ 'adminProducts.variants.missingCombination' | transloco }}
+              </span>
+              }
+            </td>
+            }
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+    } @else if (isLoading()) {
   <output>{{ 'adminProducts.loading' | transloco }}</output>
   } @else if (errorKey(); as message) {
   <p role="alert">{{ message | transloco }}</p>

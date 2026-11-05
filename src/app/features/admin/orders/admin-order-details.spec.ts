@@ -216,7 +216,7 @@ describe('AdminOrderDetails', () => {
     );
 
     expect(element.querySelector<HTMLAnchorElement>('a.button')?.getAttribute('href')).toBe(
-      '/pl/admin/login',
+      '/pl/account/login',
     );
 
     expect(element.querySelector('.order-card')).toBeNull();

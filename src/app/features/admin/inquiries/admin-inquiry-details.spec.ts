@@ -180,7 +180,7 @@ describe('AdminInquiryDetails', () => {
 
     expect(element.querySelector('[role="alert"]')).not.toBeNull();
 
-    expect(element.querySelector('a[href="/pl/admin/login"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/pl/account/login"]')).not.toBeNull();
 
     expect(element.querySelector('button')).toBeNull();
     expect(element.querySelector('.inquiry-details__card')).toBeNull();

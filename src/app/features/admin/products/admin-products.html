@@ -12,7 +12,7 @@
   message === 'adminOrders.errors.sessionExpired' ||
   message === 'adminOrders.errors.accessDenied'
   ) {
-  <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+  <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
     {{ 'adminOrders.login' | transloco }}
   </a>
   } @else {
@@ -24,12 +24,12 @@
     @if (visibilityErrorKey(); as message) {
     <div class="products-feedback">
       <p role="alert">{{ message | transloco }}</p>
-    
+
       @if (
       message === 'adminOrders.errors.sessionExpired' ||
       message === 'adminOrders.errors.accessDenied'
       ) {
-      <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+      <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
         {{ 'adminOrders.login' | transloco }}
       </a>
       } @else {
@@ -49,7 +49,7 @@
         ) | transloco: { product: product.slug }
         }}
       </p>
-    
+
       <div class="products-actions">
         <button type="button" data-testid="confirm-visibility" [disabled]="isSaving()" (click)="confirmVisibilityChange()">
           {{
@@ -60,7 +60,7 @@
           ) | transloco
           }}
         </button>
-    
+
         <button type="button" data-testid="cancel-visibility" [disabled]="isSaving()" (click)="cancelVisibilityChange()">
           {{ 'adminProducts.cancel' | transloco }}
         </button>

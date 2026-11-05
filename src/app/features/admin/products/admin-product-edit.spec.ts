@@ -24,6 +24,7 @@ describe('AdminProductEdit', () => {
     saveProduct: vi.fn(),
     updateDigitalPrice: vi.fn(),
     getVariants: vi.fn(),
+    getEmbroiderySelections: vi.fn(),
   };
 
   const packagesApi = {
@@ -90,6 +91,8 @@ describe('AdminProductEdit', () => {
       }),
     );
 
+    api.getEmbroiderySelections.mockReset();
+    api.getEmbroiderySelections.mockReturnValue(of([]));
     packagesApi.getPackages.mockReset();
     packagesApi.getPackages.mockReturnValue(of([]));
 
@@ -200,7 +203,7 @@ describe('AdminProductEdit', () => {
     await fixture.whenStable();
 
     expect(element.querySelector('[role="alert"]')).not.toBeNull();
-    expect(element.querySelector('a[href="/pl/admin/login"]')).not.toBeNull();
+    expect(element.querySelector('a[href="/pl/account/login"]')).not.toBeNull();
     expect(element.querySelector('form')).toBeNull();
   });
 

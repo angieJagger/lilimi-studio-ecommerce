@@ -1,12 +1,26 @@
-import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  computed,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CurrencyPipe } from '@angular/common';
 import { form, FormField, required, validate } from '@angular/forms/signals';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { AdminProductApiService } from './admin-product-api.service';
-import type { AdminGarmentVariant, AdminGarmentVariantPage } from './admin-product.model';
+import type {
+  AdminGarmentVariant,
+  AdminGarmentVariantPage,
+  AdminGarmentVariantFilters,
+  AdminEmbroiderySelection,
+} from './admin-product.model';
 
 @Component({
   selector: 'app-admin-product-variants',
@@ -28,6 +42,14 @@ export class AdminProductVariants {
   protected readonly errorKey = signal<string | null>(null);
 
   protected readonly selectedVariant = signal<AdminGarmentVariant | null>(null);
+  protected readonly filters = signal<AdminGarmentVariantFilters>({});
+  protected readonly embroiderySelections = signal<readonly AdminEmbroiderySelection[]>([]);
+  protected readonly matrixVariants = signal<readonly AdminGarmentVariant[]>([]);
+
+  protected readonly isMatrixLoading = signal(false);
+  protected readonly matrixErrorKey = signal<string | null>(null);
+
+  private matrixRequestNumber = 0;
   protected readonly isSaving = signal(false);
   protected readonly saveErrorKey = signal<string | null>(null);
 
@@ -55,6 +77,71 @@ export class AdminProductVariants {
     });
   });
 
+  protected readonly availablePatterns = computed(() =>
+    [...new Set(this.embroiderySelections().map((selection) => selection.patternId))].sort(),
+  );
+
+  protected readonly availableEmbroideryOptions = computed(() => {
+    const patternId = this.filters().patternId;
+
+    return [
+      ...new Set(
+        this.embroiderySelections()
+          .filter((selection) => !patternId || selection.patternId === patternId)
+          .map((selection) => selection.embroideryOptionId),
+      ),
+    ].sort();
+  });
+
+  protected readonly hasMatrixSelection = computed(() => {
+    const filters = this.filters();
+
+    return Boolean(filters.fit && filters.patternId && filters.embroideryOptionId);
+  });
+
+  protected readonly matrixColors = computed(() => {
+    const availableColors = new Set(this.matrixVariants().map((variant) => variant.color));
+
+    const colorOrder: readonly AdminGarmentVariant['color'][] = ['white', 'grey', 'navy', 'black'];
+
+    return colorOrder.filter((color) => availableColors.has(color));
+  });
+
+  protected readonly matrixRows = computed(() => {
+    const variants = this.matrixVariants();
+    const sizes = [...new Set(variants.map((variant) => variant.size))];
+
+    const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+
+    sizes.sort((first, second) => {
+      const firstIndex = sizeOrder.indexOf(first);
+      const secondIndex = sizeOrder.indexOf(second);
+
+      if (firstIndex >= 0 && secondIndex >= 0) {
+        return firstIndex - secondIndex;
+      }
+
+      if (firstIndex >= 0) {
+        return -1;
+      }
+
+      if (secondIndex >= 0) {
+        return 1;
+      }
+
+      return first.localeCompare(second, undefined, { numeric: true });
+    });
+
+    return sizes.map((size) => ({
+      size,
+      cells: this.matrixColors().map((color) => ({
+        color,
+        variant:
+          variants.find((variant) => variant.size === size && variant.color === color) ?? null,
+      })),
+    }));
+  });
+
   constructor() {
     effect(() => {
       const productId = this.productId();
@@ -62,8 +149,71 @@ export class AdminProductVariants {
       this.selectedVariant.set(null);
       this.saveErrorKey.set(null);
       this.variants.set(null);
-      this.loadPage(0, productId);
+      this.filters.set({});
+      this.embroiderySelections.set([]);
+      untracked(() => this.loadPage(0, productId));
     });
+  }
+
+  protected changeFit(event: Event): void {
+    if (this.isLoading() || this.isSaving() || this.selectedVariant()) {
+      return;
+    }
+
+    const fit = (event.target as HTMLSelectElement).value;
+
+    if (fit !== '' && fit !== 'women' && fit !== 'men' && fit !== 'children') {
+      return;
+    }
+
+    this.filters.update((filters) => ({
+      ...filters,
+      fit: fit === '' ? undefined : fit,
+    }));
+
+    this.loadPage(0);
+  }
+
+  protected changePattern(event: Event): void {
+    if (this.isLoading() || this.isSaving() || this.selectedVariant()) {
+      return;
+    }
+
+    const patternId = (event.target as HTMLSelectElement).value;
+
+    if (patternId !== '' && !this.availablePatterns().includes(patternId)) {
+      return;
+    }
+
+    this.filters.update((filters) => ({
+      ...filters,
+      patternId: patternId || undefined,
+      embroideryOptionId: undefined,
+    }));
+
+    this.loadPage(0);
+  }
+
+  protected changeEmbroideryOption(event: Event): void {
+    if (this.isLoading() || this.isSaving() || this.selectedVariant()) {
+      return;
+    }
+
+    const embroideryOptionId = (event.target as HTMLSelectElement).value;
+
+    if (
+      embroideryOptionId !== '' &&
+      !this.availableEmbroideryOptions().includes(embroideryOptionId)
+    ) {
+      return;
+    }
+
+    this.filters.update((filters) => ({
+      ...filters,
+      embroideryOptionId: embroideryOptionId || undefined,
+    }));
+
+    this.loadPage(0);
   }
 
   protected editVariant(variant: AdminGarmentVariant): void {
@@ -135,6 +285,10 @@ export class AdminProductVariants {
                   items: page.items.map((item) => (item.id === updated.id ? updated : item)),
                 }
               : page,
+          );
+          
+          this.matrixVariants.update((variants) =>
+            variants.map((item) => (item.id === updated.id ? updated : item)),
           );
 
           this.selectedVariant.set(null);
@@ -218,13 +372,16 @@ export class AdminProductVariants {
 
   private loadPage(page: number, productId = this.productId()): void {
     const requestNumber = ++this.requestNumber;
+    this.loadMatrix(productId);
 
     this.requestedPage = page;
     this.isLoading.set(true);
     this.errorKey.set(null);
 
-    this.api
-      .getVariants(productId, page)
+    forkJoin({
+      variants: this.api.getVariants(productId, page, 20, this.filters()),
+      selections: this.api.getEmbroiderySelections(productId),
+    })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -239,7 +396,8 @@ export class AdminProductVariants {
             return;
           }
 
-          this.variants.set(response);
+          this.variants.set(response.variants);
+          this.embroiderySelections.set(response.selections);
         },
         error: (error: unknown) => {
           if (requestNumber !== this.requestNumber) {
@@ -247,6 +405,52 @@ export class AdminProductVariants {
           }
 
           this.errorKey.set(this.getErrorKey(error));
+        },
+      });
+  }
+
+  private loadMatrix(productId: string): void {
+    const requestNumber = ++this.matrixRequestNumber;
+    const { fit, patternId, embroideryOptionId } = this.filters();
+
+    this.matrixVariants.set([]);
+    this.matrixErrorKey.set(null);
+    this.isMatrixLoading.set(false);
+
+    if (!fit || !patternId || !embroideryOptionId) {
+      return;
+    }
+
+    this.isMatrixLoading.set(true);
+
+    this.api
+      .getVariantMatrix(productId, {
+        fit,
+        patternId,
+        embroideryOptionId,
+      })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          if (requestNumber === this.matrixRequestNumber) {
+            this.isMatrixLoading.set(false);
+          }
+        }),
+      )
+      .subscribe({
+        next: (variants) => {
+          if (requestNumber !== this.matrixRequestNumber) {
+            return;
+          }
+
+          this.matrixVariants.set(variants);
+        },
+        error: (error: unknown) => {
+          if (requestNumber !== this.matrixRequestNumber) {
+            return;
+          }
+
+          this.matrixErrorKey.set(this.getErrorKey(error));
         },
       });
   }

@@ -14,7 +14,7 @@
   message === 'adminOrders.errors.sessionExpired' ||
   message === 'adminOrders.errors.accessDenied'
   ) {
-  <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+  <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
     {{ 'adminOrders.login' | transloco }}
   </a>
   } @else if (message === 'adminOrderDetails.errors.loadFailed') {
@@ -82,7 +82,7 @@
     message === 'adminOrders.errors.sessionExpired' ||
     message === 'adminOrders.errors.accessDenied'
     ) {
-    <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'admin', 'login']">
+    <a class="button button--primary" [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
       {{ 'adminOrders.login' | transloco }}
     </a>
     } @else {

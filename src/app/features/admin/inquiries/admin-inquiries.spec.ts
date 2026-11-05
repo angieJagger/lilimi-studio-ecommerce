@@ -165,7 +165,7 @@ describe('AdminInquiries', () => {
     expect(element.querySelector('[role="alert"]')?.textContent).toContain(
       'Sesja wygasła. Zaloguj się ponownie.',
     );
-    expect(element.querySelector('a')?.getAttribute('href')).toBe('/pl/admin/login');
+    expect(element.querySelector('a')?.getAttribute('href')).toBe('/pl/account/login');
     expect(element.querySelector('table')).toBeNull();
   });
 

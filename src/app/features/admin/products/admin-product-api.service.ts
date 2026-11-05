@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { switchMap, type Observable } from 'rxjs';
+import { switchMap, type Observable, EMPTY, expand, reduce } from 'rxjs';
 import { API_BASE_URL } from '../../../core/api/api-base-url';
 import { CsrfService } from '../../../core/auth/csrf.service';
 import type {
@@ -15,6 +15,8 @@ import type {
   AdminGarmentVariant,
   AdminGarmentVariantPage,
   UpdateGarmentVariantRequest,
+  AdminGarmentVariantFilters,
+  AdminEmbroiderySelection,
 } from './admin-product.model';
 
 @Injectable({
@@ -87,12 +89,52 @@ export class AdminProductApiService {
       );
   }
 
-  getVariants(productId: string, page = 0, size = 20): Observable<AdminGarmentVariantPage> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  getVariants(
+    productId: string,
+    page = 0,
+    size = 20,
+    filters: AdminGarmentVariantFilters = {},
+  ): Observable<AdminGarmentVariantPage> {
+    let params = new HttpParams().set('page', page).set('size', size);
+
+    if (filters.fit) {
+      params = params.set('fit', filters.fit);
+    }
+
+    if (filters.patternId?.trim()) {
+      params = params.set('patternId', filters.patternId.trim());
+    }
+
+    if (filters.embroideryOptionId?.trim()) {
+      params = params.set('embroideryOptionId', filters.embroideryOptionId.trim());
+    }
 
     return this.http.get<AdminGarmentVariantPage>(
       `${this.baseUrl}/admin/products/${encodeURIComponent(productId)}/variants`,
       { params },
+    );
+  }
+
+  getEmbroiderySelections(productId: string): Observable<readonly AdminEmbroiderySelection[]> {
+    return this.http.get<readonly AdminEmbroiderySelection[]>(
+      `${this.baseUrl}/admin/products/${encodeURIComponent(productId)}/variants/embroidery-selections`,
+    );
+  }
+
+  getVariantMatrix(
+    productId: string,
+    filters: Required<AdminGarmentVariantFilters>,
+  ): Observable<readonly AdminGarmentVariant[]> {
+    return this.getVariants(productId, 0, 100, filters).pipe(
+      expand((page) =>
+        page.page + 1 < page.totalPages
+          ? this.getVariants(productId, page.page + 1, 100, filters)
+          : EMPTY,
+      ),
+      reduce(
+        (variants, page) => [...variants, ...page.items],
+        [] as readonly AdminGarmentVariant[],
+      ),
     );
   }
 
