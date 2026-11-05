@@ -286,7 +286,7 @@ export class AdminProductVariants {
                 }
               : page,
           );
-          
+
           this.matrixVariants.update((variants) =>
             variants.map((item) => (item.id === updated.id ? updated : item)),
           );
