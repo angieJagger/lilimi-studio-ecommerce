@@ -13,12 +13,32 @@ export class ProjectInquiryApiService {
   private readonly baseUrl = inject(API_BASE_URL);
   private readonly csrf = inject(CsrfService);
 
-  createInquiry(request: CreateInquiryRequest): Observable<CreateInquiryResponse> {
+  createInquiry(
+    request: CreateInquiryRequest,
+    files: readonly File[] = [],
+  ): Observable<CreateInquiryResponse> {
+    let body: CreateInquiryRequest | FormData = request;
+
+    if (files.length > 0) {
+      const multipart = new FormData();
+
+      multipart.append(
+        'request',
+        new Blob([JSON.stringify(request)], { type: 'application/json' }),
+      );
+
+      for (const file of files) {
+        multipart.append('files', file, file.name);
+      }
+
+      body = multipart;
+    }
+
     return this.csrf
       .initialize()
       .pipe(
         switchMap(() =>
-          this.http.post<CreateInquiryResponse>(`${this.baseUrl}/project-inquiries`, request),
+          this.http.post<CreateInquiryResponse>(`${this.baseUrl}/project-inquiries`, body),
         ),
       );
   }

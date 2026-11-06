@@ -103,12 +103,28 @@ jobs:
           timestamp=$(date -u +%Y%m%d-%H%M%S)
           backup_file="backups/lilimi-before-deploy-$timestamp.dump"
 
+          media_backup="backups/lilimi-media-before-deploy-$timestamp.tar.gz"
+
+          compose stop backend
+          trap 'compose start backend' EXIT
+
           compose exec -T postgres \
             pg_dump -U lilimi -d lilimi -Fc > "$backup_file"
 
           test -s "$backup_file"
           chmod 600 "$backup_file"
-          echo "Database backup created."
+
+          compose run --rm --no-deps -T --entrypoint tar backend \
+            -czf - -C /app/var/media . > "$media_backup"
+
+          test -s "$media_backup"
+          tar -tzf "$media_backup" > /dev/null
+          chmod 600 "$media_backup"
+
+          compose start backend
+          trap - EXIT
+
+          echo "Database and media backups created."
 
           cp -p .env "backups/environment-before-deploy-$timestamp"
           chmod 600 "backups/environment-before-deploy-$timestamp"

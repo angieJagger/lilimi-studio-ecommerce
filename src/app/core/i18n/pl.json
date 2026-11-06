@@ -191,7 +191,19 @@
     "statusTransitionInvalid": "Ta zmiana statusu jest niedozwolona. Odśwież szczegóły.",
     "statusSaveFailed": "Nie udało się potwierdzić zmiany statusu. Odśwież szczegóły, aby sprawdzić aktualny stan."
   },
-  "unread": "Nieprzeczytane zapytanie."
+  "unread": "Nieprzeczytane zapytanie.",
+  "attachments": {
+    "title": "Załączniki",
+    "loading": "Ładowanie załączników…",
+    "empty": "Do zapytania nie dodano załączników.",
+    "download": "Pobierz",
+    "downloadNamed": "Pobierz załącznik {{name}}",
+    "downloading": "Pobieranie…",
+    "errors": {
+      "loadFailed": "Nie udało się pobrać listy załączników. Spróbuj ponownie.",
+      "downloadFailed": "Nie udało się pobrać pliku. Spróbuj ponownie."
+    }
+  }
 },
   "adminOrderDetails": {
     "title": "Szczegóły zamówienia",
@@ -1148,7 +1160,20 @@
     "success": "Zapytanie zostało zapisane.",
     "successDescription": "Zachowaj numer zapytania. Wysłanie formularza nie oznacza złożenia zamówienia.",
     "reference": "Numer zapytania:",
-        "productContext": "Zapytanie dotyczy: {{ name }}"
+        "productContext": "Zapytanie dotyczy: {{ name }}",
+    "attachments": {
+      "label": "Załączniki (opcjonalnie)",
+      "hint": "Dodaj inspiracje, logo lub grafikę do wyceny. JPG, PNG, WebP lub PDF. Maksymalnie 5 plików, każdy do 10 MiB.",
+      "remove": "Usuń",
+      "removeNamed": "Usuń załącznik {{name}}",
+      "errors": {
+        "tooMany": "Możesz dodać maksymalnie 5 plików.",
+        "invalidSize": "Każdy plik musi mieć rozmiar większy od zera i nie większy niż 10 MiB.",
+        "invalidFormat": "Wybierz pliki JPG, PNG, WebP lub PDF.",
+        "uploadTooLarge": "Przesyłane pliki przekraczają dozwolony rozmiar.",
+        "invalidContent": "Nie można odczytać jednego z załączników. Sprawdź format i zawartość plików. PDF nie może być zabezpieczony hasłem."
+        }
+      }
   },
 
   "about": {

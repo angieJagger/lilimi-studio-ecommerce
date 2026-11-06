@@ -161,6 +161,8 @@ export class ProjectInquiry {
   protected readonly isSubmitting = signal(false);
   protected readonly createdInquiry = signal<CreateInquiryResponse | null>(null);
   protected readonly inquiryErrorKey = signal<string | null>(null);
+  protected readonly attachments = signal<readonly File[]>([]);
+  protected readonly attachmentErrorKey = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -175,6 +177,47 @@ export class ProjectInquiry {
         projectType,
       }));
     });
+  }
+
+  protected addAttachments(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selected = Array.from(input.files ?? []);
+    input.value = '';
+
+    if (this.isSubmitting() || this.createdInquiry()) {
+      return;
+    }
+
+    this.attachmentErrorKey.set(null);
+
+    if (this.attachments().length + selected.length > 5) {
+      this.attachmentErrorKey.set('projectInquiry.attachments.errors.tooMany');
+      return;
+    }
+
+    for (const file of selected) {
+      if (file.size === 0 || file.size > 10 * 1024 * 1024) {
+        this.attachmentErrorKey.set('projectInquiry.attachments.errors.invalidSize');
+        return;
+      }
+
+      if (!/\.(jpe?g|png|webp|pdf)$/i.test(file.name)) {
+        this.attachmentErrorKey.set('projectInquiry.attachments.errors.invalidFormat');
+        return;
+      }
+    }
+
+    this.attachments.update((files) => [...files, ...selected]);
+  }
+
+  protected removeAttachment(index: number): void {
+    if (this.isSubmitting() || this.createdInquiry()) {
+      return;
+    }
+
+    this.attachments.update((files) => files.filter((_, fileIndex) => fileIndex !== index));
+
+    this.attachmentErrorKey.set(null);
   }
 
   protected onSubmit(event: Event): void {
@@ -225,7 +268,7 @@ export class ProjectInquiry {
     this.isSubmitting.set(true);
 
     this.api
-      .createInquiry(request)
+      .createInquiry(request, this.attachments())
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.isSubmitting.set(false)),
@@ -233,6 +276,8 @@ export class ProjectInquiry {
       .subscribe({
         next: (confirmation) => {
           this.createdInquiry.set(confirmation);
+          this.attachments.set([]);
+          this.attachmentErrorKey.set(null);
         },
         error: (error: unknown) => {
           this.inquiryErrorKey.set(this.getInquiryErrorKey(error));
@@ -246,6 +291,13 @@ export class ProjectInquiry {
 
   private getInquiryErrorKey(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
+      if (error.status === 413) {
+        return 'projectInquiry.attachments.errors.uploadTooLarge';
+      }
+
+      if (error.status === 415) {
+        return 'projectInquiry.attachments.errors.invalidFormat';
+      }
       if (error.status === 429) {
         return 'projectInquiry.errors.tooManyRequests';
       }
@@ -257,6 +309,8 @@ export class ProjectInquiry {
       switch (error.error?.code) {
         case 'INQUIRY_PRODUCT_UNAVAILABLE':
           return 'projectInquiry.errors.productUnavailable';
+        case 'INQUIRY_ATTACHMENT_INVALID':
+          return 'projectInquiry.attachments.errors.invalidContent';
 
         case 'INQUIRY_VALIDATION_FAILED':
         case 'INQUIRY_REQUEST_INVALID':

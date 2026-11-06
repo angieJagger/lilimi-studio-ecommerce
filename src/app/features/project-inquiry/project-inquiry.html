@@ -14,9 +14,9 @@
       <output>
         {{ 'projectInquiry.success' | transloco }}
       </output>
-    
+
       <p>{{ 'projectInquiry.successDescription' | transloco }}</p>
-    
+
       <p>
         {{ 'projectInquiry.reference' | transloco }}
         <strong>{{ confirmation.id }}</strong>
@@ -85,7 +85,7 @@
         <label for="inquiry-project-type">
           {{ 'projectInquiry.fields.projectType.label' | transloco }}
         </label>
-      
+
         <select id="inquiry-project-type" [formField]="inquiryForm.projectType" [attr.aria-invalid]="
             inquiryForm.projectType().touched() && inquiryForm.projectType().invalid()
               ? 'true'
@@ -98,14 +98,14 @@
           <option value="">
             {{ 'projectInquiry.fields.projectType.placeholder' | transloco }}
           </option>
-      
+
           @for (type of projectTypes; track type) {
           <option [value]="type">
             {{ ('projectInquiry.fields.projectType.options.' + type) | transloco }}
           </option>
           }
         </select>
-      
+
         @if (inquiryForm.projectType().touched() && inquiryForm.projectType().invalid()) {
         <ul id="inquiry-project-type-errors" class="form-field__errors">
           @for (error of inquiryForm.projectType().errors(); track error) {
@@ -161,6 +161,63 @@
         </ul>
         }
       </div>
+
+            <div class="form-field">
+        <label for="inquiry-attachments">
+          {{ 'projectInquiry.attachments.label' | transloco }}
+        </label>
+
+        <p id="inquiry-attachments-hint" class="project-inquiry__attachment-hint">
+          {{ 'projectInquiry.attachments.hint' | transloco }}
+        </p>
+
+        <input
+          id="inquiry-attachments"
+          type="file"
+          multiple
+          accept=".jpg,.jpeg,.png,.webp,.pdf"
+          [attr.aria-describedby]="
+            attachmentErrorKey()
+              ? 'inquiry-attachments-hint inquiry-attachments-error'
+              : 'inquiry-attachments-hint'
+          "
+          (change)="addAttachments($event)"
+        />
+
+        @if (attachmentErrorKey(); as message) {
+          <p
+            id="inquiry-attachments-error"
+            class="form-field__errors"
+            role="alert"
+          >
+            {{ message | transloco }}
+          </p>
+        }
+
+        @if (attachments().length > 0) {
+          <ul class="project-inquiry__attachments">
+            @for (file of attachments(); track $index) {
+              <li class="project-inquiry__attachment">
+                <span class="project-inquiry__attachment-name">
+                  {{ file.name }}
+                </span>
+
+                <button
+                  class="button button--secondary"
+                  type="button"
+                  [attr.aria-label]="
+                    'projectInquiry.attachments.removeNamed'
+                      | transloco: { name: file.name }
+                  "
+                  (click)="removeAttachment($index)"
+                >
+                  {{ 'projectInquiry.attachments.remove' | transloco }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
             <button class="button button--primary" type="submit" [attr.aria-busy]="isSubmitting()">
               {{
               (isSubmitting() ? 'projectInquiry.submitting' : 'projectInquiry.submit')
@@ -168,11 +225,11 @@
               }}
             </button>
             </fieldset>
-            
+
             <p class="project-inquiry__notice">
               {{ 'projectInquiry.notice' | transloco }}
             </p>
-            
+
             @if (inquiryErrorKey(); as message) {
             <p class="form-field__errors" role="alert">
               {{ message | transloco }}

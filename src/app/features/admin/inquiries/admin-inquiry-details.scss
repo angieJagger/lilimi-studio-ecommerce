@@ -31,7 +31,7 @@ h3 {
   padding: 24px;
   border: 1px solid var(--border-default);
   border-radius: 12px;
-  background: var(--surface-page);
+  background: transparent;
 }
 
 .inquiry-details__metadata {
@@ -99,4 +99,43 @@ button:focus-visible {
 .inquiry-details__status button:disabled {
   opacity: 0.65;
   cursor: wait;
+}
+
+.inquiry-details__attachments {
+  display: grid;
+  gap: var(--spacing-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inquiry-details__attachment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  padding-block: var(--spacing-16);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.inquiry-details__attachment:last-child {
+  border-bottom: 0;
+}
+
+.inquiry-details__attachment-info {
+  display: grid;
+  flex: 1 1 12rem;
+  gap: var(--spacing-8);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.inquiry-details__attachment-info > span {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.inquiry-details__attachment .button {
+  flex-shrink: 0;
 }
