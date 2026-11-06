@@ -189,7 +189,19 @@
       "statusTransitionInvalid": "This status change is not allowed. Reload the inquiry details.",
       "statusSaveFailed": "The status change could not be confirmed. Reload the details to check the current status."
     },
-    "unread": "Unread inquiry."
+    "unread": "Unread inquiry.",
+    "attachments": {
+      "title": "Attachments",
+      "loading": "Loading attachments…",
+      "empty": "No attachments were added to this inquiry.",
+      "download": "Download",
+      "downloadNamed": "Download attachment {{name}}",
+      "downloading": "Downloading…",
+      "errors": {
+        "loadFailed": "Could not load the attachment list. Please try again.",
+        "downloadFailed": "Could not download the file. Please try again."
+      }
+    }
   },
   "adminOrderDetails": {
     "title": "Order details",
@@ -1146,7 +1158,20 @@
     "success": "Your inquiry has been saved.",
     "successDescription": "Keep your inquiry reference. Submitting this form does not place an order.",
     "reference": "Inquiry reference:",
-    "productContext": "Your inquiry concerns: {{ name }}"
+    "productContext": "Your inquiry concerns: {{ name }}",
+    "attachments": {
+      "label": "Attachments (optional)",
+      "hint": "Add references, a logo or artwork for your quote. JPG, PNG, WebP or PDF. Up to 5 files, each no larger than 10 MiB.",
+      "remove": "Remove",
+      "removeNamed": "Remove attachment {{name}}",
+      "errors": {
+        "tooMany": "You can add up to 5 files.",
+        "invalidSize": "Each file must be larger than zero and no larger than 10 MiB.",
+        "invalidFormat": "Choose JPG, PNG, WebP or PDF files.",
+        "uploadTooLarge": "The uploaded files exceed the allowed size.",
+        "invalidContent": "One of the attachments could not be read. Check the file format and contents. PDFs must not be password-protected."
+      }
+    }
   },
 
   "about": {

@@ -43,3 +43,11 @@ export interface ChangeInquiryStatusRequest {
   readonly status: InquiryStatus;
   readonly expectedVersion: number;
 }
+
+export interface AdminInquiryAttachment {
+  readonly id: string;
+  readonly originalFilename: string;
+  readonly contentType: string;
+  readonly byteSize: number;
+  readonly createdAt: string;
+}

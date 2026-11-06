@@ -169,5 +169,53 @@
     <p class="inquiry-details__inspiration">{{ details.inspirationUrl }}</p>
     }
   </div>
+
+    <section class="inquiry-details__card" aria-labelledby="inquiry-attachments-title"
+      [attr.aria-busy]="areAttachmentsLoading()">
+      <h2 id="inquiry-attachments-title">
+        {{ 'adminInquiries.attachments.title' | transloco }}
+      </h2>
+
+      @if (areAttachmentsLoading()) {
+      <output>{{ 'adminInquiries.attachments.loading' | transloco }}</output>
+      } @else if (attachmentsErrorKey(); as message) {
+      <p role="alert">{{ message | transloco }}</p>
+
+      <button class="button button--secondary" type="button" [disabled]="isLoading() || isSaving()" (click)="retry()">
+        {{ 'adminInquiries.details.retry' | transloco }}
+      </button>
+      } @else if (attachments().length === 0) {
+      <p>{{ 'adminInquiries.attachments.empty' | transloco }}</p>
+      } @else {
+      <ul class="inquiry-details__attachments">
+        @for (attachment of attachments(); track attachment.id) {
+        <li class="inquiry-details__attachment">
+          <div class="inquiry-details__attachment-info">
+            <strong>{{ attachment.originalFilename }}</strong>
+            <span>{{ attachment.contentType }}</span>
+          </div>
+
+          <button class="button button--primary" type="button" [disabled]="downloadingAttachmentId() !== null"
+            [attr.aria-busy]="downloadingAttachmentId() === attachment.id" [attr.aria-label]="
+                    'adminInquiries.attachments.downloadNamed'
+                      | transloco: { name: attachment.originalFilename }
+                  " (click)="downloadAttachment(attachment)">
+            {{
+            (
+            downloadingAttachmentId() === attachment.id
+            ? 'adminInquiries.attachments.downloading'
+            : 'adminInquiries.attachments.download'
+            ) | transloco
+            }}
+          </button>
+        </li>
+        }
+      </ul>
+      }
+
+      @if (downloadErrorKey(); as message) {
+      <p role="alert">{{ message | transloco }}</p>
+      }
+    </section>
   }
 </section>

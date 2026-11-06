@@ -19,6 +19,8 @@ describe('AdminInquiryDetails', () => {
     getInquiry: vi.fn(),
     changeStatus: vi.fn(),
     markRead: vi.fn(),
+    getAttachments: vi.fn(),
+    downloadAttachment: vi.fn(),
   };
 
   const inquiry: InquiryDetails = {
@@ -44,6 +46,9 @@ describe('AdminInquiryDetails', () => {
     api.getInquiry.mockReturnValue(result.asObservable());
     api.changeStatus.mockReset();
     api.markRead.mockReset();
+    api.getAttachments.mockReset();
+    api.getAttachments.mockReturnValue(of([]));
+    api.downloadAttachment.mockReset();
     api.markRead.mockReturnValue(of(undefined));
     api.changeStatus.mockReturnValue(statusResult.asObservable());
 
@@ -77,6 +82,30 @@ describe('AdminInquiryDetails', () => {
 
     await fixture.whenStable();
   }
+
+    it('should display attachments belonging to the inquiry', async () => {
+      api.getAttachments.mockReturnValue(
+        of([
+          {
+            id: '8e3f5661-3549-4407-bdcb-3c101b55a828',
+            originalFilename: 'logo.png',
+            contentType: 'image/png',
+            byteSize: 1234,
+            createdAt: '2026-10-09T08:00:00Z',
+          },
+        ]),
+      );
+
+      await respond(inquiry);
+
+      expect(api.getAttachments).toHaveBeenCalledExactlyOnceWith(inquiry.id);
+
+      const attachment = element.querySelector('.inquiry-details__attachment');
+
+      expect(attachment?.textContent).toContain('logo.png');
+      expect(attachment?.textContent).toContain('image/png');
+      expect(attachment?.querySelector('button')?.textContent).toContain('Pobierz');
+    });
 
   it('should request the inquiry from the route and show loading', () => {
     expect(api.getInquiry).toHaveBeenCalledExactlyOnceWith(inquiry.id);

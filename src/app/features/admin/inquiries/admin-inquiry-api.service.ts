@@ -8,6 +8,7 @@ import type {
   AdminInquiryFilters,
   AdminInquiryPage,
   ChangeInquiryStatusRequest,
+  AdminInquiryAttachment,
 } from './admin-inquiry.model';
 
 @Injectable({
@@ -55,6 +56,19 @@ export class AdminInquiryApiService {
   getInquiry(id: string): Observable<AdminInquiryDetails> {
     return this.http.get<AdminInquiryDetails>(
       `${this.baseUrl}/admin/project-inquiries/${encodeURIComponent(id)}`,
+    );
+  }
+
+  getAttachments(id: string): Observable<readonly AdminInquiryAttachment[]> {
+    return this.http.get<readonly AdminInquiryAttachment[]>(
+      `${this.baseUrl}/admin/project-inquiries/${encodeURIComponent(id)}/attachments`,
+    );
+  }
+
+  downloadAttachment(inquiryId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/admin/project-inquiries/${encodeURIComponent(inquiryId)}/attachments/${encodeURIComponent(attachmentId)}/download`,
+      { responseType: 'blob' },
     );
   }
 

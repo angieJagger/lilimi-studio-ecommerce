@@ -13,7 +13,12 @@ Server directory: `/home/ubuntu/lilimi`.
 A deployment creates:
 
 - a PostgreSQL dump in `backups/`;
+- a compressed archive of the media volume in `backups/`, including product images, digital packages and inquiry attachments;
 - a copy of `.env` in `backups/`.
+
+The backend is stopped while the database and media backups are created.
+Use database and media backups with the same timestamp when restoring
+a complete recovery point. Backups remain on the application server.
 
 The deployment updates `.env` with the selected image tag only after
 the deployment checks succeed.

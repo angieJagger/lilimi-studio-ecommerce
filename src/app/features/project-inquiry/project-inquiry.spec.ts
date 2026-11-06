@@ -239,7 +239,9 @@ describe('ProjectInquiry', () => {
       description: 'Potrzebuję strony dla pracowni haftu.',
       inspirationUrl: null,
       productId: null,
-    });
+    },
+    [],
+  );
   });
 
   it('should reject an invalid inspiration URL', async () => {
@@ -448,6 +450,7 @@ describe('ProjectInquiry product context', () => {
             description: 'Proszę o wycenę mojego projektu.',
             productId: null,
           }),
+          [],
         );
 
         inquiryResult.next({
@@ -565,7 +568,9 @@ describe('ProjectInquiry product context', () => {
       description: 'Proszę o wycenę personalizacji.',
       inspirationUrl: null,
       productId: 'embroidered-002',
-    });
+    },
+  [],
+);
   });
 
   it('should wait for the catalog before submitting a product inquiry', async () => {

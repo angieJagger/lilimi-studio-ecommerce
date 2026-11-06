@@ -9,11 +9,20 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.inquiry.persistence.ProjectInquiryRepository;
-import tools.jackson.databind.json.JsonMapper;
+import pl.lilimi.inquiry.persistence.InquiryAttachmentRepository;
+import pl.lilimi.inquiry.storage.InquiryAttachmentStorage;
 
+import tools.jackson.databind.json.JsonMapper;
 import java.util.UUID;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -22,6 +31,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -34,6 +48,12 @@ class ProjectInquiryControllerTest {
 
   @Autowired
   private ProjectInquiryRepository inquiries;
+
+  @Autowired
+  private InquiryAttachmentRepository attachments;
+
+  @MockitoBean
+  private InquiryAttachmentStorage attachmentStorage;
 
   private String validRequest() {
     return """
@@ -218,5 +238,93 @@ class ProjectInquiryControllerTest {
       ));
 
     assertThat(inquiries.count()).isEqualTo(initialCount);
+  }
+
+  @Test
+  void shouldCreateInquiryWithPngAttachmentWithoutLogin() throws Exception {
+    var image = new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB);
+    var output = new ByteArrayOutputStream();
+
+    ImageIO.write(image, "png", output);
+    image.flush();
+
+    var requestPart = new MockMultipartFile(
+      "request",
+      "",
+      "application/json",
+      validRequest().getBytes(StandardCharsets.UTF_8)
+    );
+
+    var filePart = new MockMultipartFile(
+      "files",
+      "inspiration.png",
+      "image/png",
+      output.toByteArray()
+    );
+
+    String storageKey = "00000000-0000-0000-0000-000000000004.bin";
+
+    when(attachmentStorage.store(any(byte[].class)))
+      .thenReturn(storageKey);
+
+    var result = mockMvc.perform(
+        multipart("/api/project-inquiries")
+          .file(requestPart)
+          .file(filePart)
+          .with(csrf())
+      )
+      .andExpect(status().isCreated())
+      .andExpect(jsonPath("$.id").isString())
+      .andReturn();
+
+    String id = JsonMapper.builder().build()
+      .readTree(result.getResponse().getContentAsString())
+      .get("id")
+      .asText();
+
+    var saved = attachments
+      .findAllByInquiryIdOrderByCreatedAtAscIdAsc(UUID.fromString(id));
+
+    assertThat(saved).hasSize(1);
+    assertThat(saved.getFirst().getOriginalFilename())
+      .isEqualTo("inspiration.png");
+    assertThat(saved.getFirst().getContentType())
+      .isEqualTo("image/png");
+    assertThat(saved.getFirst().getByteSize())
+      .isEqualTo(output.size());
+    assertThat(saved.getFirst().getStorageKey())
+      .isEqualTo(storageKey);
+  }
+
+  @Test
+  void shouldRejectMultipartInquiryWithoutCsrfToken() throws Exception {
+    long initialInquiryCount = inquiries.count();
+    long initialAttachmentCount = attachments.count();
+
+    var requestPart = new MockMultipartFile(
+      "request",
+      "",
+      "application/json",
+      validRequest().getBytes(StandardCharsets.UTF_8)
+    );
+
+    var filePart = new MockMultipartFile(
+      "files",
+      "inspiration.png",
+      "image/png",
+      new byte[] { 1, 2, 3 }
+    );
+
+    mockMvc.perform(
+        multipart("/api/project-inquiries")
+          .file(requestPart)
+          .file(filePart)
+      )
+      .andExpect(status().isForbidden());
+
+    assertThat(inquiries.count()).isEqualTo(initialInquiryCount);
+    assertThat(attachments.count()).isEqualTo(initialAttachmentCount);
+
+    verifyNoInteractions(attachmentStorage);
   }
 }

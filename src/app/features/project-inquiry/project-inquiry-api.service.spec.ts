@@ -47,6 +47,60 @@ describe('ProjectInquiryApiService', () => {
     });
   }
 
+    it('should submit attachments as multipart after initializing CSRF', async () => {
+      const firstFile = new File(['image'], 'logo.png', {
+        type: 'image/png',
+      });
+
+      const secondFile = new File(['document'], 'reference.pdf', {
+        type: 'application/pdf',
+      });
+
+      const response: CreateInquiryResponse = {
+        id: '1548c928-f278-4cbb-b8d0-d57455c72f91',
+        createdAt: '2026-10-09T08:00:00Z',
+        status: 'new',
+      };
+
+      let result: CreateInquiryResponse | undefined;
+
+      service.createInquiry(request, [firstFile, secondFile]).subscribe((confirmation) => {
+        result = confirmation;
+      });
+
+      http.expectNone('/api/project-inquiries');
+
+      completeCsrfRequest();
+
+      const pending = http.expectOne('/api/project-inquiries');
+
+      expect(pending.request.method).toBe('POST');
+      expect(pending.request.body).toBeInstanceOf(FormData);
+      expect(pending.request.headers.has('Content-Type')).toBe(false);
+
+      const body = pending.request.body as FormData;
+      const requestPart = body.get('request');
+
+      expect(requestPart).toBeInstanceOf(Blob);
+
+      const jsonPart = requestPart as Blob;
+
+      expect(jsonPart.type).toBe('application/json');
+      expect(JSON.parse(await jsonPart.text())).toEqual(request);
+
+      const files = body.getAll('files') as File[];
+
+      expect(files.map((file) => file.name)).toEqual(['logo.png', 'reference.pdf']);
+      expect(files.map((file) => file.size)).toEqual([firstFile.size, secondFile.size]);
+
+      pending.flush(response, {
+        status: 201,
+        statusText: 'Created',
+      });
+
+      expect(result).toEqual(response);
+    });
+
   it('should initialize CSRF before submitting and return confirmation', () => {
     const response: CreateInquiryResponse = {
       id: '1548c928-f278-4cbb-b8d0-d57455c72f91',
