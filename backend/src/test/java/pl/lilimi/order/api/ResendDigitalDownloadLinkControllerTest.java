@@ -62,13 +62,17 @@ class ResendDigitalDownloadLinkControllerTest {
   }
 
   @Test
-  void shouldRequireCsrfBeforeCheckingLimit() throws Exception {
+  void shouldRequireCsrfAfterCheckingLimit() throws Exception {
+    when(limiter.reserveDownloadLink("127.0.0.1"))
+      .thenReturn(0L);
+
     mvc.perform(post(URL)
         .contentType(MediaType.APPLICATION_JSON)
         .content(validRequest()))
       .andExpect(status().isForbidden());
 
-    verifyNoInteractions(service, limiter);
+    verify(limiter).reserveDownloadLink("127.0.0.1");
+    verifyNoInteractions(service);
   }
 
   @Test

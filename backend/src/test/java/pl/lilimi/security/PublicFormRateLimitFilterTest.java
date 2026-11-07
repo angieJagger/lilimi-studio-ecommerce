@@ -67,7 +67,10 @@ class PublicFormRateLimitFilterTest {
   }
 
   @Test
-  void shouldRejectMissingCsrfBeforeCheckingLimit() throws Exception {
+  void shouldRejectMissingCsrfAfterCheckingLimit() throws Exception {
+    when(limiter.reserveInquiry("127.0.0.1")).thenReturn(0L);
+    when(limiter.reserveRegistration("127.0.0.1")).thenReturn(0L);
+
     mvc.perform(post("/api/project-inquiries")
         .contentType(MediaType.APPLICATION_JSON)
         .content("{}"))
@@ -78,7 +81,28 @@ class PublicFormRateLimitFilterTest {
         .content("{}"))
       .andExpect(status().isForbidden());
 
-    verifyNoInteractions(limiter);
+    verify(limiter).reserveInquiry("127.0.0.1");
+    verify(limiter).reserveRegistration("127.0.0.1");
+  }
+
+  @Test
+  void shouldRejectExhaustedLimitBeforeCheckingCsrf() throws Exception {
+    when(limiter.reserveInquiry("127.0.0.1")).thenReturn(120L);
+    when(limiter.reserveRegistration("127.0.0.1")).thenReturn(600L);
+
+    mvc.perform(post("/api/project-inquiries")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{}"))
+      .andExpect(status().isTooManyRequests())
+      .andExpect(header().string("Retry-After", "120"))
+      .andExpect(jsonPath("$.code").value("PUBLIC_FORM_RATE_LIMITED"));
+
+    mvc.perform(post("/api/auth/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{}"))
+      .andExpect(status().isTooManyRequests())
+      .andExpect(header().string("Retry-After", "600"))
+      .andExpect(jsonPath("$.code").value("PUBLIC_FORM_RATE_LIMITED"));
   }
 
   @Test

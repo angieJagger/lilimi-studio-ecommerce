@@ -1,6 +1,7 @@
 package pl.lilimi.inquiry.storage;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
@@ -23,26 +24,45 @@ public class FileSystemInquiryAttachmentStorage
   implements InquiryAttachmentStorage {
 
   private static final long MAX_FILE_SIZE = 10L * 1024 * 1024;
-
+  private static final long MIN_FREE_SPACE =
+    1024L * 1024 * 1024;
+  private static final long MAX_TOTAL_SIZE =
+    1024L * 1024 * 1024;
   private static final Pattern STORAGE_KEY_PATTERN = Pattern.compile(
     "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.bin"
   );
-
   private final Path directory;
+  private final long maxTotalSize;
 
+  @Autowired
   public FileSystemInquiryAttachmentStorage(
     @Value("${lilimi.media.storage-directory:./var/media}")
     String storageDirectory
   ) {
+    this(storageDirectory, MAX_TOTAL_SIZE);
+  }
+
+  FileSystemInquiryAttachmentStorage(
+    String storageDirectory,
+    long maxTotalSize
+  ) {
+    if (maxTotalSize < 1) {
+      throw new IllegalArgumentException(
+        "Attachment storage limit must be positive"
+      );
+    }
+
     this.directory = Path.of(storageDirectory)
       .toAbsolutePath()
       .normalize()
       .resolve("private")
       .resolve("inquiry-attachments");
+
+    this.maxTotalSize = maxTotalSize;
   }
 
   @Override
-  public String store(byte[] content) throws IOException {
+  public synchronized String store(byte[] content) throws IOException {
     if (
       content == null ||
         content.length == 0 ||
@@ -54,6 +74,15 @@ public class FileSystemInquiryAttachmentStorage
     }
 
     Files.createDirectories(directory);
+    checkStorageCapacity(content.length);
+
+    long usableSpace = Files.getFileStore(directory).getUsableSpace();
+
+    if (usableSpace < MIN_FREE_SPACE + content.length) {
+      throw new IOException(
+        "Insufficient disk space for an inquiry attachment"
+      );
+    }
 
     String storageKey = UUID.randomUUID() + ".bin";
     Path target = resolve(storageKey);
@@ -133,6 +162,44 @@ public class FileSystemInquiryAttachmentStorage
     }
 
     return List.copyOf(storageKeys);
+  }
+
+  private void checkStorageCapacity(long incomingBytes) throws IOException {
+    long remaining = maxTotalSize - incomingBytes;
+
+    if (remaining < 0) {
+      throw new IOException(
+        "Inquiry attachment storage limit exceeded"
+      );
+    }
+
+    try (var entries = Files.newDirectoryStream(directory)) {
+      for (Path entry : entries) {
+        BasicFileAttributes attributes;
+
+        try {
+          attributes = Files.readAttributes(
+            entry,
+            BasicFileAttributes.class,
+            LinkOption.NOFOLLOW_LINKS
+          );
+        } catch (NoSuchFileException exception) {
+          continue;
+        }
+
+        if (!attributes.isRegularFile()) {
+          continue;
+        }
+
+        if (attributes.size() > remaining) {
+          throw new IOException(
+            "Inquiry attachment storage limit exceeded"
+          );
+        }
+
+        remaining -= attributes.size();
+      }
+    }
   }
 
   private Path resolve(String storageKey) {
