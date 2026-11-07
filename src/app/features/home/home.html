@@ -13,8 +13,7 @@
 
       <div class="hero__actions">
         <a
-          #projectButton class="button button--primary hero__spotlight"
-          (pointermove)="moveSpotlight($event, projectButton)"
+          class="button button--primary"
           [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
         >
           {{ 'home.hero.requestProject' | transloco }}

@@ -14,12 +14,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.security.web.csrf.CsrfFilter;
 
 import pl.lilimi.auth.persistence.UserAccountRepository;
 import pl.lilimi.auth.application.LoginRateLimiter;
 import pl.lilimi.security.application.PublicFormRateLimiter;
-
 
 
 @Configuration
@@ -44,7 +43,7 @@ public class SecurityConfig {
         UsernamePasswordAuthenticationFilter.class)
       .addFilterBefore(
         new PublicFormRateLimitFilter(publicFormRateLimiter),
-        LoginRateLimitFilter.class
+        CsrfFilter.class
       )
       .addFilterAfter(
         new CredentialsVersionFilter(accounts),

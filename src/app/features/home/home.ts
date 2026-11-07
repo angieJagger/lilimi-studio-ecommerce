@@ -41,19 +41,4 @@ export class Home {
 
   protected readonly primaryServices = primaryStudioServices;
   protected readonly additionalServices = additionalStudioServices;
-
-  protected moveSpotlight(event: PointerEvent, button: HTMLElement): void {
-    if (event.pointerType === 'touch' || !window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) {
-      return;
-    }
-
-    const bounds = button.getBoundingClientRect();
-    const horizontalPosition = (event.clientX - bounds.left) / bounds.width;
-    const edgeLight = Math.min(1, Math.max(0, (Math.abs(horizontalPosition - 0.5) - 0.22) / 0.18));
-    button.style.setProperty('--edge-light', String(edgeLight));
-    button.style.setProperty('--frame-light', String(1 - edgeLight));
-
-    button.style.setProperty('--pointer-x', `${event.clientX - bounds.left}px`);
-    button.style.setProperty('--pointer-y', `${event.clientY - bounds.top}px`);
-  }
 }

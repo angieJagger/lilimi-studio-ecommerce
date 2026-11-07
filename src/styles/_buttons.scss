@@ -5,7 +5,7 @@
   min-height: 48px;
   padding: var(--spacing-12) var(--spacing-24);
   border: 1px solid transparent;
-  border-radius: var(--radius-12);
+  border-radius: 17px;
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 600;
@@ -14,40 +14,13 @@
   text-decoration: none;
   cursor: pointer;
 }
-
-.button--primary {
-  --primary-frame-color: #e5d5f8;
-  --primary-hover-fill:
-    linear-gradient(155deg, rgb(177 149 255 / 23%) 0%, rgb(177 149 255 / 6%) 27%, transparent 44%),
-    linear-gradient(155deg, #503c63, #38294a);
-
-  position: relative;
-  border: 1px solid transparent;
-  background-image:
-    linear-gradient(155deg, rgb(177 149 255 / 18%) 0%, rgb(177 149 255 / 6%) 27%, transparent 44%),
-    linear-gradient(155deg, #463557, #30243f);
-  color: #fff;
-  box-shadow:
-    0 10px 28px -8px rgb(15 82 186 / 60%),
-    inset 0 -3px 7px rgb(182 112 255 / 42%),
-    inset 0 -12px 20px rgb(48 36 63 / 35%);
-}
-
-.button--primary:hover {
-  box-shadow:
-    0 14px 36px -6px rgb(91 106 188 / 45%),
-    inset 0 -4px 9px rgb(199 132 255 / 58%),
-    inset 0 -12px 22px rgb(48 36 63 / 45%);
-  background-image:
-    var(--primary-hover-fill);
-}
-
 .button:focus-visible {
   outline: 2px solid var(--border-brand);
   outline-offset: 4px;
 }
 
 .button--secondary {
+  border-radius: var(--radius-button);
   position: relative;
   isolation: isolate;
   border-color: transparent;
@@ -60,7 +33,6 @@
     0 5px 12px -4px rgb(48 40 61 / 22%);
 }
 
-.button--primary::before,
 .button--secondary::before {
   content: '';
   position: absolute;
@@ -78,12 +50,6 @@
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
-}
-
-.button--primary::before {
-  inset: -1px;
-  padding: 1px;
-  background: var(--primary-frame-color);
 }
 
 .button--secondary:hover::before {
@@ -129,6 +95,7 @@
 @media (prefers-reduced-motion: no-preference) {
   .button--primary,
   .button--secondary {
+  border-radius: var(--radius-button);
     transition: box-shadow 140ms ease, transform 140ms ease;
   }
 }
@@ -137,4 +104,156 @@
   .button--secondary:not(:disabled):not([aria-disabled='true']):active {
     transform: translateY(1px);
   }
+}
+
+@property --primary-light-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+.button--primary {
+  --primary-light-accent: #e5d5f8;
+  --primary-light-x: 50%;
+  --primary-light-y: 50%;
+  --primary-light-radius: 70px;
+  --primary-light-opacity: 0;
+
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-button);
+  background:
+    linear-gradient(#382b49 0 0) padding-box,
+    radial-gradient(
+      var(--primary-light-radius) circle
+        at var(--primary-light-x) var(--primary-light-y),
+      rgb(255 255 255 / var(--primary-light-opacity)) 0%,
+      rgb(229 213 248 / var(--primary-light-opacity)) 35%,
+      transparent 100%
+    ) border-box,
+    linear-gradient(#37343d 0 0) border-box;
+  color: #fff;
+  box-shadow: 0 3px 8px rgb(25 16 35 / 12%);
+  transition: --primary-light-opacity 500ms ease, box-shadow 140ms ease;
+}
+
+.button--primary:hover {
+  color: #fff;
+}
+
+.button--primary::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -40px;
+  padding: 40px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  filter: blur(6px);
+  background: radial-gradient(
+    circle 40px
+      at calc(var(--primary-light-x) + 40px) calc(var(--primary-light-y) + 40px),
+    rgb(255 255 255 / 75%) 0%,
+    rgb(255 255 255 / 65%) 12%,
+    rgb(245 232 255 / 60%) 30%,
+    rgb(229 213 248 / 40%) 50%,
+    rgb(229 213 248 / 15%) 75%,
+    transparent 100%
+  );
+
+  // Keep the pointer halo outside the button's surface.
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.primary-button-stars {
+  position: absolute;
+  z-index: -1;
+  inset: -40px;
+  padding: 40px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 700ms ease;
+
+  // A 40px circle follows the light; the button itself cuts out the stars.
+  -webkit-mask:
+    radial-gradient(
+      circle 40px at calc(var(--primary-light-x) + 40px) calc(var(--primary-light-y) + 40px),
+      #fff 65%, transparent 100%
+    ),
+    linear-gradient(#fff 0 0) content-box;
+  -webkit-mask-composite: source-out;
+  mask:
+    radial-gradient(
+      circle 40px at calc(var(--primary-light-x) + 40px) calc(var(--primary-light-y) + 40px),
+      #fff 65%, transparent 100%
+    ),
+    linear-gradient(#fff 0 0) content-box;
+  mask-composite: subtract;
+}
+
+.primary-button-star {
+  position: absolute;
+  left: calc(var(--primary-light-x) + 40px + var(--star-x));
+  top: calc(var(--primary-light-y) + 40px + var(--star-y));
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 2px #fff,
+    0 0 6px rgb(255 255 255 / 95%),
+    0 0 12px rgb(229 213 248 / 100%);
+  opacity: 0;
+}
+
+.primary-button-star--tint {
+  background: var(--primary-light-accent);
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .button--primary.primary-light-active:not(:disabled):not([aria-disabled='true']) {
+    --primary-light-opacity: 1;
+
+    .primary-button-stars {
+      opacity: 1;
+    }
+
+    &::after {
+      opacity: 1;
+    }
+
+    .primary-button-star {
+      animation:
+        primary-star-twinkle var(--star-duration) ease-in-out var(--star-delay) infinite alternate,
+        primary-star-drift var(--star-drift-duration) ease-in-out var(--star-delay) infinite alternate;
+    }
+  }
+}
+
+@keyframes primary-star-twinkle {
+  from { opacity: 0.15; }
+  to { opacity: 0.95; }
+}
+
+@keyframes primary-star-drift {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(var(--star-dx), calc(var(--star-dy) * 0.4)); }
+  66% { transform: translate(calc(var(--star-dx) * 0.3), var(--star-dy)); }
+  100% { transform: translate(calc(var(--star-dx) * -0.6), calc(var(--star-dy) * 0.5)); }
+}
+
+.button--primary:focus-visible {
+  outline: 2px solid var(--primary-light-accent);
+  outline-offset: 4px;
 }

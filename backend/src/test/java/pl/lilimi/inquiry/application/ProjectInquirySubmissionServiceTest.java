@@ -44,6 +44,9 @@ class ProjectInquirySubmissionServiceTest {
   @Autowired
   private InquiryAttachmentRepository attachments;
 
+  @Autowired
+  private InquiryAttachmentProcessingGate processingGate;
+
   @MockitoBean
   private InquiryAttachmentValidator validator;
 
@@ -122,6 +125,49 @@ class ProjectInquirySubmissionServiceTest {
 
     assertThat(inquiries.count()).isEqualTo(initialInquiryCount);
     assertThat(attachments.count()).isEqualTo(initialAttachmentCount);
+  }
+
+  @Test
+  void shouldRejectAttachmentsWhenProcessingIsBusy() {
+    long initialInquiryCount = inquiries.count();
+    long initialAttachmentCount = attachments.count();
+
+    var file = new MockMultipartFile(
+      "files",
+      "logo.png",
+      "image/png",
+      new byte[] { 1 }
+    );
+
+    processingGate.execute(() -> {
+      assertThatThrownBy(() ->
+        service.submit(validRequest(), List.of(file))
+      ).isInstanceOfSatisfying(
+        ResponseStatusException.class,
+        exception -> assertThat(exception.getStatusCode())
+          .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
+      );
+
+      return null;
+    });
+
+    verifyNoInteractions(validator, storage);
+    assertThat(inquiries.count()).isEqualTo(initialInquiryCount);
+    assertThat(attachments.count()).isEqualTo(initialAttachmentCount);
+  }
+
+  @Test
+  void shouldAcceptInquiryWithoutAttachmentsWhenProcessingIsBusy() {
+    var inquiry = processingGate.execute(() ->
+      service.submit(validRequest(), List.of())
+    );
+
+    assertThat(inquiries.findById(inquiry.getId())).isPresent();
+    assertThat(
+      attachments.findAllByInquiryIdOrderByCreatedAtAscIdAsc(inquiry.getId())
+    ).isEmpty();
+
+    verifyNoInteractions(validator, storage);
   }
 
   @Test
@@ -264,5 +310,17 @@ class ProjectInquirySubmissionServiceTest {
       attachments.deleteAll(saved);
       inquiries.deleteById(inquiry.getId());
     }
+  }
+
+  private CreateInquiryRequest validRequest() {
+    return new CreateInquiryRequest(
+      "pl",
+      "Anna Kowalska",
+      "anna@example.com",
+      "digitizing",
+      "Proszę o wycenę digitalizacji logo.",
+      null,
+      null
+    );
   }
 }

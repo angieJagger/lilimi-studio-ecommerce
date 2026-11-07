@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Header } from '../header/header';
 import { Footer } from '../footer/footer';
+import { PrimaryButtonEffect } from '../../shared/effects/primary-button-effect';
 
 @Component({
   imports: [RouterOutlet, Header, Footer],
@@ -9,4 +10,8 @@ import { Footer } from '../footer/footer';
   styleUrl: './shop-layout.scss',
   templateUrl: './shop-layout.html',
 })
-export class ShopLayout {}
+export class ShopLayout {
+  constructor() {
+    inject(PrimaryButtonEffect);
+  }
+}

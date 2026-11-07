@@ -3,6 +3,7 @@ package pl.lilimi.inquiry.storage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -132,5 +133,57 @@ class FileSystemInquiryAttachmentStorageTest {
       .isInstanceOf(IllegalArgumentException.class);
 
     assertThat(outsideFile).hasBinaryContent(new byte[] { 1, 2, 3 });
+  }
+
+  @Test
+  void shouldAllowExactCapacityAndRejectFurtherUpload() throws Exception {
+    var storage = new FileSystemInquiryAttachmentStorage(
+      storageDirectory.toString(),
+      5
+    );
+
+    String firstKey = storage.store(new byte[] { 1, 2, 3 });
+    String secondKey = storage.store(new byte[] { 4, 5 });
+
+    assertThatThrownBy(() -> storage.store(new byte[] { 6 }))
+      .isInstanceOf(IOException.class)
+      .hasMessage("Inquiry attachment storage limit exceeded");
+
+    try (var input = storage.load(firstKey).getInputStream()) {
+      assertThat(input.readAllBytes())
+        .isEqualTo(new byte[] { 1, 2, 3 });
+    }
+
+    try (var input = storage.load(secondKey).getInputStream()) {
+      assertThat(input.readAllBytes())
+        .isEqualTo(new byte[] { 4, 5 });
+    }
+
+    Path directory = storageDirectory
+      .resolve("private")
+      .resolve("inquiry-attachments");
+
+    try (var files = Files.list(directory)) {
+      assertThat(files.count()).isEqualTo(2);
+    }
+  }
+
+  @Test
+  void shouldAllowUploadAfterDeletingFileToFreeCapacity() throws Exception {
+    var storage = new FileSystemInquiryAttachmentStorage(
+      storageDirectory.toString(),
+      3
+    );
+
+    String firstKey = storage.store(new byte[] { 1, 2, 3 });
+
+    storage.delete(firstKey);
+
+    String replacementKey = storage.store(new byte[] { 4, 5, 6 });
+
+    try (var input = storage.load(replacementKey).getInputStream()) {
+      assertThat(input.readAllBytes())
+        .isEqualTo(new byte[] { 4, 5, 6 });
+    }
   }
 }

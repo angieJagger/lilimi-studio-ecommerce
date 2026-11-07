@@ -28,24 +28,26 @@ public class ProjectInquirySubmissionService {
 
   private static final Logger LOGGER =
     LoggerFactory.getLogger(ProjectInquirySubmissionService.class);
-
   private static final int MAX_ATTACHMENTS = 5;
 
   private final ProjectInquiryService inquiries;
   private final InquiryAttachmentValidator validator;
   private final InquiryAttachmentStorage storage;
   private final InquiryAttachmentRepository attachments;
+  private final InquiryAttachmentProcessingGate processingGate;
 
   public ProjectInquirySubmissionService(
     ProjectInquiryService inquiries,
     InquiryAttachmentValidator validator,
     InquiryAttachmentStorage storage,
-    InquiryAttachmentRepository attachments
+    InquiryAttachmentRepository attachments,
+    InquiryAttachmentProcessingGate processingGate
   ) {
     this.inquiries = inquiries;
     this.validator = validator;
     this.storage = storage;
     this.attachments = attachments;
+    this.processingGate = processingGate;
   }
 
   @Transactional(timeout = 120)
@@ -60,6 +62,19 @@ public class ProjectInquirySubmissionService {
       );
     }
 
+    if (files.isEmpty()) {
+      return submitValidated(request, files);
+    }
+
+    return processingGate.execute(
+      () -> submitValidated(request, files)
+    );
+  }
+
+  private ProjectInquiry submitValidated(
+    CreateInquiryRequest request,
+    List<MultipartFile> files
+  ) {
     var validatedFiles = files.stream()
       .map(validator::validate)
       .toList();
