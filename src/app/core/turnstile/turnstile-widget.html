@@ -1,0 +1,19 @@
+<div class="turnstile" [hidden]="status() === 'disabled'" [attr.aria-busy]="status() === 'loading'">
+  <div #widget class="turnstile__widget" [hidden]="status() === 'loading' || status() === 'error'"></div>
+
+  @if (status() === 'loading') {
+  <p class="turnstile__message" role="status">
+    {{ 'turnstile.loading' | transloco }}
+  </p>
+  }
+
+  @if (status() === 'error') {
+  <p class="turnstile__error" role="alert">
+    {{ 'turnstile.unavailable' | transloco }}
+  </p>
+
+  <button class="button button--secondary" type="button" (click)="retry()">
+    {{ 'turnstile.retry' | transloco }}
+  </button>
+  }
+</div>

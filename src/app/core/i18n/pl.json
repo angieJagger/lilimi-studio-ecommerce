@@ -1055,8 +1055,8 @@
     },
     "customOrder": {
       "eyebrow": "POROZMAWIAJMY",
-      "title": "Opowiedz, co planujesz.",
-      "description": "Kilka zdań o projekcie wystarczy na początek.",
+      "title": "Zróbmy razem coś, co robi wrażenie.",
+      "description": "Opowiedz o swoim pomyśle, a wrócimy z wyceną i pierwszą wizją.",
       "cta": "Przejdź do formularza"
     },
     "featured": {
@@ -1303,5 +1303,11 @@
         "action": "Zapytaj o digitalizację"
       }
     }
+  },
+  "turnstile": {
+    "loading": "Ładowanie weryfikacji…",
+    "unavailable": "Nie udało się uruchomić weryfikacji. Spróbuj ponownie.",
+    "retry": "Ponów weryfikację",
+    "rejected": "Weryfikacja wygasła lub nie powiodła się. Spróbuj ponownie."
   }
 }

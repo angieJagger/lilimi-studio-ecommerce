@@ -1,12 +1,8 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { switchMap, type Observable } from 'rxjs';
 import { API_BASE_URL } from '../api/api-base-url';
-import type {
-  CurrentUser,
-  LoginRequest,
-  RegisterCustomerRequest,
-} from './auth.model';
+import type { CurrentUser, LoginRequest, RegisterCustomerRequest } from './auth.model';
 import { CsrfService } from './csrf.service';
 
 @Injectable({
@@ -21,16 +17,25 @@ export class AuthApiService {
     return this.http.get<CurrentUser>(`${this.baseUrl}/auth/me`);
   }
 
-  register(request: RegisterCustomerRequest): Observable<void> {
+  register(
+    request: RegisterCustomerRequest,
+    turnstileToken: string | null = null,
+  ): Observable<void> {
     const body: RegisterCustomerRequest = {
       email: request.email.trim(),
       password: request.password,
       ...(request.language ? { language: request.language } : {}),
     };
 
+    const headers = turnstileToken
+      ? new HttpHeaders().set('X-Turnstile-Token', turnstileToken)
+      : new HttpHeaders();
+
     return this.csrf
       .initialize()
-      .pipe(switchMap(() => this.http.post<void>(`${this.baseUrl}/auth/register`, body)));
+      .pipe(
+        switchMap(() => this.http.post<void>(`${this.baseUrl}/auth/register`, body, { headers })),
+      );
   }
 
   login(request: LoginRequest): Observable<CurrentUser> {

@@ -42,6 +42,40 @@ describe('AuthApiService', () => {
     });
   }
 
+  it('should send the Turnstile token when registering', () => {
+    service
+      .register(
+        {
+          email: '  customer@example.com  ',
+          password: 'Customer-password!',
+          language: 'pl',
+        },
+        'test-turnstile-token',
+      )
+      .subscribe();
+
+    http.expectNone('/api/auth/register');
+
+    completeCsrfRequest();
+
+    const pending = http.expectOne('/api/auth/register');
+
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.headers.get('X-Turnstile-Token')).toBe('test-turnstile-token');
+    expect(pending.request.body).toEqual({
+      email: 'customer@example.com',
+      password: 'Customer-password!',
+      language: 'pl',
+    });
+
+    pending.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    http.expectNone('/api/auth/me');
+  });
+
   it('should read the current user', () => {
     let result: CurrentUser | undefined;
 

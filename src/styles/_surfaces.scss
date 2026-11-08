@@ -1,0 +1,13 @@
+@mixin glass-surface {
+  border: var(--surface-glass-border-width) solid var(--surface-glass-border-color);
+  border-top-color: var(--surface-glass-border-top-color);
+  border-radius: var(--surface-glass-radius);
+  background: var(--surface-glass-background);
+  box-shadow: var(--surface-glass-shadow);
+  -webkit-backdrop-filter: blur(var(--surface-glass-blur));
+  backdrop-filter: blur(var(--surface-glass-blur));
+}
+
+.surface-glass {
+  @include glass-surface;
+}

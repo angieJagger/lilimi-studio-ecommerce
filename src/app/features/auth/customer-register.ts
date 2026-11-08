@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
@@ -13,6 +13,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { AuthApiService } from '../../core/auth/auth-api.service';
 import { RouterLink } from '@angular/router';
+import { TurnstileWidget, type TurnstileState } from '../../core/turnstile/turnstile-widget';
 
 const passwordByteLimit: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const value = control.value;
@@ -33,7 +34,7 @@ const passwordsMatch: ValidatorFn = (control: AbstractControl): ValidationErrors
 
 @Component({
   selector: 'app-customer-register',
-  imports: [ReactiveFormsModule, RouterLink, TranslocoPipe],
+  imports: [ReactiveFormsModule, RouterLink, TranslocoPipe, TurnstileWidget],
   templateUrl: './customer-register.html',
   styleUrl: './customer-register.scss',
 })
@@ -41,6 +42,12 @@ export class CustomerRegister {
   private readonly formBuilder = inject(FormBuilder);
   private readonly api = inject(AuthApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly turnstile = viewChild(TurnstileWidget);
+
+  protected readonly turnstileState = signal<TurnstileState>({
+    ready: false,
+    token: null,
+  });
 
   protected readonly transloco = inject(TranslocoService);
 
@@ -71,6 +78,10 @@ export class CustomerRegister {
       return;
     }
 
+    if (!this.turnstileState().ready) {
+      return;
+    }
+
     this.errorKey.set(null);
     this.registrationForm.markAllAsTouched();
 
@@ -84,11 +95,14 @@ export class CustomerRegister {
     this.registrationForm.disable({ emitEvent: false });
 
     this.api
-      .register({
-        email,
-        password,
-        language: this.transloco.getActiveLang() === 'pl' ? 'pl' : 'en',
-      })
+      .register(
+        {
+          email,
+          password,
+          language: this.transloco.getActiveLang() === 'pl' ? 'pl' : 'en',
+        },
+        this.turnstileState().token,
+      )
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -103,9 +117,9 @@ export class CustomerRegister {
         },
         error: (error: unknown) => {
           this.errorKey.set(this.getErrorKey(error));
-
           this.registrationForm.controls.password.reset();
           this.registrationForm.controls.confirmPassword.reset();
+          this.turnstile()?.reset();
         },
       });
   }
@@ -113,6 +127,14 @@ export class CustomerRegister {
   private getErrorKey(error: unknown): string {
     if (!(error instanceof HttpErrorResponse)) {
       return 'customerRegister.errors.generic';
+    }
+
+    if (error.error?.code === 'TURNSTILE_REJECTED') {
+      return 'turnstile.rejected';
+    }
+
+    if (error.error?.code === 'TURNSTILE_UNAVAILABLE') {
+      return 'turnstile.unavailable';
     }
 
     switch (error.status) {

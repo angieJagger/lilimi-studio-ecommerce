@@ -14,3 +14,8 @@ app-header,
 app-footer {
   flex-shrink: 0;
 }
+// Let the home page fill the available height without a gap above the footer.
+:host-context(body:has(app-home)) main {
+  display: flex;
+  flex-direction: column;
+}

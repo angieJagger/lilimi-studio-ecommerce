@@ -6,6 +6,9 @@ import { AuthApiService } from '../../core/auth/auth-api.service';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
 import { CustomerRegister } from './customer-register';
 import { provideRouter } from '@angular/router';
+import { provideDisabledTurnstileTesting } from '../../testing/turnstile-testing';
+import { By } from '@angular/platform-browser';
+import { TurnstileWidget } from '../../core/turnstile/turnstile-widget';
 
 describe('CustomerRegister', () => {
   let fixture: ComponentFixture<CustomerRegister>;
@@ -23,7 +26,7 @@ describe('CustomerRegister', () => {
 
     await TestBed.configureTestingModule({
       imports: [CustomerRegister, getTranslocoTestingModule()],
-      providers: [{ provide: AuthApiService, useValue: api }, provideRouter([])],
+      providers: [{ provide: AuthApiService, useValue: api }, provideRouter([]), provideDisabledTurnstileTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CustomerRegister);
@@ -55,6 +58,57 @@ describe('CustomerRegister', () => {
 
     await fixture.whenStable();
   }
+
+  it('should forward the verification token when registering', async () => {
+    await fillValidForm();
+
+    const widget = fixture.debugElement.query(By.directive(TurnstileWidget))
+      .componentInstance as TurnstileWidget;
+
+    widget.stateChange.emit({
+      ready: true,
+      token: 'verified-registration-token',
+    });
+
+    await fixture.whenStable();
+    await submitForm();
+
+    expect(api.register).toHaveBeenCalledExactlyOnceWith(
+      {
+        email: 'customer@example.com',
+        password: 'Customer-password!',
+        language: 'pl',
+      },
+      'verified-registration-token',
+    );
+  });
+
+  it('should block registration after verification expires', async () => {
+    await fillValidForm();
+
+    const widget = fixture.debugElement.query(By.directive(TurnstileWidget))
+      .componentInstance as TurnstileWidget;
+
+    widget.stateChange.emit({
+      ready: true,
+      token: 'verified-registration-token',
+    });
+
+    await fixture.whenStable();
+
+    widget.stateChange.emit({
+      ready: false,
+      token: null,
+    });
+
+    await fixture.whenStable();
+
+    expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true);
+
+    await submitForm();
+
+    expect(api.register).not.toHaveBeenCalled();
+  });
 
   it('should reject an empty form without sending a request', async () => {
     await submitForm();
@@ -91,11 +145,14 @@ describe('CustomerRegister', () => {
     await submitForm();
     await submitForm();
 
-    expect(api.register).toHaveBeenCalledExactlyOnceWith({
-      email: 'customer@example.com',
-      password: 'Customer-password!',
-      language: 'pl',
-    });
+    expect(api.register).toHaveBeenCalledExactlyOnceWith(
+      {
+        email: 'customer@example.com',
+        password: 'Customer-password!',
+        language: 'pl',
+      },
+      null,
+    );
 
     expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
 

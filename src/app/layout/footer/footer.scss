@@ -68,3 +68,8 @@
 .site-footer__contact:hover {
   color: var(--header-link-hover);
 }
+
+// Continue the home invitation background into the footer.
+:host-context(body:has(app-home)) .site-footer {
+  border-top: 0;
+}

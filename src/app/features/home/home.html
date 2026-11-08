@@ -49,7 +49,7 @@
     </h2>
     <ol class="offer__grid">
       @for (item of primaryServices; track item.id; let index = $index) {
-        <li [class.offer__wide]="item.id === 'maintenance'">
+        <li>
           <a class="offer-card"
             [routerLink]="['/', transloco.getActiveLang(), 'services']"
             [fragment]="'service-' + item.id">
@@ -69,8 +69,6 @@
       <ul class="studio-extras__grid">
         @for (item of additionalServices; track item.id) {
           <li class="studio-extras__card">
-            <h4>{{ 'studioServices.items.' + item.id + '.title' | transloco }}</h4>
-            <p>{{ 'studioServices.items.' + item.id + '.description' | transloco }}</p>
             <a
               [routerLink]="['/', transloco.getActiveLang(), 'project-inquiry']"
               [queryParams]="{ projectType: item.projectType }"
@@ -167,10 +165,6 @@
   <div class="container">
     <div class="custom-order__panel">
       <div class="custom-order__copy">
-        <p class="custom-order__eyebrow">
-          {{ 'home.customOrder.eyebrow' | transloco }}
-        </p>
-
         <h2 id="custom-order-title" class="heading-2">
           {{ 'home.customOrder.title' | transloco }}
         </h2>
