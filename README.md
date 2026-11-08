@@ -23,6 +23,8 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 - Downloads after confirmed payment, from the payment result page, customer order details or an emailed link without signing in.
 - Download links expire after seven days. Resend requests use CSRF protection, per-source rate limits and a per-order cooldown; earlier links keep their original expiry dates.
 - Order and inquiry work queues with filters, search, archive views, per-administrator read tracking and URL-preserved navigation.
+- Private project inquiry attachments for logos, artwork and visual references, with file validation and administrator-only downloads.
+- Cloudflare Turnstile protection for registration and project inquiries, with server-side token, hostname and action validation.
 
 ## Technology
 
@@ -110,6 +112,5 @@ The project covers both interface design and implementation. README screenshots 
 - Further payment recovery, refunds and preparation for real payments.
 - Physical fulfilment workflows, order status notifications and automated off-host backups.
 - Assess multi-instance readiness and test load balancing locally before provisioning additional cloud infrastructure.
-- Add private file attachments to project inquiries for logos, artwork and visual references.
 
 [Detailed features and implementation notes](docs/PROJECT_GUIDE.md)
