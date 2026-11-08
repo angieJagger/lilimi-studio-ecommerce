@@ -1,11 +1,8 @@
+@use './surfaces';
+
 @mixin glass-forms {
   form:has(input:not([type='hidden']), select, textarea) {
-    border: 1px solid rgb(255 255 255 / 50%);
-    border-top-color: rgb(255 255 255 / 75%);
-    border-radius: var(--radius-12);
-    background: linear-gradient(145deg, rgb(248 242 255 / 48%), rgb(228 238 255 / 26%));
-    box-shadow: 0 12px 28px -16px rgb(48 40 91 / 32%);
-    backdrop-filter: blur(10px);
+    @include surfaces.glass-surface;
 
     &:not(.project-inquiry__form) {
       padding: var(--spacing-24);

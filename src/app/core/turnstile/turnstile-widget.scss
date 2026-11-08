@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.turnstile {
+  min-width: 0;
+}
+
+.turnstile__widget {
+  width: 100%;
+}
+
+.turnstile__message,
+.turnstile__error {
+  margin: 0 0 var(--spacing-12);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.turnstile__message {
+  color: var(--text-secondary);
+}
+
+.turnstile__error {
+  color: var(--status-error);
+}

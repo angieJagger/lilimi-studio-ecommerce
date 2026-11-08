@@ -19,6 +19,8 @@ import org.springframework.security.web.csrf.CsrfFilter;
 import pl.lilimi.auth.persistence.UserAccountRepository;
 import pl.lilimi.auth.application.LoginRateLimiter;
 import pl.lilimi.security.application.PublicFormRateLimiter;
+import pl.lilimi.security.turnstile.TurnstileFilter;
+import pl.lilimi.security.turnstile.TurnstileVerifier;
 
 
 @Configuration
@@ -35,12 +37,17 @@ public class SecurityConfig {
     UserAccountRepository accounts,
     LoginRateLimiter loginRateLimiter,
     PublicFormRateLimiter publicFormRateLimiter,
-    Environment environment
+    Environment environment,
+    TurnstileVerifier turnstileVerifier
   ) throws Exception {
 
     http
       .addFilterBefore(new LoginRateLimitFilter(loginRateLimiter),
         UsernamePasswordAuthenticationFilter.class)
+      .addFilterAfter(
+        new TurnstileFilter(turnstileVerifier),
+        CsrfFilter.class
+      )
       .addFilterBefore(
         new PublicFormRateLimitFilter(publicFormRateLimiter),
         CsrfFilter.class
@@ -68,6 +75,7 @@ public class SecurityConfig {
           "/api/products/**",
           "/actuator/health",
           "/api/auth/csrf",
+          "/api/security/turnstile",
           "/api/payments/attempts/*",
           "/api/orders/*/items/*/download",
           "/api/orders/*/downloads",

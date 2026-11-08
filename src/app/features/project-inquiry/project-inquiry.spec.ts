@@ -14,6 +14,9 @@ import {
   provideProductCatalogTesting,
 } from '../../testing/product-catalog-testing';
 import { ProductCatalogService } from '../products/product-catalog.service';
+import { provideDisabledTurnstileTesting } from '../../testing/turnstile-testing';
+import { By } from '@angular/platform-browser';
+import { TurnstileWidget } from '../../core/turnstile/turnstile-widget';
 
 describe('ProjectInquiry', () => {
   let component: ProjectInquiry;
@@ -31,6 +34,7 @@ describe('ProjectInquiry', () => {
         provideRouter([]),
         { provide: ProjectInquiryApiService, useValue: api },
         provideProductCatalogTesting(),
+        provideDisabledTurnstileTesting()
       ],
     }).compileComponents();
 
@@ -42,6 +46,74 @@ describe('ProjectInquiry', () => {
     fixture = TestBed.createComponent(ProjectInquiry);
     component = fixture.componentInstance;
     await fixture.whenStable();
+  });
+
+  it('should submit the token received from the verification widget', async () => {
+    await fillRequiredFields();
+
+    const widget = fixture.debugElement.query(By.directive(TurnstileWidget))
+      .componentInstance as TurnstileWidget;
+
+    widget.stateChange.emit({
+      ready: true,
+      token: 'verified-inquiry-token',
+    });
+
+    await fixture.whenStable();
+    await submitForm();
+
+    expect(api.createInquiry).toHaveBeenCalledExactlyOnceWith(
+      {
+        language: 'pl',
+        name: 'Anna',
+        email: 'anna@example.com',
+        projectType: 'website',
+        description: 'Potrzebuję strony dla pracowni haftu.',
+        inspirationUrl: null,
+        productId: null,
+      },
+      [],
+      'verified-inquiry-token',
+    );
+  });
+
+  it('should block submission after verification expires', async () => {
+    await fillRequiredFields();
+
+    const widget = fixture.debugElement.query(By.directive(TurnstileWidget))
+      .componentInstance as TurnstileWidget;
+
+    widget.stateChange.emit({
+      ready: true,
+      token: 'verified-inquiry-token',
+    });
+
+    await fixture.whenStable();
+
+    widget.stateChange.emit({
+      ready: false,
+      token: null,
+    });
+
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const submitButton = element.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+
+    expect(submitButton.disabled).toBe(true);
+
+    // Sprawdzamy też zabezpieczenie obsługi formularza,
+    // niezależnie od wyłączenia przycisku.
+    element.querySelector('form')!.dispatchEvent(
+      new Event('submit', {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    await fixture.whenStable();
+
+    expect(api.createInquiry).not.toHaveBeenCalled();
   });
 
   it('should create', () => {
@@ -241,6 +313,7 @@ describe('ProjectInquiry', () => {
       productId: null,
     },
     [],
+    null,
   );
   });
 
@@ -361,9 +434,10 @@ describe('ProjectInquiry product context', () => {
         ]),
         {
           provide: ProjectInquiryApiService,
-          useValue: api
+          useValue: api,
         },
         { provide: ProductCatalogService, useValue: catalog },
+        provideDisabledTurnstileTesting(),
       ],
     }).compileComponents();
 
@@ -451,6 +525,7 @@ describe('ProjectInquiry product context', () => {
             productId: null,
           }),
           [],
+          null,
         );
 
         inquiryResult.next({
@@ -570,6 +645,7 @@ describe('ProjectInquiry product context', () => {
       productId: 'embroidered-002',
     },
   [],
+  null,
 );
   });
 

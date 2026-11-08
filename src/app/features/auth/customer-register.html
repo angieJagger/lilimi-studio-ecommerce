@@ -4,7 +4,7 @@
   </h1>
 
   @if (registered()) {
-      <output aria-live="polite">
+      <output class="surface-glass" aria-live="polite">
         {{ 'customerRegister.success' | transloco }}
       </output>
   } @else {
@@ -114,7 +114,12 @@
       }
     </div>
 
-    <button class="button button--primary" type="submit" [disabled]="isSubmitting()">
+    <div class="customer-register__field">
+      <app-turnstile-widget action="registration" [language]="transloco.getActiveLang() === 'pl' ? 'pl' : 'en'"
+        (stateChange)="turnstileState.set($event)" />
+    </div>
+
+    <button class="button button--primary" type="submit" [disabled]="isSubmitting() || !turnstileState().ready">
       {{
       (
       isSubmitting()
@@ -129,7 +134,7 @@
       @if (!registered()) {
       {{ 'customerRegister.alreadyHaveAccount' | transloco }}
       }
-    
+
       <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
         {{ 'customerRegister.signIn' | transloco }}
       </a>

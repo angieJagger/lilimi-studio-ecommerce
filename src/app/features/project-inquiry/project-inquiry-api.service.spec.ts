@@ -64,9 +64,11 @@ describe('ProjectInquiryApiService', () => {
 
       let result: CreateInquiryResponse | undefined;
 
-      service.createInquiry(request, [firstFile, secondFile]).subscribe((confirmation) => {
-        result = confirmation;
-      });
+      service
+        .createInquiry(request, [firstFile, secondFile], 'test-turnstile-token')
+        .subscribe((confirmation) => {
+          result = confirmation;
+        });
 
       http.expectNone('/api/project-inquiries');
 
@@ -75,6 +77,7 @@ describe('ProjectInquiryApiService', () => {
       const pending = http.expectOne('/api/project-inquiries');
 
       expect(pending.request.method).toBe('POST');
+      expect(pending.request.headers.get('X-Turnstile-Token')).toBe('test-turnstile-token');
       expect(pending.request.body).toBeInstanceOf(FormData);
       expect(pending.request.headers.has('Content-Type')).toBe(false);
 
@@ -122,6 +125,7 @@ describe('ProjectInquiryApiService', () => {
 
     expect(pending.request.method).toBe('POST');
     expect(pending.request.body).toEqual(request);
+    expect(pending.request.headers.has('X-Turnstile-Token')).toBe(false);
 
     pending.flush(response, {
       status: 201,
@@ -129,6 +133,24 @@ describe('ProjectInquiryApiService', () => {
     });
 
     expect(result).toEqual(response);
+  });
+
+  it('should send the Turnstile token with a JSON inquiry', () => {
+    service.createInquiry(request, [], 'test-turnstile-token').subscribe();
+
+    completeCsrfRequest();
+
+    const pending = http.expectOne('/api/project-inquiries');
+
+    expect(pending.request.method).toBe('POST');
+    expect(pending.request.body).toEqual(request);
+    expect(pending.request.headers.get('X-Turnstile-Token')).toBe('test-turnstile-token');
+
+    pending.flush({
+      id: '1548c928-f278-4cbb-b8d0-d57455c72f91',
+      createdAt: '2026-10-09T08:00:00Z',
+      status: 'new',
+    });
   });
 
   it('should propagate an unavailable product error without retrying', () => {

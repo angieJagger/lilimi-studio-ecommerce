@@ -1053,8 +1053,8 @@
     },
     "customOrder": {
       "eyebrow": "LET’S TALK",
-      "title": "Tell us what you have in mind.",
-      "description": "A few sentences about your project are enough to get started.",
+      "title": "Let’s create something impressive together.",
+      "description": "Tell us about your idea, and we’ll get back to you with a quote and an initial concept.",
       "cta": "Open the inquiry form"
     },
     "featured": {
@@ -1301,5 +1301,11 @@
         "action": "Discuss digitizing"
       }
     }
+  },
+  "turnstile": {
+    "loading": "Loading verification…",
+    "unavailable": "Verification could not be started. Please try again.",
+    "retry": "Retry verification",
+    "rejected": "Verification expired or failed. Please try again."
   }
 }

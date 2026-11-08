@@ -1,8 +1,9 @@
-import { Component, computed, DestroyRef, inject, signal, effect } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal, effect, viewChild } from '@angular/core';
 import { email, form, FormField, required, validate } from '@angular/forms/signals';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
+import { TurnstileWidget, type TurnstileState } from '../../core/turnstile/turnstile-widget';
 import type {
   CreateInquiryRequest,
   CreateInquiryResponse,
@@ -21,7 +22,7 @@ interface ProjectInquiryModel {
   inspirationUrl: string;
 }
 @Component({
-  imports: [TranslocoPipe, FormField],
+  imports: [TranslocoPipe, FormField, TurnstileWidget],
   selector: 'app-project-inquiry',
   styleUrl: './project-inquiry.scss',
   templateUrl: './project-inquiry.html',
@@ -163,6 +164,11 @@ export class ProjectInquiry {
   protected readonly inquiryErrorKey = signal<string | null>(null);
   protected readonly attachments = signal<readonly File[]>([]);
   protected readonly attachmentErrorKey = signal<string | null>(null);
+  private readonly turnstile = viewChild(TurnstileWidget);
+  protected readonly turnstileState = signal<TurnstileState>({
+    ready: false,
+    token: null,
+  });
 
   constructor() {
     effect(() => {
@@ -227,6 +233,10 @@ export class ProjectInquiry {
       return;
     }
 
+    if (!this.turnstileState().ready) {
+      return;
+    }
+
     this.inquiryErrorKey.set(null);
     if (this.queryParams().get('product') && !this.selectedProduct()) {
       const state = this.catalog.state();
@@ -268,7 +278,7 @@ export class ProjectInquiry {
     this.isSubmitting.set(true);
 
     this.api
-      .createInquiry(request, this.attachments())
+      .createInquiry(request, this.attachments(), this.turnstileState().token)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.isSubmitting.set(false)),
@@ -281,6 +291,7 @@ export class ProjectInquiry {
         },
         error: (error: unknown) => {
           this.inquiryErrorKey.set(this.getInquiryErrorKey(error));
+          this.turnstile()?.reset();
         },
       });
   }
@@ -311,7 +322,8 @@ export class ProjectInquiry {
           return 'projectInquiry.errors.productUnavailable';
         case 'INQUIRY_ATTACHMENT_INVALID':
           return 'projectInquiry.attachments.errors.invalidContent';
-
+        case 'TURNSTILE_REJECTED':
+          return 'turnstile.rejected';
         case 'INQUIRY_VALIDATION_FAILED':
         case 'INQUIRY_REQUEST_INVALID':
           return 'projectInquiry.errors.requestInvalid';

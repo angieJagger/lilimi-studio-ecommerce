@@ -29,3 +29,11 @@ lilimi.payments.stripe.webhook-secret=
 
 springdoc.api-docs.enabled=true
 springdoc.swagger-ui.enabled=true
+
+# Turnstile (optional)
+# Keep disabled until the frontend and backend integration is configured.
+# Never commit a real secret key.
+lilimi.security.turnstile.enabled=false
+lilimi.security.turnstile.site-key=
+lilimi.security.turnstile.secret-key=
+lilimi.security.turnstile.allowed-hostnames=localhost,127.0.0.1

@@ -1,3 +1,9 @@
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 .hero {
   padding-top: clamp(44px, 6vw, 92px);
   padding-bottom: clamp(32px, 4vw, 60px);
@@ -11,7 +17,7 @@
   min-width: 0;
 }
 .hero__eyebrow,
-.custom-order__eyebrow {
+.featured__eyebrow {
   font-size: 10px;
   letter-spacing: 0.15em;
   font-weight: 700;
@@ -49,8 +55,7 @@
   height: auto;
 }
 .offer,
-.featured,
-.custom-order {
+.featured {
   padding-block: clamp(42px, 5vw, 70px);
 }
 .offer {
@@ -154,10 +159,6 @@
   background: transparent;
   border-radius: 0;
 }
-.offer .studio-extras__card h4,
-.offer .studio-extras__card p {
-  display: none;
-}
 .offer .studio-extras__card a {
   font-size: 12px;
   text-decoration: underline;
@@ -249,13 +250,6 @@
 .featured__header {
   min-width: 0;
 }
-.featured__eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  font-weight: 700;
-  color: var(--brand-primary);
-  margin: 0 0 24px;
-}
 .featured__title-row {
   display: flex;
   flex-direction: column;
@@ -287,29 +281,45 @@
   min-width: 0;
   color: inherit;
   text-decoration: none;
-  border-radius: 0;
+}
+// The closing invitation shares the footer surface without a dividing edge.
+.custom-order {
+  margin-top: auto;
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+  padding-block: clamp(64px, 8vw, 112px) clamp(48px, 6vw, 80px);
 }
 .custom-order__panel {
-  border-top: 1px solid var(--border-brand-soft);
-  padding-top: 40px;
   display: flex;
   flex-direction: column;
-  gap: 27px;
-  align-items: flex-start;
+  align-items: center;
+  gap: 40px;
+  text-align: center;
+}
+.custom-order__copy {
+  max-width: 760px;
 }
 .custom-order__copy .heading-2 {
-  font-size: 32px;
+  color: inherit;
+  font-size: clamp(30px, 4vw, 52px);
+  font-weight: 750;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 .custom-order__description {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--text-secondary);
-  margin: 17px 0 0;
+  max-width: 52ch;
+  margin: 28px auto 0;
+  color: #d8cbea;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.6;
+  text-wrap: pretty;
 }
 .custom-order__cta {
   flex-shrink: 0;
+  min-height: 52px;
+  padding-inline: 30px;
 }
-.offer-card a:focus-visible,
 .featured__product-link:focus-visible {
   outline: 2px solid var(--brand-primary);
   outline-offset: 5px;
@@ -331,11 +341,6 @@
     grid-template-columns: minmax(220px, 0.8fr) minmax(0, 2fr);
     gap: 48px;
   }
-  .custom-order__panel {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
 }
 @media (max-width: 47.999rem) {
   .hero__container {
@@ -354,9 +359,6 @@
   .featured__title-row h2 {
     font-size: 29px;
     max-width: 100%;
-  }
-  .custom-order__copy .heading-2 {
-    font-size: 28px;
   }
   .projects {
     padding-block: 43px;

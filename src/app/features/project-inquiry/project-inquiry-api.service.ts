@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { switchMap, type Observable } from 'rxjs';
 import { API_BASE_URL } from '../../core/api/api-base-url';
@@ -16,6 +16,7 @@ export class ProjectInquiryApiService {
   createInquiry(
     request: CreateInquiryRequest,
     files: readonly File[] = [],
+    turnstileToken: string | null = null,
   ): Observable<CreateInquiryResponse> {
     let body: CreateInquiryRequest | FormData = request;
 
@@ -34,11 +35,17 @@ export class ProjectInquiryApiService {
       body = multipart;
     }
 
+    const headers = turnstileToken
+    ? new HttpHeaders().set('X-Turnstile-Token', turnstileToken)
+    : new HttpHeaders();
+
     return this.csrf
       .initialize()
       .pipe(
         switchMap(() =>
-          this.http.post<CreateInquiryResponse>(`${this.baseUrl}/project-inquiries`, body),
+          this.http.post<CreateInquiryResponse>(`${this.baseUrl}/project-inquiries`, body, {
+            headers,
+          }),
         ),
       );
   }
