@@ -483,6 +483,31 @@ To stop the complete stack while retaining its database volume:
 docker compose down
 ```
 
+### Optional: enable Cloudflare Turnstile locally
+
+Registration and project inquiries support Cloudflare Turnstile. Protection is disabled by default.
+
+For a manual local check, create a separate Managed widget in Cloudflare with `localhost` as its allowed hostname. Keep its keys separate from the deployed widget.
+
+Set the following values in the Git-ignored `backend/src/main/resources/application-local.properties`:
+
+```properties
+lilimi.security.turnstile.enabled=true
+lilimi.security.turnstile.site-key=YOUR_LOCAL_SITE_KEY
+lilimi.security.turnstile.secret-key=YOUR_LOCAL_SECRET_KEY
+lilimi.security.turnstile.allowed-hostnames=localhost
+```
+
+Restart the backend and open the frontend at `http://localhost:4200`.
+
+The widget runs automatically and becomes visible only when interaction is required. Submission remains blocked until verification succeeds. The frontend sends the token in the `X-Turnstile-Token` header; the backend validates it through Cloudflare and checks the hostname and expected action.
+
+Failed submissions reset verification so the next attempt can obtain a fresh token. Turnstile complements CSRF protection and request rate limits.
+
+Cloudflare's standard dummy keys do not return an action, so they cannot complete this application's strict action validation. Automated tests use mocked responses and do not contact Cloudflare.
+
+Docker deployments use `TURNSTILE_ENABLED`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` and `TURNSTILE_ALLOWED_HOSTNAMES`. Store real values outside version control. Configure the deployed widget for `lilimistudio.com`, independently of the local widget.
+
 ## API
 
 | Method | Endpoint | Purpose |
