@@ -4,6 +4,8 @@ import {
   GarmentFit,
 } from '../products/embroidered-product-options';
 
+export const MAX_CART_ITEM_QUANTITY = 99;
+
 export interface DigitalCartItem {
   readonly kind: 'digital';
   readonly productId: string;

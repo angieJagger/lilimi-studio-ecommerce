@@ -4,7 +4,7 @@ import {
   garmentFits,
   garmentSizes,
 } from '../products/embroidered-product-options';
-import { SweatshirtCartItem } from './cart-item.model';
+import { MAX_CART_ITEM_QUANTITY, SweatshirtCartItem } from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -61,7 +61,7 @@ function readSweatshirt(value: unknown): SweatshirtCartItem | null {
       color,
       embroideryOptionId: embroidery.id,
     },
-    quantity,
+    quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY),
   };
 }
 
@@ -81,11 +81,9 @@ export function readStoredSweatshirts(value: unknown): SweatshirtCartItem[] {
 
     const key = getCartItemKey(item);
     const existing = items.get(key);
-    const quantity = (existing?.quantity ?? 0) + item.quantity;
+    const quantity = Math.min((existing?.quantity ?? 0) + item.quantity, MAX_CART_ITEM_QUANTITY);
 
-    if (Number.isSafeInteger(quantity)) {
-      items.set(key, { ...item, quantity });
-    }
+    items.set(key, { ...item, quantity });
   }
 
   return [...items.values()];

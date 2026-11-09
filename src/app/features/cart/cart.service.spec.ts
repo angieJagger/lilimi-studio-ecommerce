@@ -2,7 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { CartService } from './cart.service';
 import { EmbroideryPattern } from '../products/product.model';
 import { vi } from 'vitest';
-import { SweatshirtConfiguration } from './cart-item.model';
+import {
+  MAX_CART_ITEM_QUANTITY,
+  SweatshirtConfiguration,
+} from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
 import {
   createSweatshirtVariantsMock,
@@ -72,6 +75,29 @@ describe('CartService', () => {
       expect(cart.sweatshirtLines()[0]?.unitPriceInGrosz).toBe(15900);
       expect(cart.subtotalInGrosz()).toBe(31800);
       expect(cart.pricingStatus()).toBe('ready');
+    });
+
+    it('should reject adding another item after reaching the quantity limit', () => {
+      cart.addSweatshirt(sweatshirtConfiguration);
+
+      const key = getCartItemKey(cart.sweatshirts()[0]!);
+
+      cart.updateSweatshirtQuantity(key, MAX_CART_ITEM_QUANTITY);
+
+      expect(cart.addSweatshirt(sweatshirtConfiguration)).toBe(false);
+      expect(cart.sweatshirts()).toHaveLength(1);
+      expect(cart.sweatshirts()[0]?.quantity).toBe(MAX_CART_ITEM_QUANTITY);
+    });
+
+    it('should preserve the quantity when an update exceeds the limit', () => {
+      cart.addSweatshirt(sweatshirtConfiguration);
+
+      const key = getCartItemKey(cart.sweatshirts()[0]!);
+
+      cart.updateSweatshirtQuantity(key, 2);
+      cart.updateSweatshirtQuantity(key, MAX_CART_ITEM_QUANTITY + 1);
+
+      expect(cart.sweatshirts()[0]?.quantity).toBe(2);
     });
 
     it('should keep an unavailable item but prevent pricing and adding it again', () => {

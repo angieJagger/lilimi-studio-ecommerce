@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CartService } from './cart.service';
+import { MAX_CART_ITEM_QUANTITY } from './cart-item.model';
 
 @Component({
   selector: 'app-cart',
@@ -14,6 +15,7 @@ import { CartService } from './cart.service';
 })
 export class Cart {
   private readonly transloco = inject(TranslocoService);
+  protected readonly maxItemQuantity = MAX_CART_ITEM_QUANTITY;
 
   private readonly activeLanguage = toSignal(this.transloco.langChanges$, {
     initialValue: this.transloco.getActiveLang(),

@@ -842,7 +842,8 @@
     "loading": "Ładowanie dostępnych wariantów…",
     "loadError": "Nie udało się pobrać wariantów produktu.",
     "retry": "Spróbuj ponownie",
-    "unavailable": "Ten produkt nie ma obecnie dostępnych wariantów."
+    "unavailable": "Ten produkt nie ma obecnie dostępnych wariantów.",
+    "quantityLimitReached": "W koszyku jest już maksymalna liczba sztuk tej konfiguracji: {{ max }}."
   },
 
   "checkout": {

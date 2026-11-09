@@ -6,7 +6,11 @@ import {
   garmentSizes,
   dragonEmbroideryOptions
 } from '../products/embroidered-product-options';
-import { SweatshirtCartItem, SweatshirtConfiguration } from './cart-item.model';
+import {
+  MAX_CART_ITEM_QUANTITY,
+  SweatshirtCartItem,
+  SweatshirtConfiguration,
+} from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
 import { readStoredSweatshirts } from './cart-storage';
 import { SweatshirtVariantsService } from '../products/sweatshirt-variants.service';
@@ -215,6 +219,12 @@ export class CartService {
 
     const key = getCartItemKey(newItem);
 
+    const existingItem = this.sweatshirtsState().find((item) => getCartItemKey(item) === key);
+
+    if (existingItem && existingItem.quantity >= MAX_CART_ITEM_QUANTITY) {
+      return false;
+    }
+
     this.sweatshirtsState.update((items) => {
       const alreadyAdded = items.some((item) => getCartItemKey(item) === key);
 
@@ -295,7 +305,7 @@ export class CartService {
   }
 
   updateSweatshirtQuantity(key: string, quantity: number): void {
-    if (!Number.isSafeInteger(quantity) || quantity < 1) {
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_CART_ITEM_QUANTITY) {
       return;
     }
 
