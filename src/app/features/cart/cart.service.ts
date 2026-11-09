@@ -1,10 +1,10 @@
-import { afterNextRender, computed, inject, Injectable, signal } from '@angular/core';
+import { afterNextRender, computed, inject, Injectable, signal, effect, untracked } from '@angular/core';
 
 import { EmbroideryPattern } from '../products/product.model';
 import {
   garmentColors,
   garmentSizes,
-  dragonEmbroideryOptions
+  isEmbroideryOptionId,
 } from '../products/embroidered-product-options';
 import {
   MAX_CART_ITEM_QUANTITY,
@@ -55,17 +55,40 @@ export class CartService {
 
   readonly sweatshirts = this.sweatshirtsState.asReadonly();
 
+  private readonly sweatshirtSlugs = computed(() => {
+    const slugs = new Set<string>();
+
+    for (const item of this.sweatshirts()) {
+      const slug = this.getSweatshirtSlug(item.productId);
+
+      if (slug !== undefined) {
+        slugs.add(slug);
+      }
+    }
+
+    return slugs;
+  });
+
   readonly sweatshirtLines = computed(() =>
-    this.sweatshirts().map((item) => ({
-      key: getCartItemKey(item),
-      item,
-      product: this.catalog.productsById().get(item.productId),
-      pattern: this.catalog.productsById().get(item.patternId),
-      embroidery: dragonEmbroideryOptions.find(
-        (option) => option.id === item.configuration.embroideryOptionId,
-      ),
-      unitPriceInGrosz: this.getSweatshirtUnitPrice(item),
-    })),
+    this.sweatshirts().map((item) => {
+      const variant = this.findSweatshirtVariant(item);
+
+      return {
+        key: getCartItemKey(item),
+        item,
+        product: this.catalog.productsById().get(item.productId),
+        pattern: this.catalog.productsById().get(item.patternId),
+        embroidery: variant
+          ? {
+              id: variant.embroideryOptionId,
+              widthMm: variant.widthMm,
+              heightMm: variant.heightMm,
+              placement: variant.placement,
+            }
+          : undefined,
+        unitPriceInGrosz: variant?.priceInGrosz ?? null,
+      };
+    }),
   );
 
   readonly itemCount = computed(
@@ -80,9 +103,7 @@ export class CartService {
     }
     let total = this.patterns().reduce((sum, product) => sum + product.priceInGrosz, 0);
 
-    for (const item of this.sweatshirts()) {
-      const price = this.getSweatshirtUnitPrice(item);
-
+    for (const { item, unitPriceInGrosz: price } of this.sweatshirtLines()) {
       if (price === null) {
         return null;
       }
@@ -95,26 +116,25 @@ export class CartService {
 
   readonly pricingStatus = computed<'ready' | 'loading' | 'error' | 'unavailable'>(() => {
     const needsCatalog = this.patternIdsState().length > 0 || this.sweatshirts().length > 0;
-    const needsVariants = this.sweatshirts().length > 0;
-
     const catalogStatus = needsCatalog ? this.catalog.state().status : 'ready';
+    const variantsStatuses = [...this.sweatshirtSlugs()].map(
+      (slug) => this.variantsService.findSource(slug)?.state().status ?? 'loading',
+    );
 
-    const variantsStatus = needsVariants ? this.variantsService.state().status : 'ready';
-
-    if (catalogStatus === 'error' || variantsStatus === 'error') {
+    if (catalogStatus === 'error' || variantsStatuses.includes('error')) {
       return 'error';
     }
 
-    if (catalogStatus === 'loading' || variantsStatus === 'loading') {
+    if (catalogStatus === 'loading' || variantsStatuses.includes('loading')) {
       return 'loading';
     }
 
-        const unavailableSweatshirt = this.sweatshirts().some(
-          (item) =>
-            !this.catalog.productsById().has(item.productId) ||
-            !this.catalog.productsById().has(item.patternId) ||
-            this.getSweatshirtUnitPrice(item) === null,
-        );
+    const unavailableSweatshirt = this.sweatshirts().some(
+      (item) =>
+        !this.catalog.productsById().has(item.productId) ||
+        !this.catalog.productsById().has(item.patternId) ||
+        this.findSweatshirtVariant(item) === undefined,
+    );
 
     return this.unavailablePatternIds().length > 0 || unavailableSweatshirt
       ? 'unavailable'
@@ -122,16 +142,28 @@ export class CartService {
   });
 
   reloadPrices(): void {
+    const slugs = this.sweatshirtSlugs();
+
     if (this.patternIdsState().length > 0 || this.sweatshirts().length > 0) {
       this.catalog.reload();
     }
 
-    if (this.sweatshirts().length > 0) {
-      this.variantsService.reload();
+    for (const slug of slugs) {
+      this.variantsService.findSource(slug)?.reload();
     }
   }
 
   constructor() {
+    effect(() => {
+      const slugs = this.sweatshirtSlugs();
+
+      untracked(() => {
+        for (const slug of slugs) {
+          this.variantsService.forProduct(slug);
+        }
+      });
+    });
+
     afterNextRender(() => {
       const savedPatternIds = this.readStoredPatternIds();
 
@@ -173,33 +205,16 @@ export class CartService {
     this.save();
   }
 
-  getSweatshirtUnitPrice(item: SweatshirtCartItem): number | null {
-    if (item.productId !== 'embroidered-002') {
-      return null;
-    }
-
-    const variant = this.variantsService
-      .variants()
-      .find(
-        (variant) =>
-          variant.patternId === item.patternId &&
-          variant.fit === item.configuration.fit &&
-          variant.size === item.configuration.size &&
-          variant.color === item.configuration.color &&
-          variant.embroideryOptionId === item.configuration.embroideryOptionId,
-      );
-
-    return variant?.priceInGrosz ?? null;
-  }
-
-  addSweatshirt(configuration: SweatshirtConfiguration): boolean {
+  addSweatshirt(
+    productId: string,
+    patternId: string,
+    configuration: SweatshirtConfiguration,
+  ): boolean {
     const validSize = garmentSizes[configuration.fit]?.includes(configuration.size);
 
     const validColor = garmentColors.includes(configuration.color);
 
-    const validEmbroidery = dragonEmbroideryOptions.some(
-      (option) => option.id === configuration.embroideryOptionId,
-    );
+    const validEmbroidery = isEmbroideryOptionId(configuration.embroideryOptionId);
 
     if (!validSize || !validColor || !validEmbroidery) {
       return false;
@@ -207,13 +222,21 @@ export class CartService {
 
     const newItem: SweatshirtCartItem = {
       kind: 'sweatshirt',
-      productId: 'embroidered-002',
-      patternId: 'pattern-001',
+      productId,
+      patternId,
       configuration: { ...configuration },
       quantity: 1,
     };
 
-    if (this.getSweatshirtUnitPrice(newItem) === null) {
+    const slug = this.getSweatshirtSlug(productId);
+
+    if (slug === undefined) {
+      return false;
+    }
+
+    this.variantsService.forProduct(slug);
+
+    if (this.findSweatshirtVariant(newItem) === undefined) {
       return false;
     }
 
@@ -314,5 +337,29 @@ export class CartService {
     );
 
     this.save();
+  }
+
+  private getSweatshirtSlug(productId: string): string | undefined {
+    const product = this.catalog.productsById().get(productId);
+
+    return product?.category === 'embroidered-products' && product.productType === 'sweatshirt'
+      ? product.slug
+      : undefined;
+  }
+
+  private findSweatshirtVariant(item: SweatshirtCartItem) {
+    const slug = this.getSweatshirtSlug(item.productId);
+    const source = slug === undefined ? undefined : this.variantsService.findSource(slug);
+
+    return source
+      ?.variants()
+      .find(
+        (variant) =>
+          variant.patternId === item.patternId &&
+          variant.fit === item.configuration.fit &&
+          variant.size === item.configuration.size &&
+          variant.color === item.configuration.color &&
+          variant.embroideryOptionId === item.configuration.embroideryOptionId,
+      );
   }
 }

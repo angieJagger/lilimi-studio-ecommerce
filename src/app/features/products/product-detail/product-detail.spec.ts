@@ -10,6 +10,7 @@ import { ProductApiService } from '../product-api.service';
 import type { ProductApiResponse } from '../product-api.model';
 import { vi } from 'vitest';
 import { provideProductCatalogTesting } from '../../../testing/product-catalog-testing';
+import { testSweatshirtVariants } from '../../../testing/sweatshirt-variants-testing';
 
 describe('ProductDetail', () => {
   let harness: RouterTestingHarness;
@@ -79,6 +80,7 @@ describe('ProductDetail', () => {
           provide: ProductApiService,
           useValue: {
             getProducts: () => of([...apiProducts, relatedPattern]),
+            getVariants: vi.fn(() => of(testSweatshirtVariants)),
             getProduct: (slug: string) => {
               const product = apiProducts.find((item) => item.slug === slug);
 
@@ -107,6 +109,24 @@ describe('ProductDetail', () => {
     const element = harness.routeNativeElement!;
 
     expect(element.querySelector('h1')?.textContent).toContain('Wzór haftu „Leśny smok”');
+  });
+
+  it('should load the configurator for a sweatshirt with a different slug', async () => {
+    const api = TestBed.inject(ProductApiService);
+    const sweatshirt: ProductApiResponse = {
+      ...apiProducts[1]!,
+      id: 'embroidered-004',
+      slug: 'another-sweatshirt',
+      productType: 'sweatshirt',
+    };
+
+    vi.spyOn(api, 'getProduct').mockReturnValueOnce(of(sweatshirt));
+
+    await harness.navigateByUrl('/pl/products/another-sweatshirt', ProductDetail);
+    await harness.fixture.whenStable();
+
+    expect(harness.routeNativeElement?.querySelector('app-sweatshirt-configurator')).not.toBeNull();
+    expect(api.getVariants).toHaveBeenCalledExactlyOnceWith(sweatshirt.slug);
   });
 
   it('should update the product when the slug changes', async () => {

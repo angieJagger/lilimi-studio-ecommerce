@@ -1,10 +1,10 @@
-import type { LocalizedText, ProductImage } from './product.model';
+import type { LocalizedText, ProductImage, EmbroideredProduct } from './product.model';
 
 export interface ProductApiResponse {
   readonly images?: readonly ProductImage[];
   readonly id: string;
   readonly slug: string;
-  readonly productType: 'digital' | 'sweatshirt' | 'tshirt' | 'tote';
+  readonly productType: 'digital' | EmbroideredProduct['productType'];
   readonly name: LocalizedText;
   readonly description: LocalizedText;
   readonly priceInGrosz: number;

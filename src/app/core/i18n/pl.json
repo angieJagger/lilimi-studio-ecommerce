@@ -843,7 +843,8 @@
     "loadError": "Nie udało się pobrać wariantów produktu.",
     "retry": "Spróbuj ponownie",
     "unavailable": "Ten produkt nie ma obecnie dostępnych wariantów.",
-    "quantityLimitReached": "W koszyku jest już maksymalna liczba sztuk tej konfiguracji: {{ max }}."
+    "quantityLimitReached": "W koszyku jest już maksymalna liczba sztuk tej konfiguracji: {{ max }}.",
+    "pattern": "Wzór haftu"
   },
 
   "checkout": {

@@ -40,8 +40,11 @@
             {{ currentProduct.description[language()] }}
           </p>
 
-          @if (currentProduct.slug === 'embroidered-sweatshirt') {
-            <app-sweatshirt-configurator></app-sweatshirt-configurator>
+          @if (
+          currentProduct.category === 'embroidered-products' &&
+          currentProduct.productType === 'sweatshirt'
+          ) {
+          <app-sweatshirt-configurator [product]="currentProduct" />
           } @else {
             <p class="product-detail__price">
               @if (currentProduct.priceType === 'from') {

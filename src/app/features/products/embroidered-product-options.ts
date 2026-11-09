@@ -2,7 +2,11 @@ export type GarmentFit = 'women' | 'men' | 'children';
 
 export type GarmentColor = 'white' | 'navy' | 'grey' | 'black';
 
-export type EmbroideryOptionId = 'small-front' | 'large-back';
+export type EmbroideryOptionId = string;
+
+export function isEmbroideryOptionId(value: unknown): value is EmbroideryOptionId {
+  return typeof value === 'string' && value.trim().length > 0 && value.length <= 100;
+}
 
 export interface EmbroideryOption {
   readonly id: EmbroideryOptionId;
@@ -34,21 +38,6 @@ export const garmentSizes: Readonly<Record<GarmentFit, readonly string[]>> = {
     '164',
   ],
 };
-
-export const dragonEmbroideryOptions: readonly EmbroideryOption[] = [
-  {
-    id: 'small-front',
-    widthMm: 100,
-    heightMm: 100,
-    placement: 'chest',
-  },
-  {
-    id: 'large-back',
-    widthMm: 200,
-    heightMm: 200,
-    placement: 'back',
-  },
-];
 
 export const sweatshirtPricesInGrosz: Readonly<
   Record<GarmentFit, Readonly<Record<EmbroideryOptionId, number>>>

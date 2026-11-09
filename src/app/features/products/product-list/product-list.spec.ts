@@ -16,14 +16,7 @@ describe('ProductList', () => {
   const apiProducts: readonly ProductApiResponse[] = demoProducts.map((product) => ({
     id: product.id,
     slug: product.slug,
-    productType:
-      product.category === 'embroidery-patterns'
-        ? 'digital'
-        : product.slug === 'embroidered-shirt'
-          ? 'tshirt'
-          : product.slug === 'embroidered-tote-bag'
-            ? 'tote'
-            : 'sweatshirt',
+    productType: product.category === 'embroidery-patterns' ? 'digital' : product.productType,
     name: product.name,
     description: product.description,
     priceInGrosz: product.priceInGrosz,

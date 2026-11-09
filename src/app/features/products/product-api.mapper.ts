@@ -23,6 +23,7 @@ export function mapApiProductToProduct(response: ProductApiResponse): Product {
   return {
     ...common,
     category: 'embroidered-products',
+    productType: response.productType,
     madeToOrder: response.madeToOrder,
     personalizationAvailable: response.personalizationAvailable,
   };

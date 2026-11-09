@@ -7,7 +7,7 @@ import {
   provideSweatshirtVariantsTesting,
   testSweatshirtVariants,
 } from '../../../testing/sweatshirt-variants-testing';
-import { provideProductCatalogTesting } from '../../../testing/product-catalog-testing';
+import { provideProductCatalogTesting, testCatalogProducts } from '../../../testing/product-catalog-testing';
 import { SweatshirtVariantsService } from '../sweatshirt-variants.service';
 import { CartService } from '../../cart/cart.service';
 import { vi } from 'vitest';
@@ -32,8 +32,15 @@ describe('SweatshirtConfigurator', () => {
 
     fixture = TestBed.createComponent(SweatshirtConfigurator);
     component = fixture.componentInstance;
+     const sweatshirt = testCatalogProducts.find(
+       (product) =>
+         product.category === 'embroidered-products' && product.productType === 'sweatshirt',
+     );
+     fixture.componentRef.setInput('product', sweatshirt);
     await fixture.whenStable();
   });
+
+
 
   afterEach(() => {
     localStorage.removeItem('lilimi.cart.v1');
@@ -42,6 +49,56 @@ describe('SweatshirtConfigurator', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should use the selected pattern options and price when adding to the cart', async () => {
+    const variants = TestBed.inject(SweatshirtVariantsService) as unknown as ReturnType<
+      typeof createSweatshirtVariantsMock
+    >;
+    const cart = TestBed.inject(CartService);
+    const element = fixture.nativeElement as HTMLElement;
+
+    variants.state.set({
+      status: 'ready',
+      variants: [
+        ...testSweatshirtVariants,
+        {
+          ...testSweatshirtVariants[0]!,
+          id: 'test-second-pattern-women-s',
+          patternId: 'pattern-002',
+          embroideryOptionId: 'medium-sleeve',
+          size: 'S',
+          priceInGrosz: 18900,
+        },
+      ],
+    });
+    await fixture.whenStable();
+
+    const patternSelect = element.querySelector<HTMLSelectElement>('#sweatshirt-pattern')!;
+    patternSelect.value = 'pattern-002';
+    patternSelect.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+
+    const sizeSelect = element.querySelector<HTMLSelectElement>('#sweatshirt-size')!;
+    expect(Array.from(sizeSelect.options, (option) => option.value)).toEqual(['', 'S']);
+
+    sizeSelect.value = 'S';
+    sizeSelect.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+
+    expect(element.querySelector('.configurator__price')?.textContent).toContain('189');
+
+    const addButton = element.querySelector<HTMLButtonElement>('.configurator__actions button')!;
+    addButton.click();
+
+    expect(cart.sweatshirts()).toMatchObject([
+      {
+        patternId: 'pattern-002',
+        configuration: { size: 'S', embroideryOptionId: 'medium-sleeve' },
+        quantity: 1,
+      },
+    ]);
+    expect(cart.subtotalInGrosz()).toBe(18900);
   });
 
   it('should block adding at the limit and allow it after reducing quantity', async () => {
@@ -217,7 +274,7 @@ describe('SweatshirtConfigurator', () => {
 
         addButton.click();
 
-        expect(addSweatshirt).toHaveBeenCalledExactlyOnceWith({
+        expect(addSweatshirt).toHaveBeenCalledExactlyOnceWith('embroidered-002', 'pattern-001', {
           fit: 'women',
           size: 'M',
           color: 'white',

@@ -1,4 +1,4 @@
-import { Component, computed, inject, linkedSignal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, input, effect, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAX_CART_ITEM_QUANTITY } from '../../cart/cart-item.model';
 
@@ -16,6 +16,9 @@ import { RouterLink } from '@angular/router';
 import { CartService } from '../../cart/cart.service';
 import { SweatshirtVariantsService } from '../sweatshirt-variants.service';
 import type { EmbroideryOption } from '../embroidered-product-options';
+import type { EmbroideredProduct } from '../product.model';
+import type { VariantsSource } from '../sweatshirt-variants.service';
+import { ProductCatalogService } from '../product-catalog.service';
 
 
 @Component({
@@ -26,22 +29,31 @@ import type { EmbroideryOption } from '../embroidered-product-options';
 })
 export class SweatshirtConfigurator {
   private readonly transloco = inject(TranslocoService);
-
+  readonly product = input.required<EmbroideredProduct>();
   private readonly activeLanguage = toSignal(this.transloco.langChanges$, {
     initialValue: this.transloco.getActiveLang(),
   });
 
   private readonly cart = inject(CartService);
-
+  private readonly catalog = inject(ProductCatalogService);
   private readonly variantsService = inject(SweatshirtVariantsService);
+  private readonly variantsSource = signal<VariantsSource | null>(null);
+  protected readonly variantsState = computed(
+    () => this.variantsSource()?.state() ?? { status: 'loading' as const },
+  );
+  protected readonly variants = computed(() => this.variantsSource()?.variants() ?? []);
 
-  protected readonly variantsState = this.variantsService.state;
-  protected readonly variants = this.variantsService.variants;
-
-  protected reloadVariants(): void {
-    this.variantsService.reload();
+  constructor() {
+    effect(() => {
+      const slug = this.product().slug;
+      const source = untracked(() => this.variantsService.forProduct(slug));
+      this.variantsSource.set(source);
+    });
   }
 
+  protected reloadVariants(): void {
+    this.variantsSource()?.reload();
+  }
   protected readonly language = computed<'pl' | 'en'>(() =>
     this.activeLanguage() === 'en' ? 'en' : 'pl',
   );
@@ -59,7 +71,7 @@ export class SweatshirtConfigurator {
       .sweatshirts()
       .some(
         (item) =>
-          item.productId === 'embroidered-002' &&
+          item.productId === this.product().id &&
           item.patternId === variant.patternId &&
           item.configuration.fit === variant.fit &&
           item.configuration.size === variant.size &&
@@ -71,6 +83,8 @@ export class SweatshirtConfigurator {
 
   protected readonly addedCount = linkedSignal({
     source: () => ({
+      productId: this.product().id,
+      patternId: this.selectedPatternId(),
       fit: this.selectedFit(),
       size: this.selectedSize(),
       color: this.selectedColor(),
@@ -86,7 +100,7 @@ export class SweatshirtConfigurator {
       return;
     }
 
-    const added = this.cart.addSweatshirt({
+    const added = this.cart.addSweatshirt(this.product().id, variant.patternId, {
       fit: variant.fit,
       size: variant.size,
       color: variant.color,
@@ -98,24 +112,37 @@ export class SweatshirtConfigurator {
     }
   }
 
-  private readonly dragonVariants = computed(() =>
-    this.variants().filter((variant) => variant.patternId === 'pattern-001'),
+  protected readonly patternIds = computed(() => [
+    ...new Set(this.variants().map((variant) => variant.patternId)),
+  ]);
+
+  protected readonly selectedPatternId = linkedSignal<readonly string[], string | undefined>({
+    source: this.patternIds,
+    computation: (ids, previous) => {
+      const previousId = previous?.value;
+
+      return previousId !== undefined && ids.includes(previousId) ? previousId : ids[0];
+    },
+  });
+
+  private readonly patternVariants = computed(() =>
+    this.variants().filter((variant) => variant.patternId === this.selectedPatternId()),
   );
 
   protected readonly fits = computed(() =>
-    garmentFits.filter((fit) => this.dragonVariants().some((variant) => variant.fit === fit)),
+    garmentFits.filter((fit) => this.patternVariants().some((variant) => variant.fit === fit)),
   );
 
   protected readonly colors = computed(() =>
     garmentColors.filter((color) =>
-      this.dragonVariants().some(
+      this.patternVariants().some(
         (variant) => variant.fit === this.selectedFit() && variant.color === color,
       ),
     ),
   );
 
   protected readonly embroideryOptions = computed(() => {
-    const matchingVariants = this.dragonVariants().filter(
+    const matchingVariants = this.patternVariants().filter(
       (variant) => variant.fit === this.selectedFit() && variant.color === this.selectedColor(),
     );
 
@@ -179,7 +206,7 @@ export class SweatshirtConfigurator {
     }
 
     return garmentSizes[fit].filter((size) =>
-      this.dragonVariants().some(
+      this.patternVariants().some(
         (variant) =>
           variant.fit === fit &&
           variant.color === this.selectedColor() &&
@@ -199,7 +226,7 @@ export class SweatshirtConfigurator {
   });
 
   protected readonly selectedVariant = computed(() =>
-    this.dragonVariants().find(
+    this.patternVariants().find(
       (variant) =>
         variant.fit === this.selectedFit() &&
         variant.color === this.selectedColor() &&
@@ -229,6 +256,16 @@ export class SweatshirtConfigurator {
     if (fit) {
       this.selectedFit.set(fit);
     }
+  }
+
+  protected changePattern(patternId: string): void {
+    if (this.patternIds().includes(patternId)) {
+      this.selectedPatternId.set(patternId);
+    }
+  }
+
+  protected patternName(patternId: string): string {
+    return this.catalog.productsById().get(patternId)?.name[this.language()] ?? patternId;
   }
 
   protected changeSize(value: string): void {

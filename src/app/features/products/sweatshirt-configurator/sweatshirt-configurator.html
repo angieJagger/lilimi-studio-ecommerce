@@ -15,6 +15,18 @@
   <legend>{{ 'configurator.title' | transloco }}</legend>
 
   <div class="configurator__fields">
+    @if (patternIds().length > 1) {
+    <label class="configurator__field">
+      <span>{{ 'configurator.pattern' | transloco }}</span>
+
+      <select id="sweatshirt-pattern" [ngModel]="selectedPatternId()" (ngModelChange)="changePattern($event)"
+        [ngModelOptions]="{ standalone: true }">
+        @for (patternId of patternIds(); track patternId) {
+        <option [value]="patternId">{{ patternName(patternId) }}</option>
+        }
+      </select>
+    </label>
+    }
     <label class="configurator__field">
       <span>{{ 'configurator.fit' | transloco }}</span>
 
@@ -30,7 +42,7 @@
     <label class="configurator__field">
       <span>{{ 'configurator.size' | transloco }}</span>
 
-      <select required [ngModel]="selectedSize()" (ngModelChange)="changeSize($event)" [ngModelOptions]="{ standalone: true }">
+      <select  id="sweatshirt-size" required [ngModel]="selectedSize()" (ngModelChange)="changeSize($event)" [ngModelOptions]="{ standalone: true }">
         <option value="" disabled>
           {{ 'configurator.selectSize' | transloco }}
         </option>

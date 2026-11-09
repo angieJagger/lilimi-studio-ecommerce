@@ -45,6 +45,7 @@ export const testCatalogProducts: readonly Product[] = [
     id: 'embroidered-002',
     slug: 'embroidered-sweatshirt',
     category: 'embroidered-products',
+    productType: 'sweatshirt',
     name: {
       pl: 'Bluza z haftem',
       en: 'Embroidered sweatshirt',
