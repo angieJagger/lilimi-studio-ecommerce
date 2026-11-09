@@ -7,6 +7,8 @@ import { provideRouter } from '@angular/router';
 import { getTranslocoTestingModule } from '../../testing/transloco-testing';
 import { provideSweatshirtVariantsTesting } from '../../testing/sweatshirt-variants-testing';
 import { provideProductCatalogTesting } from '../../testing/product-catalog-testing';
+import { MAX_CART_ITEM_QUANTITY } from './cart-item.model';
+import { getCartItemKey } from './cart-item-key';
 
 describe('Cart', () => {
   let component: Cart;
@@ -46,5 +48,34 @@ describe('Cart', () => {
   });
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should disable increasing quantity at the limit', async () => {
+    const cart = TestBed.inject(CartService);
+
+    cart.addSweatshirt({
+      fit: 'women',
+      size: 'M',
+      color: 'black',
+      embroideryOptionId: 'small-front',
+    });
+
+    const key = getCartItemKey(cart.sweatshirts()[0]!);
+
+    cart.updateSweatshirtQuantity(key, MAX_CART_ITEM_QUANTITY);
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const buttons = element.querySelectorAll<HTMLButtonElement>('.cart__quantity-controls button');
+
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]!.disabled).toBe(false);
+    expect(buttons[1]!.disabled).toBe(true);
+
+    buttons[0]!.click();
+    await fixture.whenStable();
+
+    expect(cart.sweatshirts()[0]?.quantity).toBe(MAX_CART_ITEM_QUANTITY - 1);
+    expect(buttons[1]!.disabled).toBe(false);
   });
 });

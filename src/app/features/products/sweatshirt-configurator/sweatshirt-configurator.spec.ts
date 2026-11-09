@@ -11,12 +11,16 @@ import { provideProductCatalogTesting } from '../../../testing/product-catalog-t
 import { SweatshirtVariantsService } from '../sweatshirt-variants.service';
 import { CartService } from '../../cart/cart.service';
 import { vi } from 'vitest';
+import { MAX_CART_ITEM_QUANTITY } from '../../cart/cart-item.model';
+import { getCartItemKey } from '../../cart/cart-item-key';
 
 describe('SweatshirtConfigurator', () => {
   let component: SweatshirtConfigurator;
   let fixture: ComponentFixture<SweatshirtConfigurator>;
 
   beforeEach(async () => {
+    localStorage.removeItem('lilimi.cart.v1');
+    localStorage.removeItem('lilimi.cart.sweatshirts.v1');
     await TestBed.configureTestingModule({
       imports: [SweatshirtConfigurator, getTranslocoTestingModule()],
       providers: [
@@ -31,8 +35,52 @@ describe('SweatshirtConfigurator', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    localStorage.removeItem('lilimi.cart.v1');
+    localStorage.removeItem('lilimi.cart.sweatshirts.v1');
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should block adding at the limit and allow it after reducing quantity', async () => {
+    const cart = TestBed.inject(CartService);
+    const element = fixture.nativeElement as HTMLElement;
+    const sizeSelect = element.querySelectorAll('select')[1]!;
+    const addButton = element.querySelector<HTMLButtonElement>('.configurator__actions button')!;
+
+    sizeSelect.value = 'M';
+    sizeSelect.dispatchEvent(new Event('change'));
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    addButton.click();
+    await fixture.whenStable();
+
+    expect(cart.sweatshirts()).toHaveLength(1);
+
+    const key = getCartItemKey(cart.sweatshirts()[0]!);
+
+    cart.updateSweatshirtQuantity(key, MAX_CART_ITEM_QUANTITY);
+    await fixture.whenStable();
+
+    expect(addButton.disabled).toBe(true);
+    expect(element.textContent).toContain(
+      `W koszyku jest już maksymalna liczba sztuk tej konfiguracji: ${MAX_CART_ITEM_QUANTITY}.`,
+    );
+
+    cart.updateSweatshirtQuantity(key, MAX_CART_ITEM_QUANTITY - 1);
+    await fixture.whenStable();
+
+    expect(addButton.disabled).toBe(false);
+
+    addButton.click();
+    await fixture.whenStable();
+
+    expect(cart.sweatshirts()[0]?.quantity).toBe(MAX_CART_ITEM_QUANTITY);
+    expect(addButton.disabled).toBe(true);
   });
 
     it('should require a size before allowing the product to be added', async () => {

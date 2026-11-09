@@ -839,7 +839,8 @@
     "loading": "Loading available variants…",
     "loadError": "Could not load product variants.",
     "retry": "Try again",
-    "unavailable": "This product currently has no available variants."
+    "unavailable": "This product currently has no available variants.",
+    "quantityLimitReached": "Your cart already contains the maximum quantity for this configuration: {{ max }}."
   },
 
   "checkout": {

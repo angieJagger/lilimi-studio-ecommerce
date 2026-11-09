@@ -25,7 +25,7 @@
       <output>{{ 'cart.pricingLoading' | transloco }}</output>
       } @else if (cart.pricingStatus() === 'error') {
       <p role="alert">{{ 'cart.pricingError' | transloco }}</p>
-      
+
       <button class="button button--secondary" type="button" (click)="cart.reloadPrices()">
         {{ 'cart.retryPricing' | transloco }}
       </button>
@@ -40,9 +40,9 @@
             <h2 class="cart__item-title">
               {{ 'cart.unavailableDigitalProduct' | transloco }}
             </h2>
-        
+
             <p>{{ 'cart.productReference' | transloco }}: {{ id }}</p>
-        
+
             <button class="cart__remove" type="button" (click)="cart.removeProduct(id)">
               {{ 'cart.remove' | transloco }}
             </button>
@@ -100,7 +100,7 @@
               {{ line.item.productId }}
               }
             </h2>
-            
+
             <p>
               @if (line.pattern; as pattern) {
               {{ pattern.name[language()] }}
@@ -146,7 +146,7 @@
                 <button type="button" [attr.aria-label]="'cart.increaseQuantity' | transloco" (click)="cart.updateSweatshirtQuantity(
                     line.key,
                     line.item.quantity + 1
-                  )">
+                  )" [disabled]="line.item.quantity >= maxItemQuantity">
                   <span aria-hidden="true">+</span>
                 </button>
               </div>

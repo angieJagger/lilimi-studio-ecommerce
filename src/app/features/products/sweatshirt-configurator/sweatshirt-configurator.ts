@@ -1,5 +1,6 @@
 import { Component, computed, inject, linkedSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MAX_CART_ITEM_QUANTITY } from '../../cart/cart-item.model';
 
 import {
   EmbroideryOptionId,
@@ -44,6 +45,29 @@ export class SweatshirtConfigurator {
   protected readonly language = computed<'pl' | 'en'>(() =>
     this.activeLanguage() === 'en' ? 'en' : 'pl',
   );
+
+  protected readonly maxItemQuantity = MAX_CART_ITEM_QUANTITY;
+
+  protected readonly quantityLimitReached = computed(() => {
+    const variant = this.selectedVariant();
+
+    if (!variant) {
+      return false;
+    }
+
+    return this.cart
+      .sweatshirts()
+      .some(
+        (item) =>
+          item.productId === 'embroidered-002' &&
+          item.patternId === variant.patternId &&
+          item.configuration.fit === variant.fit &&
+          item.configuration.size === variant.size &&
+          item.configuration.color === variant.color &&
+          item.configuration.embroideryOptionId === variant.embroideryOptionId &&
+          item.quantity >= MAX_CART_ITEM_QUANTITY,
+      );
+  });
 
   protected readonly addedCount = linkedSignal({
     source: () => ({
@@ -115,37 +139,37 @@ export class SweatshirtConfigurator {
     computation: (fits): GarmentFit | undefined => (fits.includes('women') ? 'women' : fits[0]),
   });
 
-    protected readonly selectedColor = linkedSignal<
-      readonly GarmentColor[],
-      GarmentColor | undefined
-    >({
-      source: this.colors,
-      computation: (colors, previous) => {
-        const previousColor = previous?.value;
-  
-        if (previousColor && colors.includes(previousColor)) {
-          return previousColor;
-        }
-  
-        return colors.includes('black') ? 'black' : colors[0];
-      },
-    });
+  protected readonly selectedColor = linkedSignal<
+    readonly GarmentColor[],
+    GarmentColor | undefined
+  >({
+    source: this.colors,
+    computation: (colors, previous) => {
+      const previousColor = previous?.value;
 
-    protected readonly selectedEmbroidery = linkedSignal<
-      readonly EmbroideryOption[],
-      EmbroideryOptionId | undefined
-    >({
-      source: this.embroideryOptions,
-      computation: (options, previous) => {
-        const previousOption = options.find(
-          (option) => option.id === previous?.value,
-        );
-  
-        return previousOption?.id ??
-          options.find((option) => option.id === 'small-front')?.id ??
-          options[0]?.id;
-      },
-    });
+      if (previousColor && colors.includes(previousColor)) {
+        return previousColor;
+      }
+
+      return colors.includes('black') ? 'black' : colors[0];
+    },
+  });
+
+  protected readonly selectedEmbroidery = linkedSignal<
+    readonly EmbroideryOption[],
+    EmbroideryOptionId | undefined
+  >({
+    source: this.embroideryOptions,
+    computation: (options, previous) => {
+      const previousOption = options.find((option) => option.id === previous?.value);
+
+      return (
+        previousOption?.id ??
+        options.find((option) => option.id === 'small-front')?.id ??
+        options[0]?.id
+      );
+    },
+  });
 
   protected readonly availableSizes = computed(() => {
     const fit = this.selectedFit();
