@@ -15,6 +15,21 @@ describe('readStoredSweatshirts', () => {
     quantity: 1,
   };
 
+  it('should preserve distinct products and patterns from storage', () => {
+    const otherProduct = { ...item, productId: 'embroidered-004' };
+    const otherPattern = {
+      ...item,
+      patternId: 'pattern-002',
+      configuration: { ...item.configuration, embroideryOptionId: 'medium-sleeve' },
+    };
+
+    expect(readStoredSweatshirts([item, otherProduct, otherPattern])).toEqual([
+      item,
+      otherProduct,
+      otherPattern,
+    ]);
+  });
+
   it('should preserve a quantity at the limit', () => {
     const result = readStoredSweatshirts([{ ...item, quantity: MAX_CART_ITEM_QUANTITY }]);
 

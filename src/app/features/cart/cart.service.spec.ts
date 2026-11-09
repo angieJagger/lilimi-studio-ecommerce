@@ -19,6 +19,8 @@ import {
   testCatalogProducts,
 } from '../../testing/product-catalog-testing';
 import { ProductCatalogService } from '../products/product-catalog.service';
+import { of } from 'rxjs';
+import { ProductApiService } from '../products/product-api.service';
 
 
 describe('CartService', () => {
@@ -55,13 +57,63 @@ describe('CartService', () => {
     cart = TestBed.inject(CartService);
   });
 
+  it('should price identical configurations separately for different sweatshirts', () => {
+    const catalog = TestBed.inject(ProductCatalogService) as unknown as ReturnType<
+      typeof createProductCatalogMock
+    >;
+    const variantsService = TestBed.inject(SweatshirtVariantsService);
+    const firstProduct = testCatalogProducts.find((product) => product.id === 'embroidered-002')!;
+    const secondProduct = {
+      ...firstProduct,
+      id: 'embroidered-004',
+      slug: 'another-sweatshirt',
+    };
+
+    catalog.state.set({
+      status: 'ready',
+      products: [...testCatalogProducts, secondProduct],
+    });
+
+    const firstSource = createSweatshirtVariantsMock();
+    const secondSource = createSweatshirtVariantsMock();
+
+    secondSource.state.set({
+      status: 'ready',
+      variants: testSweatshirtVariants.map((variant) => ({
+        ...variant,
+        priceInGrosz: 18900,
+        widthMm: 140,
+        heightMm: 120,
+        placement: 'back' as const,
+      })),
+    });
+
+    const sources = new Map([
+      [firstProduct.slug, firstSource],
+      [secondProduct.slug, secondSource],
+    ]);
+
+    vi.spyOn(variantsService, 'findSource').mockImplementation((slug) => sources.get(slug));
+
+    expect(cart.addSweatshirt(firstProduct.id, 'pattern-001', sweatshirtConfiguration)).toBe(true);
+    expect(cart.addSweatshirt(secondProduct.id, 'pattern-001', sweatshirtConfiguration)).toBe(true);
+
+    expect(cart.sweatshirtLines().map((line) => line.unitPriceInGrosz)).toEqual([14900, 18900]);
+    expect(cart.sweatshirtLines()[1]?.embroidery).toMatchObject({
+      widthMm: 140,
+      heightMm: 120,
+      placement: 'back',
+    });
+    expect(cart.subtotalInGrosz()).toBe(33800);
+  });
+
     it('should use the API price and update the subtotal when it changes', () => {
       const variants = TestBed.inject(SweatshirtVariantsService) as unknown as ReturnType<
         typeof createSweatshirtVariantsMock
       >;
 
-      cart.addSweatshirt(sweatshirtConfiguration);
-      cart.addSweatshirt(sweatshirtConfiguration);
+      cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
+      cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
       expect(cart.subtotalInGrosz()).toBe(29800);
 
@@ -78,19 +130,19 @@ describe('CartService', () => {
     });
 
     it('should reject adding another item after reaching the quantity limit', () => {
-      cart.addSweatshirt(sweatshirtConfiguration);
+      cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
       const key = getCartItemKey(cart.sweatshirts()[0]!);
 
       cart.updateSweatshirtQuantity(key, MAX_CART_ITEM_QUANTITY);
 
-      expect(cart.addSweatshirt(sweatshirtConfiguration)).toBe(false);
+      expect(cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration)).toBe(false);
       expect(cart.sweatshirts()).toHaveLength(1);
       expect(cart.sweatshirts()[0]?.quantity).toBe(MAX_CART_ITEM_QUANTITY);
     });
 
     it('should preserve the quantity when an update exceeds the limit', () => {
-      cart.addSweatshirt(sweatshirtConfiguration);
+      cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
       const key = getCartItemKey(cart.sweatshirts()[0]!);
 
@@ -105,7 +157,7 @@ describe('CartService', () => {
         typeof createSweatshirtVariantsMock
       >;
 
-      cart.addSweatshirt(sweatshirtConfiguration);
+      cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
       variants.state.set({
         status: 'ready',
@@ -119,16 +171,18 @@ describe('CartService', () => {
       expect(cart.subtotalInGrosz()).toBeNull();
       expect(cart.pricingStatus()).toBe('unavailable');
 
-      expect(cart.addSweatshirt(sweatshirtConfiguration)).toBe(false);
+      expect(cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration)).toBe(
+        false,
+      );
       expect(cart.sweatshirts()[0]?.quantity).toBe(1);
     });
 
   it('should increase quantity for the same sweatshirt configuration', () => {
     // Arrange
-    cart.addSweatshirt(sweatshirtConfiguration);
+    cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
     // Act
-    const added = cart.addSweatshirt(sweatshirtConfiguration);
+    const added = cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
     // Assert
     expect(added).toBe(true);
@@ -140,10 +194,10 @@ describe('CartService', () => {
 
   it('should keep different sweatshirt sizes as separate items', () => {
     // Arrange
-    cart.addSweatshirt(sweatshirtConfiguration);
+    cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
     // Act
-    cart.addSweatshirt({
+    cart.addSweatshirt('embroidered-002', 'pattern-001', {
       ...sweatshirtConfiguration,
       size: 'L',
     });
@@ -167,7 +221,7 @@ describe('CartService', () => {
 
   it('should calculate the price of a child sweatshirt with large embroidery', () => {
     // Act
-    const added = cart.addSweatshirt({
+    const added = cart.addSweatshirt('embroidered-002', 'pattern-001', {
       ...sweatshirtConfiguration,
       fit: 'children',
       size: '92',
@@ -182,7 +236,7 @@ describe('CartService', () => {
 
   it('should reject a size that does not belong to the selected fit', () => {
     // Act
-    const added = cart.addSweatshirt({
+    const added = cart.addSweatshirt('embroidered-002', 'pattern-001', {
       ...sweatshirtConfiguration,
       fit: 'children',
       size: 'M',
@@ -197,7 +251,7 @@ describe('CartService', () => {
 
   it('should calculate the subtotal for digital and physical products together', () => {
     cart.addPattern(pattern);
-    cart.addSweatshirt(sweatshirtConfiguration);
+    cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
     expect(cart.itemCount()).toBe(2);
     expect(cart.subtotalInGrosz()).toBe(17800);
@@ -205,8 +259,8 @@ describe('CartService', () => {
 
   it('should remove only the selected sweatshirt configuration', () => {
     // Arrange
-    cart.addSweatshirt(sweatshirtConfiguration);
-    cart.addSweatshirt({
+    cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
+    cart.addSweatshirt('embroidered-002', 'pattern-001', {
       ...sweatshirtConfiguration,
       size: 'L',
     });
@@ -225,7 +279,7 @@ describe('CartService', () => {
 
   it('should clear both digital and physical products', () => {
     cart.addPattern(pattern);
-    cart.addSweatshirt(sweatshirtConfiguration);
+    cart.addSweatshirt('embroidered-002', 'pattern-001', sweatshirtConfiguration);
 
     cart.clear();
 
@@ -429,6 +483,16 @@ describe('CartService persistence', () => {
 
   it('should restore a sweatshirt configuration and quantity', () => {
     // Arrange
+
+    const getVariants = vi.fn(() => of(testSweatshirtVariants));
+
+    TestBed.overrideProvider(SweatshirtVariantsService, {
+      useFactory: () => new SweatshirtVariantsService(),
+      deps: [],
+    });
+    TestBed.overrideProvider(ProductApiService, {
+      useValue: { getVariants },
+    });
     storage.set(
       sweatshirtStorageKey,
       JSON.stringify([
@@ -469,6 +533,7 @@ describe('CartService persistence', () => {
 
     expect(cart.itemCount()).toBe(2);
     expect(cart.subtotalInGrosz()).toBe(29800);
+    expect(getVariants).toHaveBeenCalledExactlyOnceWith('embroidered-sweatshirt');
   });
 
   it('should save a sweatshirt configuration after adding it', () => {
@@ -477,7 +542,7 @@ describe('CartService persistence', () => {
     TestBed.tick();
 
     // Act
-    cart.addSweatshirt({
+    cart.addSweatshirt('embroidered-002', 'pattern-001', {
       fit: 'women',
       size: 'M',
       color: 'black',
@@ -548,7 +613,7 @@ describe('CartService persistence', () => {
     const cart = TestBed.inject(CartService);
     TestBed.tick();
 
-    cart.addSweatshirt({
+    cart.addSweatshirt('embroidered-002', 'pattern-001', {
       fit: 'women',
       size: 'M',
       color: 'black',

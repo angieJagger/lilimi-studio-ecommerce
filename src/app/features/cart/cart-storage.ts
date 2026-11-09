@@ -1,5 +1,5 @@
 import {
-  dragonEmbroideryOptions,
+  isEmbroideryOptionId,
   garmentColors,
   garmentFits,
   garmentSizes,
@@ -16,10 +16,17 @@ function readSweatshirt(value: unknown): SweatshirtCartItem | null {
     return null;
   }
 
+  const productId = value['productId'];
+  const patternId = value['patternId'];
+
   if (
     value['kind'] !== 'sweatshirt' ||
-    value['productId'] !== 'embroidered-002' ||
-    value['patternId'] !== 'pattern-001'
+    typeof productId !== 'string' ||
+    productId.trim().length === 0 ||
+    productId.length > 100 ||
+    typeof patternId !== 'string' ||
+    patternId.trim().length === 0 ||
+    patternId.length > 100
   ) {
     return null;
   }
@@ -31,16 +38,13 @@ function readSweatshirt(value: unknown): SweatshirtCartItem | null {
 
   const color = garmentColors.find((item) => item === configuration['color']);
 
-  const embroidery = dragonEmbroideryOptions.find(
-    (item) => item.id === configuration['embroideryOptionId'],
-  );
-
+  const embroideryOptionId = configuration['embroideryOptionId'];
   const size = configuration['size'];
 
   if (
     !fit ||
     !color ||
-    !embroidery ||
+    !isEmbroideryOptionId(embroideryOptionId) ||
     typeof size !== 'string' ||
     !garmentSizes[fit].includes(size)
   ) {
@@ -53,13 +57,13 @@ function readSweatshirt(value: unknown): SweatshirtCartItem | null {
 
   return {
     kind: 'sweatshirt',
-    productId: 'embroidered-002',
-    patternId: 'pattern-001',
+    productId,
+    patternId,
     configuration: {
       fit,
       size,
       color,
-      embroideryOptionId: embroidery.id,
+      embroideryOptionId,
     },
     quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY),
   };

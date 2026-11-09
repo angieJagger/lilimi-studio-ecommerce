@@ -29,6 +29,7 @@ export interface EmbroideryPattern extends ProductBase {
 
 export interface EmbroideredProduct extends ProductBase {
   readonly category: 'embroidered-products';
+  readonly productType: 'sweatshirt' | 'tshirt' | 'tote';
   readonly madeToOrder: boolean;
   readonly personalizationAvailable: boolean;
 }

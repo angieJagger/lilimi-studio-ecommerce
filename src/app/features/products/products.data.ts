@@ -21,6 +21,7 @@ export const demoProducts: readonly Product[] = [
     id: 'embroidered-001',
     slug: 'embroidered-shirt',
     category: 'embroidered-products',
+    productType: 'tshirt',
     madeToOrder: true,
     personalizationAvailable: true,
     name: {
@@ -54,6 +55,7 @@ export const demoProducts: readonly Product[] = [
     id: 'embroidered-002',
     slug: 'embroidered-sweatshirt',
     category: 'embroidered-products',
+    productType: 'sweatshirt',
     madeToOrder: true,
     personalizationAvailable: true,
     name: {
@@ -87,6 +89,7 @@ export const demoProducts: readonly Product[] = [
     id: 'embroidered-003',
     slug: 'embroidered-tote-bag',
     category: 'embroidered-products',
+    productType: 'tote',
     madeToOrder: true,
     personalizationAvailable: true,
     name: {

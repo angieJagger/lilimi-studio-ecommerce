@@ -53,7 +53,7 @@ describe('Cart', () => {
   it('should disable increasing quantity at the limit', async () => {
     const cart = TestBed.inject(CartService);
 
-    cart.addSweatshirt({
+    cart.addSweatshirt('embroidered-002', 'pattern-001', {
       fit: 'women',
       size: 'M',
       color: 'black',

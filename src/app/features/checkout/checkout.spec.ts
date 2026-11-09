@@ -125,7 +125,7 @@ describe('Checkout', () => {
   });
 
   async function addSweatshirt(): Promise<void> {
-    cart.addSweatshirt({
+    cart.addSweatshirt('embroidered-002', 'pattern-001', {
       fit: 'women',
       size: 'M',
       color: 'black',

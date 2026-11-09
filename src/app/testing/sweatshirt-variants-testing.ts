@@ -62,7 +62,7 @@ export function createSweatshirtVariantsMock() {
     variants: testSweatshirtVariants,
   });
 
-  return {
+  const source = {
     state,
     variants: computed(() => {
       const current = state();
@@ -70,6 +70,12 @@ export function createSweatshirtVariantsMock() {
       return current.status === 'ready' ? current.variants : [];
     }),
     reload: vi.fn(),
+  };
+
+  return {
+    ...source,
+    forProduct: vi.fn(() => source),
+    findSource: vi.fn(() => source),
   };
 }
 
