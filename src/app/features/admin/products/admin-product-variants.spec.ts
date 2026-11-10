@@ -218,7 +218,8 @@ describe('AdminProductVariants', () => {
   });
 
   it('should display variant configuration and pagination', async () => {
-    await respond();
+    await respond({ ...page, items: [{ ...variant, stockQuantity: 0 }] });
+    expect(element.querySelector('tbody .variants__stock-empty')?.textContent).toContain('0 szt.');
 
     expect(element.querySelector('tbody')?.textContent).toContain('pattern-001');
     expect(element.querySelector('tbody')?.textContent).toContain('small-front');

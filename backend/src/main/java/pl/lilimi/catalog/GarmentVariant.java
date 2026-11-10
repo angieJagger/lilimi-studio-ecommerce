@@ -44,6 +44,20 @@ public class GarmentVariant {
   @Column(name = "active", nullable = false)
   private boolean active;
 
+  @Column(name = "stock_quantity", nullable = false)
+  private int stockQuantity;
+
+  public int getStockQuantity() {
+    return stockQuantity;
+  }
+
+  public void changeStockQuantity(int quantity) {
+    if (quantity < 0) {
+      throw new IllegalArgumentException("Stock quantity cannot be negative");
+    }
+    stockQuantity = quantity;
+  }
+
   protected GarmentVariant() {
     // Required by JPA.
   }

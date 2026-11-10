@@ -29,9 +29,15 @@ export interface EmbroideryPattern extends ProductBase {
 
 export interface EmbroideredProduct extends ProductBase {
   readonly category: 'embroidered-products';
-  readonly productType: 'sweatshirt' | 'tshirt' | 'tote';
+  readonly productType: 'sweatshirt' | 'tshirt' | 'tote' | 'physical';
+  readonly variantAttributes?: readonly ProductVariantAttribute[];
   readonly madeToOrder: boolean;
   readonly personalizationAvailable: boolean;
+}
+
+export interface ProductVariantAttribute {
+  readonly name: string;
+  readonly values: readonly string[];
 }
 
 export type Product = EmbroideryPattern | EmbroideredProduct;

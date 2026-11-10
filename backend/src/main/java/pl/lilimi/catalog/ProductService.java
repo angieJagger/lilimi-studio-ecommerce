@@ -1,6 +1,8 @@
 package pl.lilimi.catalog;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
@@ -10,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -18,15 +21,18 @@ public class ProductService {
   private final ProductRepository productRepository;
   private final ProductTranslationRepository translationRepository;
   private final ProductImageRepository imageRepository;
+  private final GarmentVariantRepository variants;
 
   public ProductService(
     ProductRepository productRepository,
     ProductTranslationRepository translationRepository,
-    ProductImageRepository imageRepository
+    ProductImageRepository imageRepository,
+    GarmentVariantRepository variants
   ) {
     this.productRepository = productRepository;
     this.translationRepository = translationRepository;
     this.imageRepository = imageRepository;
+    this.variants = variants;
   }
 
   public List<ProductResponse> getActiveProducts() {
@@ -78,6 +84,21 @@ public class ProductService {
         imagesByProduct.getOrDefault(product.getId(), List.of())
       ))
       .toList();
+  }
+
+  public Optional<Integer> getQuantityLimit(String slug, long requestedQuantity, UUID variantId) {
+    var product = productRepository.findBySlugAndActiveTrue(slug)
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product unavailable"));
+    if (variantId != null) {
+      var variant = variants.findByIdAndProductId(variantId, product.getId())
+        .filter(GarmentVariant::isActive)
+        .filter(value -> productRepository.findByIdAndActiveTrue(value.getPatternId()).isPresent())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Variant unavailable"));
+      return Optional.of(variant.getStockQuantity()).filter(quantity -> quantity < requestedQuantity);
+    }
+
+    return Optional.ofNullable(product.getStockQuantity())
+      .filter(quantity -> quantity < requestedQuantity);
   }
 
   public Optional<ProductResponse> getActiveProductBySlug(String slug) {
@@ -186,7 +207,9 @@ public class ProductService {
         .sorted(Comparator.comparing(ProductImage::isPrimaryImage).reversed()
           .thenComparingInt(ProductImage::getSortOrder).thenComparing(ProductImage::getId))
         .map(image -> ProductImageResponse.from(image, product.getVersion()))
-        .toList()
+        .toList(),
+      product.getPhysicalConfiguration() == null
+        ? List.of() : product.getPhysicalConfiguration().variantAttributes()
     );
   }
 }

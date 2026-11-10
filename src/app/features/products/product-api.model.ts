@@ -1,4 +1,4 @@
-import type { LocalizedText, ProductImage, EmbroideredProduct } from './product.model';
+import type { LocalizedText, ProductImage, EmbroideredProduct, ProductVariantAttribute } from './product.model';
 
 export interface ProductApiResponse {
   readonly images?: readonly ProductImage[];
@@ -10,6 +10,7 @@ export interface ProductApiResponse {
   readonly priceInGrosz: number;
   readonly priceType: 'fixed' | 'from';
   readonly currency: 'PLN';
+  readonly variantAttributes?: readonly ProductVariantAttribute[];
   readonly fileFormats: readonly string[];
   readonly madeToOrder: boolean;
   readonly personalizationAvailable: boolean;

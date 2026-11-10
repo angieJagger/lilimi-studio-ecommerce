@@ -21,6 +21,191 @@
   </button>
   }
   } @else if (products(); as result) {
+    <button class="button button--primary" type="button"
+      [attr.aria-expanded]="showProductTypePicker()" [disabled]="isCreatingDraft()"
+      (click)="showProductTypePicker.set(!showProductTypePicker())">
+      {{ 'adminProducts.create.addProduct' | transloco }}
+    </button>
+
+    @if (showProductTypePicker()) {
+      <fieldset class="product-type-picker" [disabled]="isCreatingDraft()">
+        <legend>{{ 'adminProducts.create.chooseType' | transloco }}</legend>
+        <label>
+          <input type="radio" name="new-product-type" value="digital"
+            [checked]="newProductType() === 'digital'" (change)="newProductType.set('digital')" />
+          {{ 'adminProducts.create.digital' | transloco }}
+        </label>
+        <label>
+          <input type="radio" name="new-product-type" value="physical"
+            [checked]="newProductType() === 'physical'" (change)="newProductType.set('physical')" />
+          {{ 'adminProducts.create.physical' | transloco }}
+        </label>
+      </fieldset>
+
+      @if (newProductType(); as type) {
+        <form #draftForm class="product-draft-form" (submit)="createDraft($event, draftForm)"
+          [attr.aria-busy]="isCreatingDraft()">
+          <fieldset class="product-draft-fields" [disabled]="isCreatingDraft()">
+            <legend>{{ ('adminProducts.create.' + type) | transloco }}</legend>
+
+            @if (type === 'physical') {
+              <fieldset class="product-type-picker">
+                <legend>{{ 'adminProducts.create.hasVariants' | transloco }}</legend>
+                <label>
+                  <input type="radio" name="has-variants" value="yes"
+                    [checked]="hasVariants() === true" (change)="hasVariants.set(true)" />
+                  {{ 'adminProducts.create.withVariants' | transloco }}
+                </label>
+                <label>
+                  <input type="radio" name="has-variants" value="no"
+                    [checked]="hasVariants() === false" (change)="hasVariants.set(false)" />
+                  {{ 'adminProducts.create.withoutVariants' | transloco }}
+                </label>
+              </fieldset>
+
+              @if (hasVariants() !== null) {
+                <label class="product-draft-field">
+                  {{ 'adminProducts.create.category' | transloco }}
+                  <input name="physicalCategory" type="text" maxlength="80" />
+                </label>
+
+                @if (hasVariants()) {
+                  @for (id of variantAttributeIds(); track id) {
+                    <fieldset class="product-draft-attribute">
+                      <legend>{{ 'adminProducts.create.attribute' | transloco }} {{ $index + 1 }}</legend>
+                      <label class="product-draft-field">
+                        {{ 'adminProducts.create.attributeName' | transloco }}
+                        <input [name]="'attribute-name-' + id" type="text" maxlength="60" required />
+                      </label>
+                      <label class="product-draft-field">
+                        {{ 'adminProducts.create.attributeValues' | transloco }}
+                        <input [name]="'attribute-values-' + id" type="text" maxlength="1220" required />
+                      </label>
+                      @if (variantAttributeIds().length > 1) {
+                        <button type="button" (click)="removeVariantAttribute(id)">
+                          {{ 'adminProducts.create.removeAttribute' | transloco }}
+                        </button>
+                      }
+                    </fieldset>
+                  }
+                  @if (variantAttributeIds().length < 6) {
+                    <button type="button" (click)="addVariantAttribute()">
+                      {{ 'adminProducts.create.addAttribute' | transloco }}
+                    </button>
+                  }
+                }
+
+                <label class="product-draft-field">
+                  {{ 'adminProducts.create.stockQuantity' | transloco }}
+                  <input name="stockQuantity" type="number" min="0" max="2147483647" step="1" required />
+                </label>
+                @if (hasVariants()) {
+                  <p>{{ 'adminProducts.create.sharedVariantPrice' | transloco }}</p>
+                }
+
+                <fieldset class="product-draft-attribute">
+                  <legend>{{ 'adminProducts.create.shippingPackageOptional' | transloco }}</legend>
+                  <p>{{ 'adminProducts.create.shippingPackageHint' | transloco }}</p>
+                  <label class="product-draft-field">
+                    {{ 'adminProducts.create.packageLength' | transloco }}
+                    <input name="packageLength" type="text" inputmode="decimal"
+                      maxlength="8" pattern="[0-9]{1,4}([.,][0-9]{1,3})?" />
+                  </label>
+                  <label class="product-draft-field">
+                    {{ 'adminProducts.create.packageWidth' | transloco }}
+                    <input name="packageWidth" type="text" inputmode="decimal"
+                      maxlength="8" pattern="[0-9]{1,4}([.,][0-9]{1,3})?" />
+                  </label>
+                  <label class="product-draft-field">
+                    {{ 'adminProducts.create.packageHeight' | transloco }}
+                    <input name="packageHeight" type="text" inputmode="decimal"
+                      maxlength="8" pattern="[0-9]{1,4}([.,][0-9]{1,3})?" />
+                  </label>
+                  <label class="product-draft-field">
+                    {{ 'adminProducts.create.packageWeight' | transloco }}
+                    <input name="packageWeight" type="text" inputmode="decimal"
+                      maxlength="8" pattern="[0-9]{1,4}([.,][0-9]{1,3})?" />
+                  </label>
+                </fieldset>
+              }
+            }
+
+            @if (type === 'digital' || hasVariants() !== null) {
+              <label class="product-draft-field">
+                {{ 'adminProducts.create.namePl' | transloco }}
+                <input name="namePl" type="text" maxlength="200" required />
+              </label>
+              <label class="product-draft-field">
+                {{ 'adminProducts.create.descriptionPl' | transloco }}
+                <textarea name="descriptionPl" maxlength="5000" required></textarea>
+              </label>
+
+              <label class="product-draft-field">
+                {{ 'adminProducts.create.nameEn' | transloco }}
+                <input name="nameEn" type="text" maxlength="200" required />
+              </label>
+              <label class="product-draft-field">
+                {{ 'adminProducts.create.descriptionEn' | transloco }}
+                <textarea name="descriptionEn" maxlength="5000" required></textarea>
+              </label>
+
+              <label class="product-draft-field">
+                {{ 'adminProducts.create.productCode' | transloco }}
+                <input name="productCode" type="text" maxlength="64"
+                  pattern="(?!(?:pattern|physical)-[0-9]+$)[a-z0-9]+(?:-[a-z0-9]+)*" aria-describedby="draft-code-hint" />
+              </label>
+              <p id="draft-code-hint">{{ 'adminProducts.create.hint' | transloco }}</p>
+
+              <label class="product-draft-field">
+                {{ 'adminProducts.create.physicalPrice' | transloco }}
+                <input name="price" type="text" inputmode="decimal"
+                  maxlength="11" pattern="[0-9]+([.,][0-9]{1,2})?" required />
+              </label>
+
+              <label class="product-draft-field">
+                {{ 'adminProducts.create.images' | transloco }}
+                <input #productImages name="images" type="file" accept="image/jpeg,image/png,image/webp"
+                  multiple (change)="previewImages(productImages)" />
+              </label>
+              @if (imagePreviews().length) {
+                <ul class="product-draft-previews">
+                  @for (preview of imagePreviews(); track preview.url; let index = $index) {
+                    <li>
+                      <div class="product-draft-previews__image">
+                        @if (preview.failed) {
+                          <span>{{ 'adminProductImages.previewFailed' | transloco }}</span>
+                        } @else {
+                          <img [src]="preview.url" alt="" (error)="markImagePreviewFailed(preview.url)" />
+                        }
+                      </div>
+                      <span class="product-draft-previews__name">{{ preview.name }}</span>
+                      @if (index === 0) {
+                        <strong>{{ 'adminProductImages.primary' | transloco }}</strong>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+              @if (type === 'digital') {
+                <label class="product-draft-field">
+                  {{ 'adminProducts.create.digitalPackage' | transloco }}
+                  <input name="digitalPackage" type="file" accept=".zip,application/zip" required />
+                </label>
+              }
+
+              <button class="button button--primary" type="submit">
+                {{ 'adminProducts.create.submit' | transloco }}
+              </button>
+            }
+          </fieldset>
+
+          @if (draftErrorKey(); as message) {
+            <p role="alert">{{ message | transloco }}</p>
+          }
+        </form>
+      }
+    }
+
     @if (visibilityErrorKey(); as message) {
     <div class="products-feedback">
       <p role="alert">{{ message | transloco }}</p>
@@ -32,6 +217,14 @@
       <a [routerLink]="['/', transloco.getActiveLang(), 'account', 'login']">
         {{ 'adminOrders.login' | transloco }}
       </a>
+      } @else if (
+        message === 'adminProducts.errors.digitalProductNotReady' ||
+        message === 'adminProducts.errors.physicalProductNotPublishable' ||
+        message === 'adminProducts.errors.sweatshirtNotReady'
+      ) {
+      <button type="button" (click)="visibilityErrorKey.set(null)">
+        {{ 'adminProducts.dismiss' | transloco }}
+      </button>
       } @else {
       <button type="button" data-testid="reload-products" (click)="retry()">
         {{ 'adminProducts.reload' | transloco }}
@@ -85,6 +278,7 @@
         <tr>
           <th scope="col">{{ 'adminProducts.product' | transloco }}</th>
           <th scope="col">{{ 'adminProducts.type' | transloco }}</th>
+          <th scope="col">{{ 'adminProducts.stock.title' | transloco }}</th>
           <th scope="col">{{ 'adminProducts.visibility' | transloco }}</th>
           <th scope="col">{{ 'adminProducts.madeToOrder' | transloco }}</th>
           <th scope="col">
@@ -107,11 +301,31 @@
               ]">
               {{ product.slug }}
             </a>
-            <small>{{ product.id }}</small>
+            <small>{{ product.productCode ?? product.id }}</small>
           </td>
 
           <td>
             {{ 'adminProducts.types.' + product.productType | transloco }}
+          </td>
+
+          <td>
+            @if (product.stockQuantity != null) {
+              <strong [class.stock-empty]="product.stockQuantity === 0">
+                {{ 'adminProducts.stock.units' | transloco: { count: product.stockQuantity } }}
+              </strong>
+              @if (product.productType === 'sweatshirt' || product.productType === 'tshirt') {
+                <small>{{ 'adminProducts.stock.variantTotal' | transloco }}</small>
+                <button class="product-stock-toggle" type="button"
+                  [attr.aria-expanded]="expandedStockProductId() === product.id"
+                  (click)="expandedStockProductId.set(expandedStockProductId() === product.id ? null : product.id)">
+                  {{ (expandedStockProductId() === product.id ? 'adminProducts.stock.hideVariants' : 'adminProducts.stock.showVariants') | transloco }}
+                </button>
+              }
+            } @else if (product.productType === 'digital') {
+              {{ 'adminProducts.stock.notApplicable' | transloco }}
+            } @else {
+              {{ 'adminProducts.stock.untracked' | transloco }}
+            }
           </td>
 
           <td>
@@ -158,6 +372,13 @@
             }}
           </td>
         </tr>
+        @if (expandedStockProductId() === product.id) {
+          <tr>
+            <td colspan="6">
+              <app-admin-product-variants [productId]="product.id" [readOnly]="true" />
+            </td>
+          </tr>
+        }
         }
       </tbody>
     </table>

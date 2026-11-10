@@ -30,6 +30,7 @@ import type {
 })
 export class AdminProductVariants {
   readonly productId = input.required<string>();
+  readonly readOnly = input(false);
 
   private readonly api = inject(AdminProductApiService);
   private readonly destroyRef = inject(DestroyRef);
@@ -55,12 +56,19 @@ export class AdminProductVariants {
 
   protected readonly editModel = signal({
     amount: '',
+    stock: '',
     active: false,
   });
 
   protected readonly editForm = form(this.editModel, (path) => {
     required(path.amount, {
       message: 'adminProducts.edit.price.errors.required',
+    });
+
+    validate(path.stock, ({ value }) => {
+      const stock = value();
+      if (stock === '' || (/^\d+$/.test(stock) && Number(stock) <= 2_147_483_647)) return undefined;
+      return { kind: 'invalidStock', message: 'adminProducts.create.invalidStock' };
     });
 
     validate(path.amount, ({ value }) => {
@@ -217,13 +225,14 @@ export class AdminProductVariants {
   }
 
   protected editVariant(variant: AdminGarmentVariant): void {
-    if (this.isLoading() || this.isSaving() || this.selectedVariant()) {
+    if (this.readOnly() || this.isLoading() || this.isSaving() || this.selectedVariant()) {
       return;
     }
 
     this.saveErrorKey.set(null);
     this.editForm().reset({
       amount: this.formatPrice(variant.priceInGrosz),
+      stock: String(variant.stockQuantity ?? ''),
       active: variant.active,
     });
     this.selectedVariant.set(variant);
@@ -250,7 +259,8 @@ export class AdminProductVariants {
     this.editForm().markAsTouched();
 
     if (!this.editForm().valid()) {
-      this.editForm.amount().focusBoundControl();
+      const field = this.editForm.amount().invalid() ? this.editForm.amount : this.editForm.stock;
+      field().focusBoundControl();
       return;
     }
 
@@ -265,6 +275,7 @@ export class AdminProductVariants {
     this.api
       .updateVariant(productId, variant.id, {
         priceInGrosz,
+        ...(this.editModel().stock !== '' ? { stockQuantity: Number(this.editModel().stock) } : {}),
         active: this.editModel().active,
         expectedVersion: variant.version,
       })

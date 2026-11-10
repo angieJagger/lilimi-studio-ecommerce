@@ -9,16 +9,24 @@ import { provideSweatshirtVariantsTesting } from '../../testing/sweatshirt-varia
 import { provideProductCatalogTesting } from '../../testing/product-catalog-testing';
 import { MAX_CART_ITEM_QUANTITY } from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
+import { ProductApiService } from '../products/product-api.service';
+import { of } from 'rxjs';
+import { vi } from 'vitest';
 
 describe('Cart', () => {
   let component: Cart;
   let fixture: ComponentFixture<Cart>;
 
+  const productApi = { checkQuantity: vi.fn() };
+
   beforeEach(async () => {
+    productApi.checkQuantity.mockReset();
+    productApi.checkQuantity.mockReturnValue(of(null));
     await TestBed.configureTestingModule({
       imports: [Cart, getTranslocoTestingModule()],
       providers: [
         provideRouter([]),
+        { provide: ProductApiService, useValue: productApi },
         provideSweatshirtVariantsTesting(),
         provideProductCatalogTesting(),
       ],
@@ -48,6 +56,42 @@ describe('Cart', () => {
   });
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should show the available maximum only after a quantity change exceeds stock', async () => {
+    const cart = TestBed.inject(CartService);
+    cart.addSweatshirt('embroidered-002', 'pattern-001', {
+      fit: 'women',
+      size: 'M',
+      color: 'black',
+      embroideryOptionId: 'small-front',
+    });
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const input = element.querySelector<HTMLInputElement>('.cart__quantity-controls input')!;
+    expect(productApi.checkQuantity).not.toHaveBeenCalled();
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+
+    productApi.checkQuantity.mockReturnValueOnce(of({ maxQuantity: 4 }));
+    input.value = '6';
+    input.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+
+    expect(productApi.checkQuantity).toHaveBeenCalledWith('embroidered-sweatshirt', 7, 'test-women-m-black-small');
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('maksymalnie 4 szt.');
+    expect(cart.sweatshirts()[0]?.quantity).toBe(1);
+    expect(input.value).toBe('1');
+
+    productApi.checkQuantity.mockReturnValueOnce(of({ maxQuantity: 4 }));
+    input.value = '4';
+    input.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')).toBeNull();
+    expect(cart.sweatshirts()[0]?.quantity).toBe(4);
+    const increase = element.querySelectorAll<HTMLButtonElement>('.cart__quantity-controls button')[1]!;
+    expect(increase.disabled).toBe(true);
   });
 
   it('should disable increasing quantity at the limit', async () => {

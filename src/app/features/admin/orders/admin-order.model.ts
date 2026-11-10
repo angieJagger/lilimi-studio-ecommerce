@@ -52,11 +52,12 @@ export interface AdminOrderDelivery {
 }
 
 export interface AdminOrderItem {
-  readonly kind: 'digital' | 'sweatshirt';
+  readonly kind: 'digital' | 'sweatshirt' | 'physical';
   readonly productId: string;
   readonly productName: string;
   readonly patternId: string | null;
   readonly patternName: string | null;
+  readonly physicalOptions?: string | null;
   readonly fit: string | null;
   readonly size: string | null;
   readonly color: string | null;

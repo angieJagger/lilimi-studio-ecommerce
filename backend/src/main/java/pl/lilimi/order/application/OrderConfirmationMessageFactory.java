@@ -92,6 +92,10 @@ public class OrderConfirmationMessageFactory {
         );
       }
 
+      if (item.getPhysicalOptions() != null) {
+        line(text, polish ? "Wariant" : "Variant", item.getPhysicalOptions());
+      }
+
       line(
         text,
         polish ? "Liczba sztuk" : "Quantity",

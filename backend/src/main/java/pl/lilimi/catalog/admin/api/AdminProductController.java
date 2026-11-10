@@ -1,14 +1,17 @@
 package pl.lilimi.catalog.admin.api;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+import java.util.List;
+import java.net.URI;
+
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
-import pl.lilimi.catalog.admin.application.AdminProductEditService;
-import java.util.List;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,10 +19,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import pl.lilimi.catalog.admin.application.AdminProductQueryService;
 import pl.lilimi.catalog.admin.application.AdminProductVisibilityService;
 import pl.lilimi.catalog.admin.application.AdminProductTranslationService;
 import pl.lilimi.catalog.admin.application.AdminProductPriceService;
+import pl.lilimi.catalog.admin.application.AdminProductEditService;
+import pl.lilimi.catalog.admin.application.AdminProductCreationService;
 
 @RestController
 @RequestMapping("/api/admin/products")
@@ -30,19 +36,34 @@ public class AdminProductController {
   private final AdminProductTranslationService translationService;
   private final AdminProductPriceService priceService;
   private final AdminProductEditService editService;
+  private final AdminProductCreationService creationService;
 
   public AdminProductController(
     AdminProductQueryService queryService,
     AdminProductVisibilityService visibilityService,
     AdminProductTranslationService translationService,
     AdminProductPriceService priceService,
-    AdminProductEditService editService
+    AdminProductEditService editService,
+    AdminProductCreationService creationService
   ) {
     this.queryService = queryService;
     this.visibilityService = visibilityService;
     this.translationService = translationService;
     this.priceService = priceService;
     this.editService = editService;
+    this.creationService = creationService;
+  }
+
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<AdminProductSummaryResponse> createProduct(
+    @Valid @RequestPart("metadata") CreateProductDraftRequest request,
+    @RequestPart(value = "images", required = false) List<MultipartFile> images,
+    @RequestPart(value = "package", required = false) MultipartFile digitalPackage
+  ) {
+    var product = creationService.createProduct(request, images == null ? List.of() : images, digitalPackage);
+    return ResponseEntity
+      .created(URI.create("/api/admin/products/" + product.id()))
+      .body(product);
   }
 
   @GetMapping

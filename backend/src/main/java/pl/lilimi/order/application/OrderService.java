@@ -12,9 +12,16 @@ import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderItem;
 import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.catalog.Product;
+import pl.lilimi.catalog.ProductRepository;
+import pl.lilimi.catalog.ProductType;
 import pl.lilimi.catalog.digital.DigitalProductPackageRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 @Service
@@ -26,19 +33,22 @@ public class OrderService {
   private final OrderRepository orderRepository;
   private final OrderItemRepository orderItemRepository;
   private final DigitalProductPackageRepository digitalPackages;
+  private final ProductRepository products;
 
   public OrderService(
     OrderPricingService pricingService,
     OrderDeliveryService deliveryService,
     OrderRepository orderRepository,
     OrderItemRepository orderItemRepository,
-    DigitalProductPackageRepository digitalPackages
+    DigitalProductPackageRepository digitalPackages,
+    ProductRepository products
   ) {
     this.pricingService = pricingService;
     this.deliveryService = deliveryService;
     this.orderRepository = orderRepository;
     this.orderItemRepository = orderItemRepository;
     this.digitalPackages = digitalPackages;
+    this.products = products;
   }
 
   @Transactional
@@ -51,6 +61,7 @@ public class OrderService {
     @NotNull @Valid CreateOrderRequest request,
     UUID customerAccountId
   ) {
+    var physicalProducts = lockPhysicalProducts(request.items());
     var pricedItems = pricingService.priceItems(
       request.items(),
       request.language()
@@ -60,6 +71,9 @@ public class OrderService {
       request.delivery(),
       pricedItems
     );
+
+    reserveStock(request.items(), physicalProducts);
+    reserveGarmentStock(pricedItems);
 
     long subtotalInGrosz = pricedItems.stream()
       .mapToLong(PricedOrderItem::lineTotalInGrosz)
@@ -101,6 +115,12 @@ public class OrderService {
             pricedItem.unitPriceInGrosz()
           );
 
+        case OrderItemRequest.Physical physical ->
+          OrderItem.physical(
+            order, position, physical.productId(), pricedItem.productName(),
+            physical.options(), physical.quantity(), pricedItem.unitPriceInGrosz()
+          );
+
         case OrderItemRequest.Sweatshirt sweatshirt ->
           OrderItem.sweatshirt(
             order,
@@ -118,12 +138,83 @@ public class OrderService {
           );
       };
 
+      var stockProduct = physicalProducts.get(pricedItem.item().productId());
+      if (pricedItem.garmentVariant() != null) {
+        orderItem.markVariantStockReserved(pricedItem.garmentVariant().getId());
+      } else if (pricedItem.item() instanceof OrderItemRequest.Physical
+        && stockProduct != null && stockProduct.getStockQuantity() != null) {
+        orderItem.markStockReserved();
+      }
       orderItems.add(orderItem);
     }
 
     orderItemRepository.saveAll(orderItems);
 
     return order;
+  }
+
+  private Map<String, Product> lockPhysicalProducts(List<OrderItemRequest> items) {
+    var ids = items.stream()
+      .filter(item -> !(item instanceof OrderItemRequest.Digital))
+      .map(OrderItemRequest::productId)
+      .distinct()
+      .sorted()
+      .toList();
+
+    var locked = new HashMap<String, Product>();
+    for (String id : ids) {
+      var product = products.findByIdForUpdate(id)
+        .filter(Product::isActive)
+        .filter(value -> value.getProductType() == ProductType.PHYSICAL || value.getProductType() == ProductType.SWEATSHIRT)
+        .orElseThrow(() -> new OrderProductUnavailableException(id));
+      locked.put(id, product);
+    }
+
+    return locked;
+  }
+
+  private void reserveStock(List<OrderItemRequest> items, Map<String, Product> productsById) {
+    var quantities = new TreeMap<String, Long>();
+    for (var item : items) {
+      if (item instanceof OrderItemRequest.Physical) {
+        quantities.merge(item.productId(), item.quantity().longValue(), Long::sum);
+      }
+    }
+
+    for (var entry : quantities.entrySet()) {
+      var product = productsById.get(entry.getKey());
+      var available = product.getStockQuantity();
+      if (available == null) {
+        continue;
+      }
+      if (entry.getValue() > available) {
+        throw new OrderStockLimitException(product.getId(), available);
+      }
+      product.changeStockQuantity(available - entry.getValue().intValue());
+    }
+  }
+
+  private void reserveGarmentStock(List<PricedOrderItem> items) {
+    var quantities = new HashMap<UUID, Long>();
+    for (var item : items) {
+      if (item.garmentVariant() != null) {
+        quantities.merge(item.garmentVariant().getId(), (long) item.quantity(), Long::sum);
+      }
+    }
+
+    for (var item : items) {
+      var variant = item.garmentVariant();
+      if (variant == null) continue;
+
+      var requested = quantities.remove(variant.getId());
+      if (requested == null) continue;
+
+      int available = variant.getStockQuantity();
+      if (requested > available) {
+        throw new OrderStockLimitException(variant.getProductId(), available, variant.getId());
+      }
+      variant.changeStockQuantity(available - requested.intValue());
+    }
   }
 
   private UUID currentPackageId(String productId) {

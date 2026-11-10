@@ -20,6 +20,16 @@ public class DigitalProductPrice {
     // Required by JPA.
   }
 
+  public static DigitalProductPrice create(
+    String productId,
+    int priceInGrosz
+  ) {
+    var price = new DigitalProductPrice();
+    price.productId = productId;
+    price.changePrice(priceInGrosz);
+    return price;
+  }
+
   public String getProductId() {
     return productId;
   }

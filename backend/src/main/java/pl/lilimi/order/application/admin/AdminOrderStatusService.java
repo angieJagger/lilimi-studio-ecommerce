@@ -11,11 +11,16 @@ import org.springframework.web.server.ResponseStatusException;
 import pl.lilimi.order.api.admin.AdminOrderDetailsResponse;
 import pl.lilimi.order.api.admin.ChangeOrderStatusRequest;
 import pl.lilimi.order.domain.OrderStatus;
+import pl.lilimi.catalog.GarmentVariantRepository;
+import pl.lilimi.catalog.ProductRepository;
+import pl.lilimi.order.domain.OrderItem;
+import pl.lilimi.order.persistence.OrderItemRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.payment.domain.PaymentAttemptStatus;
 import pl.lilimi.payment.persistence.PaymentAttemptRepository;
 import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 
+import java.util.Comparator;
 import java.util.UUID;
 
 @Service
@@ -26,17 +31,26 @@ public class AdminOrderStatusService {
   private final AdminOrderQueryService queryService;
   private final PaymentAttemptRepository payments;
   private final CheckoutExpirationQueue expirationQueue;
+  private final OrderItemRepository orderItems;
+  private final ProductRepository products;
+  private final GarmentVariantRepository variants;
 
   public AdminOrderStatusService(
     OrderRepository orders,
     AdminOrderQueryService queryService,
     PaymentAttemptRepository payments,
-    CheckoutExpirationQueue expirationQueue
+    CheckoutExpirationQueue expirationQueue,
+    OrderItemRepository orderItems,
+    ProductRepository products,
+    GarmentVariantRepository variants
   ) {
     this.orders = orders;
     this.queryService = queryService;
     this.payments = payments;
     this.expirationQueue = expirationQueue;
+    this.orderItems = orderItems;
+    this.products = products;
+    this.variants = variants;
   }
 
   @Transactional
@@ -60,10 +74,10 @@ public class AdminOrderStatusService {
 
     var nextStatus = OrderStatus.fromValue(request.status());
 
+    boolean cancelling = nextStatus == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED;
+
     if (
-      nextStatus == OrderStatus.CANCELLED
-        && order.getStatus() != OrderStatus.CANCELLED
-        && payments.existsByOrderIdAndStatus(
+      cancelling && payments.existsByOrderIdAndStatus(
         id,
         PaymentAttemptStatus.SUCCEEDED
       )
@@ -85,10 +99,28 @@ public class AdminOrderStatusService {
 
     orders.flush();
 
-    if (order.getStatus() == OrderStatus.CANCELLED) {
+    if (cancelling) {
+      restoreStock(id);
       expirationQueue.enqueueForOrder(id);
     }
 
     return queryService.findOrder(id);
+  }
+
+  private void restoreStock(UUID orderId) {
+    var reserved = orderItems.findByOrder_IdOrderByPositionAsc(orderId).stream()
+      .filter(OrderItem::isStockReserved)
+      .sorted(Comparator.comparing(OrderItem::getProductId))
+      .toList();
+
+    for (var item : reserved) {
+      var product = products.findByIdForUpdate(item.getProductId()).orElseThrow();
+      if (item.getReservedVariantId() == null) {
+        product.changeStockQuantity(Math.addExact(product.getStockQuantity(), item.getQuantity()));
+      } else {
+        var variant = variants.findByIdAndProductId(item.getReservedVariantId(), product.getId()).orElseThrow();
+        variant.changeStockQuantity(Math.addExact(variant.getStockQuantity(), item.getQuantity()));
+      }
+    }
   }
 }

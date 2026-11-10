@@ -22,6 +22,13 @@ export class ProductApiService {
     );
   }
 
+  checkQuantity(slug: string, quantity: number, variantId?: string): Observable<{ maxQuantity: number } | null> {
+    return this.http.get<{ maxQuantity: number } | null>(
+      `${this.baseUrl}/products/${encodeURIComponent(slug)}/quantity-check`,
+      { params: variantId ? { quantity, variantId } : { quantity }, transferCache: false },
+    );
+  }
+
   getVariants(slug: string): Observable<readonly GarmentVariantApiResponse[]> {
     return this.http.get<readonly GarmentVariantApiResponse[]>(
       `${this.baseUrl}/products/${encodeURIComponent(slug)}/variants`,

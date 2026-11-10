@@ -12,6 +12,7 @@ public record CustomerOrderItemResponse(
   String size,
   String color,
   String embroideryOptionId,
+  String physicalOptions,
   int quantity,
   long unitPriceInGrosz,
   long lineTotalInGrosz
@@ -28,6 +29,7 @@ public record CustomerOrderItemResponse(
       item.getSize(),
       item.getColor(),
       item.getEmbroideryOptionId(),
+      item.getPhysicalOptions(),
       item.getQuantity(),
       item.getUnitPriceInGrosz(),
       item.getLineTotalInGrosz()

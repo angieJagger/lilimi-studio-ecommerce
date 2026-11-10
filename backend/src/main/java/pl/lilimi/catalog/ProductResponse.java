@@ -15,7 +15,8 @@ public record ProductResponse(
   List<String> fileFormats,
   boolean madeToOrder,
   boolean personalizationAvailable,
-  List<ProductImageResponse> images
+  List<ProductImageResponse> images,
+  List<PhysicalDraftConfiguration.VariantAttribute> variantAttributes
 ) {
   public ProductResponse {
     name = Map.copyOf(name);

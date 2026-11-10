@@ -1,4 +1,6 @@
-import { Component, computed, inject, linkedSignal, input, effect, signal, untracked } from '@angular/core';
+import { Component, computed, DestroyRef, inject, linkedSignal, input, effect, signal, untracked } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { MAX_CART_ITEM_QUANTITY } from '../../cart/cart-item.model';
 
@@ -10,7 +12,8 @@ import {
   GarmentFit,
   garmentSizes
 } from '../embroidered-product-options';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ProductApiService } from '../product-api.service';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../cart/cart.service';
@@ -35,6 +38,17 @@ export class SweatshirtConfigurator {
   });
 
   private readonly cart = inject(CartService);
+  private readonly productApi = inject(ProductApiService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly isCheckingStock = signal(false);
+  protected readonly rejectedStock = linkedSignal({
+    source: () => this.selectedVariant()?.id,
+    computation: (): number | null => null,
+  });
+  protected readonly stockCheckFailed = linkedSignal({
+    source: () => this.selectedVariant()?.id,
+    computation: () => false,
+  });
   private readonly catalog = inject(ProductCatalogService);
   private readonly variantsService = inject(SweatshirtVariantsService);
   private readonly variantsSource = signal<VariantsSource | null>(null);
@@ -95,21 +109,43 @@ export class SweatshirtConfigurator {
 
   protected addToCart(): void {
     const variant = this.selectedVariant();
+    if (!variant || this.isCheckingStock() || this.quantityLimitReached()) return;
 
-    if (!variant) {
-      return;
-    }
+    const product = this.product();
+    const quantity = this.cart.sweatshirtLines().find((line) => line.variantId === variant.id)?.item.quantity ?? 0;
+    this.rejectedStock.set(null);
+    this.stockCheckFailed.set(false);
+    this.isCheckingStock.set(true);
 
-    const added = this.cart.addSweatshirt(this.product().id, variant.patternId, {
-      fit: variant.fit,
-      size: variant.size,
-      color: variant.color,
-      embroideryOptionId: variant.embroideryOptionId,
+    this.productApi.checkQuantity(product.slug, quantity + 1, variant.id).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.isCheckingStock.set(false)),
+    ).subscribe({
+      next: (limit) => {
+        if (this.selectedVariant()?.id !== variant.id) return;
+        if (limit) {
+          this.rejectedStock.set(limit.maxQuantity);
+          return;
+        }
+
+        if (this.cart.addSweatshirt(product.id, variant.patternId, {
+          fit: variant.fit,
+          size: variant.size,
+          color: variant.color,
+          embroideryOptionId: variant.embroideryOptionId,
+        })) {
+          this.addedCount.update((count) => count + 1);
+        }
+      },
+      error: (error: unknown) => {
+        if (this.selectedVariant()?.id !== variant.id) return;
+        if (error instanceof HttpErrorResponse && error.status === 404) {
+          this.rejectedStock.set(0);
+        } else {
+          this.stockCheckFailed.set(true);
+        }
+      },
     });
-
-    if (added) {
-      this.addedCount.update((count) => count + 1);
-    }
   }
 
   protected readonly patternIds = computed(() => [

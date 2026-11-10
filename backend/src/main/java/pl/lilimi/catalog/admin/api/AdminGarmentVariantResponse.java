@@ -15,6 +15,7 @@ public record AdminGarmentVariantResponse(
   String color,
   int priceInGrosz,
   String currency,
+  int stockQuantity,
   boolean active
 ) {
 
@@ -32,6 +33,7 @@ public record AdminGarmentVariantResponse(
       variant.getColor(),
       variant.getPriceInGrosz(),
       "PLN",
+      variant.getStockQuantity(),
       variant.isActive()
     );
   }

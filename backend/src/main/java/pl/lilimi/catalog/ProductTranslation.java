@@ -22,6 +22,18 @@ public class ProductTranslation {
     // Required by JPA.
   }
 
+  public static ProductTranslation create(
+    String productId,
+    String language,
+    String name,
+    String description
+  ) {
+    var translation = new ProductTranslation();
+    translation.id = new ProductTranslationId(productId, language);
+    translation.updateContent(name, description);
+    return translation;
+  }
+
   public void updateContent(String name, String description) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException(

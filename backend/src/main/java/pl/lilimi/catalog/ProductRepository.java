@@ -11,8 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 
-
 public interface ProductRepository extends JpaRepository<Product, String> {
+
+  @Query(value = "SELECT nextval('digital_product_code_seq')", nativeQuery = true)
+  long nextDigitalProductCodeNumber();
+
+  @Query(value = "SELECT nextval('physical_product_code_seq')", nativeQuery = true)
+  long nextPhysicalProductCodeNumber();
 
   List<Product> findAllByActiveTrueOrderByIdAsc();
 
@@ -51,10 +56,22 @@ public interface ProductRepository extends JpaRepository<Product, String> {
         WHERE p.active = TRUE
           AND p.product_type IN ('sweatshirt', 'tshirt')
           AND v.active = TRUE
+          AND v.stock_quantity > 0
           AND pattern.active = TRUE
           AND pattern.product_type = 'digital'
           AND p.id IN (:productIds)
         GROUP BY p.id
+
+        UNION ALL
+
+        SELECT p.id AS "productId",
+            (p.physical_configuration::jsonb ->> 'priceInGrosz')::integer AS "priceInGrosz",
+            'fixed' AS "priceType"
+        FROM products p
+        WHERE p.active = TRUE
+          AND p.product_type = 'physical'
+          AND (p.physical_configuration::jsonb ->> 'priceInGrosz')::integer > 0
+          AND p.id IN (:productIds)
         """, nativeQuery = true)
   List<ProductPriceView> findCatalogPrices(
     @Param("productIds") Collection<String> productIds
@@ -82,6 +99,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
           AND p.active = TRUE
           AND p.product_type IN ('sweatshirt', 'tshirt')
           AND v.active = TRUE
+          AND v.stock_quantity > 0
           AND pattern.active = TRUE
           AND pattern.product_type = 'digital'
         ORDER BY
@@ -110,7 +128,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
   Optional<Product> findByIdAndActiveTrue(String id);
 
   @Query(value = """
-    SELECT v.price_in_grosz
+    SELECT v.*
     FROM garment_variants v
     JOIN products p ON p.id = v.product_id
     JOIN products pattern ON pattern.id = v.pattern_id
@@ -126,7 +144,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
       AND v.color = :color
       AND v.embroidery_option_id = :embroideryOptionId
     """, nativeQuery = true)
-  Optional<Integer> findActiveSweatshirtPrice(
+  Optional<GarmentVariant> findActiveSweatshirtVariant(
     @Param("productId") String productId,
     @Param("patternId") String patternId,
     @Param("fit") String fit,

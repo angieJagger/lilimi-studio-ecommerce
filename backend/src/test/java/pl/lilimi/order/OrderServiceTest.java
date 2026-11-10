@@ -60,6 +60,12 @@ class OrderServiceTest {
 
   @Test
   void shouldCreateMixedOrderWithPricesFromCatalog() {
+    jdbc.update("""
+      UPDATE garment_variants SET stock_quantity = 2
+      WHERE product_id = 'embroidered-002' AND pattern_id = 'pattern-001'
+        AND fit = 'men' AND size = 'M' AND color = 'black'
+        AND embroidery_option_id = 'small-front'
+      """);
     var request = new CreateOrderRequest(
       "en",
       contact(),

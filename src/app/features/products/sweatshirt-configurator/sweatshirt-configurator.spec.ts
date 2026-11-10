@@ -11,6 +11,8 @@ import { provideProductCatalogTesting, testCatalogProducts } from '../../../test
 import { SweatshirtVariantsService } from '../sweatshirt-variants.service';
 import { CartService } from '../../cart/cart.service';
 import { vi } from 'vitest';
+import { of } from 'rxjs';
+import { ProductApiService } from '../product-api.service';
 import { MAX_CART_ITEM_QUANTITY } from '../../cart/cart-item.model';
 import { getCartItemKey } from '../../cart/cart-item-key';
 
@@ -26,6 +28,7 @@ describe('SweatshirtConfigurator', () => {
       providers: [
         provideSweatshirtVariantsTesting(),
         provideRouter([]),
+        { provide: ProductApiService, useValue: { checkQuantity: vi.fn(() => of(null)) } },
         provideProductCatalogTesting(),
       ],
     }).compileComponents();

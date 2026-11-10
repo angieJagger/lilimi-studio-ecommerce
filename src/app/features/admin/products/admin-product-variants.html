@@ -95,6 +95,16 @@
         }
       </div>
 
+      <div class="variants__field">
+        <label for="variant-stock">{{ 'adminProducts.create.stockQuantity' | transloco }}</label>
+        <input id="variant-stock" type="text" inputmode="numeric" [formField]="editForm.stock"
+          [attr.aria-invalid]="editForm.stock().touched() && editForm.stock().invalid() ? 'true' : null"
+          [attr.aria-describedby]="editForm.stock().touched() && editForm.stock().invalid() ? 'variant-stock-error' : null" />
+        @if (editForm.stock().touched() && editForm.stock().invalid()) {
+          <p id="variant-stock-error" class="variants__errors">{{ 'adminProducts.create.invalidStock' | transloco }}</p>
+        }
+      </div>
+
       <label class="variants__checkbox">
         <input type="checkbox" [formField]="editForm.active" />
         {{ 'adminProducts.variants.available' | transloco }}
@@ -172,7 +182,9 @@
             @for (cell of row.cells; track cell.color) {
             <td>
               @if (cell.variant; as variant) {
-              <button class="variants__matrix-cell" type="button" [disabled]="
+              <button class="variants__matrix-cell" type="button"
+                [class.variants__matrix-cell--readonly]="readOnly()" [disabled]="
+                              readOnly() ||
                               isLoading() ||
                               isSaving() ||
                               selectedVariant() !== null
@@ -180,6 +192,12 @@
                 <span>
                   {{ variant.priceInGrosz / 100 | currency:'PLN':'code':'1.2-2' }}
                 </span>
+
+                @if (variant.stockQuantity != null) {
+                  <strong [class.variants__stock-empty]="variant.stockQuantity === 0">
+                    {{ 'adminProducts.stock.variantUnits' | transloco: { count: variant.stockQuantity } }}
+                  </strong>
+                }
 
                 <span>
                   {{
@@ -191,11 +209,13 @@
                   }}
                 </span>
 
-                <span>
-                  {{ 'adminProducts.variants.edit' | transloco }}
-                  · {{ row.size }}
-                  · {{ 'adminProducts.variants.colors.' + cell.color | transloco }}
-                </span>
+                @if (!readOnly()) {
+                  <span>
+                    {{ 'adminProducts.variants.edit' | transloco }}
+                    · {{ row.size }}
+                    · {{ 'adminProducts.variants.colors.' + cell.color | transloco }}
+                  </span>
+                }
               </button>
               } @else {
               <span>
@@ -250,12 +270,13 @@
           <th scope="col">
             {{ 'adminProducts.variants.price' | transloco }}
           </th>
+          <th scope="col">{{ 'adminProducts.stock.title' | transloco }}</th>
           <th scope="col">
             {{ 'adminProducts.variants.status' | transloco }}
           </th>
-          <th scope="col">
-            {{ 'adminProducts.variants.actions' | transloco }}
-          </th>
+          @if (!readOnly()) {
+            <th scope="col">{{ 'adminProducts.variants.actions' | transloco }}</th>
+          }
         </tr>
       </thead>
 
@@ -281,6 +302,15 @@
             {{ variant.priceInGrosz / 100 | currency:'PLN':'code':'1.2-2' }}
           </td>
           <td>
+            @if (variant.stockQuantity != null) {
+              <strong [class.variants__stock-empty]="variant.stockQuantity === 0">
+                {{ 'adminProducts.stock.units' | transloco: { count: variant.stockQuantity } }}
+              </strong>
+            } @else {
+              {{ 'adminProducts.stock.untracked' | transloco }}
+            }
+          </td>
+          <td>
             {{
             (
             variant.active
@@ -289,11 +319,13 @@
             ) | transloco
             }}
           </td>
-          <td>
-            <button type="button" [disabled]="isSaving() || selectedVariant() !== null" (click)="editVariant(variant)">
-              {{ 'adminProducts.variants.edit' | transloco }}
-            </button>
-          </td>
+          @if (!readOnly()) {
+            <td>
+              <button type="button" [disabled]="isSaving() || selectedVariant() !== null" (click)="editVariant(variant)">
+                {{ 'adminProducts.variants.edit' | transloco }}
+              </button>
+            </td>
+          }
         </tr>
         }
       </tbody>

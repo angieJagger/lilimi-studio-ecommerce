@@ -12,5 +12,7 @@ public record SaveProductRequest(
   @NotNull @Valid UpdateProductTranslationRequest pl,
   @NotNull @Valid UpdateProductTranslationRequest en,
   @Positive Integer digitalPriceInGrosz,
+  @Positive Integer physicalPriceInGrosz,
+  @PositiveOrZero Integer stockQuantity,
   @NotNull @Size(max = 10) List<@NotNull @Valid SaveProductImageRequest> images
 ) {}

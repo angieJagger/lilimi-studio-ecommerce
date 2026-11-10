@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, linkedSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -97,6 +97,26 @@ export class ProductDetail {
 
     return product ? this.cart.patterns().some((item) => item.id === product.id) : false;
   });
+
+  protected readonly cartReady = () => this.cart.isReady();
+
+  protected readonly physicalAdded = linkedSignal({
+    source: () => this.product()?.id,
+    computation: (): boolean | null => null,
+  });
+
+  protected addPhysical(event: SubmitEvent, form: HTMLFormElement): void {
+    event.preventDefault();
+    const product = this.product();
+    if (product?.category !== 'embroidered-products' || product.productType !== 'physical') {
+      return;
+    }
+
+    const options = Object.fromEntries(
+      Array.from(new FormData(form), ([name, value]) => [name, String(value)]),
+    );
+    this.physicalAdded.set(this.cart.addPhysical(product, options));
+  }
 
   protected addToCart(): void {
     const product = this.product();

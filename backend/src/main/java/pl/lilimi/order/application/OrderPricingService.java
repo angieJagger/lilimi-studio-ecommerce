@@ -35,6 +35,7 @@ public class OrderPricingService {
           priceDigital(digital, language);
         case OrderItemRequest.Sweatshirt sweatshirt ->
           priceSweatshirt(sweatshirt, language);
+        case OrderItemRequest.Physical physical -> pricePhysical(physical, language);
       })
       .toList();
   }
@@ -78,7 +79,7 @@ public class OrderPricingService {
 
     var configuration = item.configuration();
 
-    var price = productRepository.findActiveSweatshirtPrice(
+    var variant = productRepository.findActiveSweatshirtVariant(
       product.getId(),
       pattern.getId(),
       configuration.fit(),
@@ -93,7 +94,25 @@ public class OrderPricingService {
       item,
       requireName(product.getId(), language),
       requireName(pattern.getId(), language),
-      price
+      variant.getPriceInGrosz(),
+      variant
+    );
+  }
+
+  private PricedOrderItem pricePhysical(OrderItemRequest.Physical item, String language) {
+    var product = requireProduct(item.productId(), ProductType.PHYSICAL);
+    var configuration = product.getPhysicalConfiguration();
+
+    if (configuration == null || configuration.priceInGrosz() == null
+      || item.options().size() != configuration.variantAttributes().size()
+      || configuration.variantAttributes().stream()
+        .anyMatch(attribute -> !item.options().containsKey(attribute.name())
+          || !attribute.values().contains(item.options().get(attribute.name())))) {
+      throw new OrderProductUnavailableException(item.productId());
+    }
+
+    return new PricedOrderItem(
+      item, requireName(product.getId(), language), null, configuration.priceInGrosz()
     );
   }
 

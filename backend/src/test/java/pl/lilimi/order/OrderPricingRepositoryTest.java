@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.catalog.ProductRepository;
+import pl.lilimi.catalog.GarmentVariant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,28 +25,28 @@ class OrderPricingRepositoryTest {
 
   @Test
   void shouldReturnPriceForExactEmbroideryOption() {
-    assertThat(productRepository.findActiveSweatshirtPrice(
+    assertThat(productRepository.findActiveSweatshirtVariant(
       "embroidered-002",
       "pattern-001",
       "men",
       "M",
       "black",
       "small-front"
-    )).contains(14900);
+    ).map(GarmentVariant::getPriceInGrosz)).contains(14900);
 
-    assertThat(productRepository.findActiveSweatshirtPrice(
+    assertThat(productRepository.findActiveSweatshirtVariant(
       "embroidered-002",
       "pattern-001",
       "men",
       "M",
       "black",
       "large-back"
-    )).contains(16900);
+    ).map(GarmentVariant::getPriceInGrosz)).contains(16900);
   }
 
   @Test
   void shouldRejectNonexistentConfiguration() {
-    assertThat(productRepository.findActiveSweatshirtPrice(
+    assertThat(productRepository.findActiveSweatshirtVariant(
       "embroidered-002",
       "pattern-001",
       "men",
@@ -95,13 +96,13 @@ class OrderPricingRepositoryTest {
   }
 
   private java.util.Optional<Integer> findSelectedPrice() {
-    return productRepository.findActiveSweatshirtPrice(
+    return productRepository.findActiveSweatshirtVariant(
       "embroidered-002",
       "pattern-001",
       "men",
       "M",
       "black",
       "small-front"
-    );
+    ).map(GarmentVariant::getPriceInGrosz);
   }
 }

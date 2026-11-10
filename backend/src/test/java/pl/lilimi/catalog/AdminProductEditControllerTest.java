@@ -64,6 +64,24 @@ class AdminProductEditControllerTest {
     jdbc.update("DELETE FROM products WHERE id = ?", productId);
   }
 
+  @Test
+  void shouldSaveTranslationsAndPriceOnFirstDraftEdit() throws Exception {
+    jdbc.update("DELETE FROM product_images WHERE product_id = ?", productId);
+    jdbc.update("DELETE FROM digital_product_prices WHERE product_id = ?", productId);
+    jdbc.update("DELETE FROM product_translations WHERE product_id = ?", productId);
+    jdbc.update("UPDATE products SET active = FALSE WHERE id = ?", productId);
+
+    mvc.perform(adminRequest(List.of(), 0))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.product.active").value(false))
+      .andExpect(jsonPath("$.product.version").value(1))
+      .andExpect(jsonPath("$.product.translations.length()").value(2))
+      .andExpect(jsonPath("$.product.digitalPriceInGrosz").value(3550));
+
+    assertThat(price()).isEqualTo(3550);
+    assertThat(name()).isEqualTo("Updated EN");
+  }
+
   @Test void shouldCommitPriceTranslationsAndGalleryTogether() throws Exception {
     var manifest = List.of(item(imageId, null, false), item(null, 0, true));
     mvc.perform(adminRequest(manifest, 0).file(image()))
@@ -151,7 +169,7 @@ class AdminProductEditControllerTest {
   private MockMultipartFile metadata(List<SaveProductImageRequest> manifest, long version) {
     var request = new SaveProductRequest(version,
       new UpdateProductTranslationRequest("Updated PL", "Updated description"),
-      new UpdateProductTranslationRequest("Updated EN", "Updated description"), 3550, manifest);
+      new UpdateProductTranslationRequest("Updated EN", "Updated description"), 3550, null, null, manifest);
     return new MockMultipartFile("metadata", "", "application/json", json.writeValueAsBytes(request));
   }
   private MockMultipartFile image() throws Exception {

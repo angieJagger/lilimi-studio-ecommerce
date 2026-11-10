@@ -10,7 +10,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "order_items")
@@ -57,6 +59,15 @@ public class OrderItem {
   @Column(name = "embroidery_option_id", length = 32)
   private String embroideryOptionId;
 
+  @Column(name = "physical_options", columnDefinition = "text")
+  private String physicalOptions;
+
+  @Column(name = "stock_reserved", nullable = false)
+  private boolean stockReserved;
+
+  @Column(name = "reserved_variant_id")
+  private UUID reservedVariantId;
+
   @Column(name = "quantity", nullable = false)
   private int quantity;
 
@@ -83,7 +94,7 @@ public class OrderItem {
       throw new IllegalArgumentException("Invalid order item reference");
     }
 
-    if (quantity < 1 || quantity > 99 || unitPriceInGrosz <= 0) {
+    if (quantity < 1 || unitPriceInGrosz <= 0) {
       throw new IllegalArgumentException("Invalid order item amounts");
     }
 
@@ -161,6 +172,41 @@ public class OrderItem {
     item.embroideryOptionId = embroideryOptionId;
 
     return item;
+  }
+
+  public static OrderItem physical(
+    Order order, int position, String productId, String productName,
+    Map<String, String> options, int quantity, long unitPriceInGrosz
+  ) {
+    var item = new OrderItem(order, position, "physical", productId, productName, quantity, unitPriceInGrosz);
+    if (!options.isEmpty()) {
+      item.physicalOptions = options.entrySet().stream()
+        .sorted(Map.Entry.comparingByKey())
+        .map(option -> option.getKey() + ": " + option.getValue())
+        .collect(Collectors.joining(" · "));
+    }
+    return item;
+  }
+
+  public void markStockReserved() {
+    stockReserved = true;
+  }
+
+  public void markVariantStockReserved(UUID variantId) {
+    reservedVariantId = variantId;
+    markStockReserved();
+  }
+
+  public UUID getReservedVariantId() {
+    return reservedVariantId;
+  }
+
+  public boolean isStockReserved() {
+    return stockReserved;
+  }
+
+  public String getPhysicalOptions() {
+    return physicalOptions;
   }
 
   public UUID getId() {

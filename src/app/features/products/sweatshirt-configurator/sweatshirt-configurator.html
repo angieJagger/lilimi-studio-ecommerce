@@ -83,7 +83,7 @@
     {{ 'configurator.price' | transloco }}: {{ formattedPrice() }}
   </output>
   <div class="configurator__actions">
-    <button class="button button--primary" type="button" [disabled]="!configurationComplete() || quantityLimitReached()" (click)="addToCart()">
+    <button class="button button--primary" type="button" [disabled]="!configurationComplete() || quantityLimitReached() || isCheckingStock()" (click)="addToCart()">
       {{ 'productDetail.addToCart' | transloco }}
     </button>
 
@@ -96,6 +96,13 @@
   <p role="status">
     {{ 'configurator.quantityLimitReached' | transloco: { max: maxItemQuantity } }}
   </p>
+  }
+
+  @let max = rejectedStock();
+  @if (max !== null) {
+    <p role="alert">{{ (max === 0 ? 'cart.stockUnavailable' : 'cart.stockLimit') | transloco: { max } }}</p>
+  } @else if (stockCheckFailed()) {
+    <p role="alert">{{ 'cart.stockCheckFailed' | transloco }}</p>
   }
 
   @if (!configurationComplete()) {

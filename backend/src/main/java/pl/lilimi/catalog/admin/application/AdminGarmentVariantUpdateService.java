@@ -37,7 +37,7 @@ public class AdminGarmentVariantUpdateService {
     @NotNull UUID variantId,
     @NotNull @Valid UpdateGarmentVariantRequest request
   ) {
-    var product = products.findById(productId)
+    var product = products.findByIdForUpdate(productId)
       .orElseThrow(() -> new ResponseStatusException(
         HttpStatus.NOT_FOUND,
         "Product not found"
@@ -67,6 +67,9 @@ public class AdminGarmentVariantUpdateService {
 
     variant.changePrice(request.priceInGrosz());
     variant.changeVisibility(request.active());
+    if (request.stockQuantity() != null) {
+      variant.changeStockQuantity(request.stockQuantity());
+    }
 
     variants.flush();
 

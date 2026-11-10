@@ -17,6 +17,7 @@ import type {
   UpdateGarmentVariantRequest,
   AdminGarmentVariantFilters,
   AdminEmbroiderySelection,
+  CreateProductDraftRequest,
 } from './admin-product.model';
 
 @Injectable({
@@ -42,6 +43,21 @@ export class AdminProductApiService {
           body,
         );
       }),
+    );
+  }
+
+  createProduct(
+    request: CreateProductDraftRequest,
+    images: readonly File[],
+    digitalPackage?: File,
+  ): Observable<AdminProductSummary> {
+    const body = new FormData();
+    body.append('metadata', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    for (const image of images) body.append('images', image);
+    if (digitalPackage) body.append('package', digitalPackage);
+
+    return this.csrf.initialize().pipe(
+      switchMap(() => this.http.post<AdminProductSummary>(`${this.baseUrl}/admin/products`, body)),
     );
   }
 
