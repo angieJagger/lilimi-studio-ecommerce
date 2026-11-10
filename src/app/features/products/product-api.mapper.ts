@@ -24,6 +24,7 @@ export function mapApiProductToProduct(response: ProductApiResponse): Product {
     ...common,
     category: 'embroidered-products',
     productType: response.productType,
+    ...(response.productType === 'physical' ? { variantAttributes: response.variantAttributes ?? [] } : {}),
     madeToOrder: response.madeToOrder,
     personalizationAvailable: response.personalizationAvailable,
   };

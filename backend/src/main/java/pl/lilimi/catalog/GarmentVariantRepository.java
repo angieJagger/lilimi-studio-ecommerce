@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,12 +31,44 @@ public interface GarmentVariantRepository
       variant.patternId as patternId,
       variant.embroideryOptionId as embroideryOptionId
     from GarmentVariant variant
-    where variant.productId = :productId
+    where variant.productId = :productId and variant.archived = false
     order by variant.patternId, variant.embroideryOptionId
     """)
   List<EmbroiderySelection> findEmbroiderySelectionsByProductId(
     @Param("productId") String productId
   );
+
+  @Query(value = """
+    SELECT EXISTS (
+      SELECT 1
+      FROM garment_variants variant
+      JOIN products pattern ON pattern.id = variant.pattern_id
+      WHERE variant.product_id = :productId
+        AND variant.active = TRUE
+        AND variant.stock_quantity > 0
+        AND pattern.active = TRUE
+        AND pattern.product_type = 'digital'
+    )
+    """, nativeQuery = true)
+  boolean existsSellableVariant(@Param("productId") String productId);
+
+  @Query(value = """
+    SELECT variant.product_id AS "productId", SUM(variant.stock_quantity) AS "stockQuantity"
+    FROM garment_variants variant
+    JOIN products pattern ON pattern.id = variant.pattern_id
+    WHERE variant.product_id IN (:productIds)
+      AND variant.active = TRUE
+      AND pattern.active = TRUE
+      AND pattern.product_type = 'digital'
+    GROUP BY variant.product_id
+    """, nativeQuery = true)
+  List<StockTotal> findAvailableStockTotals(@Param("productIds") Collection<String> productIds);
+
+  interface StockTotal {
+    String getProductId();
+
+    long getStockQuantity();
+  }
 
   interface EmbroiderySelection {
 

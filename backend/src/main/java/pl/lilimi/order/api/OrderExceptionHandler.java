@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import pl.lilimi.order.application.InvalidOrderDeliveryException;
 import pl.lilimi.order.application.OrderProductUnavailableException;
 import pl.lilimi.order.application.OrderSubmissionConflictException;
+import pl.lilimi.order.application.OrderStockLimitException;
 import pl.lilimi.order.application.OrderRateLimitExceededException;
 
 @RestControllerAdvice(assignableTypes = OrderController.class)
@@ -29,6 +30,22 @@ public class OrderExceptionHandler {
 
     problem.setProperty("productId", exception.getProductId());
 
+    return problem;
+  }
+
+  @ExceptionHandler(OrderStockLimitException.class)
+  public ProblemDetail handleStockLimit(OrderStockLimitException exception) {
+    var problem = problem(
+      HttpStatus.CONFLICT,
+      "Requested quantity exceeds available stock",
+      "Reduce the quantity and try again.",
+      "ORDER_STOCK_LIMIT"
+    );
+    problem.setProperty("productId", exception.getProductId());
+    problem.setProperty("maxQuantity", exception.getMaxQuantity());
+    if (exception.getVariantId() != null) {
+      problem.setProperty("variantId", exception.getVariantId());
+    }
     return problem;
   }
 

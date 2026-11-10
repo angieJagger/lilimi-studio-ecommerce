@@ -41,6 +41,7 @@ export class Checkout {
   private readonly submissionKeys = inject(OrderSubmissionKeyService);
   protected readonly createdOrder = signal<CreateOrderResponse | null>(null);
   protected readonly orderErrorKey = signal<string | null>(null);
+  protected readonly orderStockLimit = signal<{ max: number; productName: string } | null>(null);
 
   private readonly paymentApi = inject(PaymentApiService);
   private paymentKey: string | null = null;
@@ -49,7 +50,7 @@ export class Checkout {
   protected readonly paymentErrorKey = signal<string | null>(null);
   protected readonly paymentStatusKey = signal<string | null>(null);
 
-  protected readonly requiresShipping = computed(() => this.cart.sweatshirts().length > 0);
+  protected readonly requiresShipping = this.cart.requiresShipping;
 
   protected readonly deliveryMethods = deliveryMethods;
 
@@ -275,6 +276,8 @@ export class Checkout {
       });
     }
 
+    items.push(...this.cart.physicalItems());
+
     for (const item of this.cart.sweatshirts()) {
       items.push({
         kind: 'sweatshirt',
@@ -407,6 +410,7 @@ export class Checkout {
     }
 
     this.orderErrorKey.set(null);
+    this.orderStockLimit.set(null);
     this.isSubmitting.set(true);
 
     try {
@@ -429,7 +433,9 @@ export class Checkout {
             this.cart.clear();
           },
           error: (error: unknown) => {
-            this.orderErrorKey.set(this.getOrderErrorKey(error));
+            const limit = this.getOrderStockLimit(error);
+            this.orderStockLimit.set(limit);
+            if (!limit) this.orderErrorKey.set(this.getOrderErrorKey(error));
           },
         });
     } catch (error: unknown) {
@@ -510,6 +516,19 @@ export class Checkout {
       });
   }
 
+  private getOrderStockLimit(error: unknown): { max: number; productName: string } | null {
+    if (!(error instanceof HttpErrorResponse) || error.status !== 409 ||
+      error.error?.code !== 'ORDER_STOCK_LIMIT') return null;
+
+    const { maxQuantity, productId, variantId } = error.error;
+    if (!Number.isInteger(maxQuantity) || maxQuantity < 0 || typeof productId !== 'string') return null;
+
+    const line = typeof variantId === 'string'
+      ? this.cart.sweatshirtLines().find((entry) => entry.variantId === variantId)
+      : this.cart.physicalLines().find(({ item }) => item.productId === productId);
+    return { max: maxQuantity, productName: line?.product?.name[this.language()] ?? productId };
+  }
+
   private getOrderErrorKey(error: unknown): string {
     if (!(error instanceof HttpErrorResponse)) {
       return 'checkout.orderErrors.generic';
@@ -545,6 +564,7 @@ export class Checkout {
     }
 
     this.orderErrorKey.set(null);
+    this.orderStockLimit.set(null);
     this.checkoutStep.set('details');
   }
 

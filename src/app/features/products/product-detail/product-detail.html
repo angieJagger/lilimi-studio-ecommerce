@@ -54,6 +54,30 @@
             </p>
           }
 
+          @if (currentProduct.category === 'embroidered-products' && currentProduct.productType === 'physical') {
+            <form #physicalForm (submit)="addPhysical($event, physicalForm)">
+              @for (attribute of currentProduct.variantAttributes ?? []; track attribute.name) {
+                <label class="form-field">
+                  {{ attribute.name }}
+                  <select [name]="attribute.name" required [disabled]="isCheckingPhysicalStock()" (change)="physicalFeedback.set(null)">
+                    <option value="" disabled selected>{{ 'productDetail.chooseVariantValue' | transloco }}</option>
+                    @for (value of attribute.values; track value) {
+                      <option [value]="value">{{ value }}</option>
+                    }
+                  </select>
+                </label>
+              }
+              <button class="button button--primary" type="submit" [disabled]="!cartReady() || isCheckingPhysicalStock()">
+                {{ 'productDetail.addToCart' | transloco }}
+              </button>
+              <output>
+                @if (physicalFeedback(); as feedback) {
+                  {{ feedback.key | transloco: { max: feedback.max } }}
+                }
+              </output>
+            </form>
+          }
+
           <div class="product-detail__actions">
             @if (
               currentProduct.category === 'embroidery-patterns' &&

@@ -22,6 +22,7 @@ describe('AdminProductApiService', () => {
         id: 'pattern-001',
         version: 0,
         slug: 'forest-dragon',
+        productCode: 'pattern-001',
         productType: 'digital',
         active: false,
         madeToOrder: false,

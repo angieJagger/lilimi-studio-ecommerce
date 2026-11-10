@@ -1,6 +1,7 @@
 package pl.lilimi.order.application;
 
 import pl.lilimi.order.api.OrderItemRequest;
+import pl.lilimi.catalog.GarmentVariant;
 
 import java.util.Objects;
 
@@ -8,8 +9,13 @@ public record PricedOrderItem(
   OrderItemRequest item,
   String productName,
   String patternName,
-  long unitPriceInGrosz
+  long unitPriceInGrosz,
+  GarmentVariant garmentVariant
 ) {
+
+  public PricedOrderItem(OrderItemRequest item, String productName, String patternName, long unitPriceInGrosz) {
+    this(item, productName, patternName, unitPriceInGrosz, null);
+  }
 
   public PricedOrderItem {
     Objects.requireNonNull(item, "Order item is required");
@@ -24,12 +30,9 @@ public record PricedOrderItem(
       throw new IllegalArgumentException("Pattern name is required");
     }
 
-    Integer quantity = switch (item) {
-      case OrderItemRequest.Digital digital -> digital.quantity();
-      case OrderItemRequest.Sweatshirt sweatshirt -> sweatshirt.quantity();
-    };
+    Integer quantity = item.quantity();
 
-    if (quantity == null || quantity < 1 || quantity > 99) {
+    if (quantity == null || quantity < 1) {
       throw new IllegalArgumentException("Invalid order item quantity");
     }
 
@@ -39,10 +42,7 @@ public record PricedOrderItem(
   }
 
   public int quantity() {
-    return switch (item) {
-      case OrderItemRequest.Digital digital -> digital.quantity();
-      case OrderItemRequest.Sweatshirt sweatshirt -> sweatshirt.quantity();
-    };
+    return item.quantity();
   }
 
   public long lineTotalInGrosz() {

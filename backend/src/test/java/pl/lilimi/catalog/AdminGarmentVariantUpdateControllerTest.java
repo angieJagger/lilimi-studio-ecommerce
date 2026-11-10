@@ -19,6 +19,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,6 +40,21 @@ class AdminGarmentVariantUpdateControllerTest {
   private EntityManager entityManager;
 
   @Test
+  void shouldDeleteOnlyTheSelectedVariantWithoutOrderHistory() throws Exception {
+    var variant = firstVariant();
+    long countBefore = variants.count();
+
+    mockMvc.perform(delete("/api/admin/products/embroidered-002/variants/{id}", variant.getId())
+        .param("expectedVersion", Long.toString(variant.getVersion()))
+        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.archived").value(false));
+
+    assertThat(variants.findById(variant.getId())).isEmpty();
+    assertThat(variants.count()).isEqualTo(countBefore - 1);
+  }
+
+  @Test
   void shouldSavePriceAndVisibilityAndIncreaseVersion()
     throws Exception {
     var variant = firstVariant();
@@ -53,7 +69,9 @@ class AdminGarmentVariantUpdateControllerTest {
           .with(user("admin@example.com").roles("ADMIN"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
-          .content(requestBody(18900, false, originalVersion))
+          .content("""
+            {"priceInGrosz": 18900, "active": false, "expectedVersion": %d, "stockQuantity": 5}
+            """.formatted(originalVersion))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id").value(id.toString()))
@@ -68,6 +86,7 @@ class AdminGarmentVariantUpdateControllerTest {
     var saved = variants.findById(id).orElseThrow();
 
     assertThat(saved.getPriceInGrosz()).isEqualTo(18900);
+    assertThat(saved.getStockQuantity()).isEqualTo(5);
     assertThat(saved.isActive()).isFalse();
     assertThat(saved.getVersion()).isEqualTo(originalVersion + 1);
   }

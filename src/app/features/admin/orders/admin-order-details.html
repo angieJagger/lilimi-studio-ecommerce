@@ -180,6 +180,12 @@
         }
 
         <dl class="order-fields">
+          @if (item.physicalOptions) {
+            <div>
+              <dt>{{ 'adminOrderDetails.variant' | transloco }}</dt>
+              <dd>{{ item.physicalOptions }}</dd>
+            </div>
+          }
           @if (item.kind === 'sweatshirt') {
           <div>
             <dt>{{ 'adminOrderDetails.fit' | transloco }}</dt>

@@ -42,13 +42,13 @@ describe('readStoredSweatshirts', () => {
     expect(result).toEqual([{ ...item, quantity: MAX_CART_ITEM_QUANTITY }]);
   });
 
-  it('should cap the combined quantity of duplicate configurations', () => {
+  it('should keep combined quantities above 99', () => {
     const result = readStoredSweatshirts([
       { ...item, quantity: 60 },
       { ...item, quantity: 60 },
     ]);
 
-    expect(result).toEqual([{ ...item, quantity: MAX_CART_ITEM_QUANTITY }]);
+    expect(result).toEqual([{ ...item, quantity: 120 }]);
   });
 
   it.each([0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(

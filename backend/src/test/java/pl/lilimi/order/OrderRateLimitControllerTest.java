@@ -16,7 +16,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -81,7 +81,7 @@ class OrderRateLimitControllerTest {
   }
 
   @Test
-  void shouldRejectMissingCsrfBeforeCheckingOrderLimit()
+  void shouldCountRequestButRejectMissingCsrfBeforeCheckingOrderQuota()
     throws Exception {
 
     mvc.perform(post("/api/orders")
@@ -93,7 +93,8 @@ class OrderRateLimitControllerTest {
         .content(request()))
       .andExpect(status().isForbidden());
 
-    verifyNoInteractions(limiter);
+    verify(limiter).reserveOrderRequest("127.0.0.1");
+    verify(limiter, never()).reserveOrder("127.0.0.1");
   }
 
   private String request() {

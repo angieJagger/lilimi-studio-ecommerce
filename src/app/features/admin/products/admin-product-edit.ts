@@ -19,7 +19,7 @@ import {
   takeUntil,
 } from 'rxjs';
 import { AdminProductApiService } from './admin-product-api.service';
-import type { AdminProductDetails } from './admin-product.model';
+import type { AdminProductDetails, ShippingPackage } from './admin-product.model';
 import { AdminProductImages } from './admin-product-images';
 import { AdminDigitalProductPackages } from './admin-digital-product-packages';
 
@@ -151,6 +151,13 @@ export class AdminProductEdit {
     }
   });
 
+  protected readonly shippingFields = [
+    { key: 'lengthCm', label: 'packageLength' },
+    { key: 'widthCm', label: 'packageWidth' },
+    { key: 'heightCm', label: 'packageHeight' },
+    { key: 'weightKg', label: 'packageWeight' },
+  ] as const;
+
   protected readonly translationGroups = [
     {
       language: 'pl',
@@ -198,7 +205,7 @@ export class AdminProductEdit {
       .subscribe();
   }
 
-  protected onSubmit(event: Event): void {
+  protected onSubmit(event: Event, form: HTMLFormElement): void {
     event.preventDefault();
     const product = this.product();
     const editor = this.imageEditor();
@@ -218,7 +225,7 @@ export class AdminProductEdit {
       return;
     }
     let price: number | null = null;
-    if (product.productType === 'digital') {
+    if (product.productType === 'digital' || product.productType === 'physical') {
       this.priceForm().markAsTouched();
       if (!this.priceForm().valid()) {
         this.priceForm.amount().focusBoundControl();
@@ -227,6 +234,36 @@ export class AdminProductEdit {
       price = this.parsePriceInGrosz(this.priceModel().amount);
       if (price === null) return;
     }
+    const stockInput = form.elements.namedItem('stockQuantity') as HTMLInputElement | null;
+    const stockQuantity = stockInput?.value ? stockInput.valueAsNumber : undefined;
+    if (stockInput && (!stockInput.validity.valid || (product.stockQuantity != null && stockQuantity === undefined))) {
+      this.saveErrorKey.set('adminProducts.edit.errors.invalidRequest');
+      stockInput.focus();
+      return;
+    }
+
+    const shippingInputs = this.shippingFields.map(({ key }) =>
+      form.elements.namedItem(key) as HTMLInputElement | null,
+    );
+    const invalidShippingInput = shippingInputs.find((input) => input && !input.validity.valid);
+    if (invalidShippingInput) {
+      this.saveErrorKey.set('adminProducts.edit.errors.invalidRequest');
+      invalidShippingInput.focus();
+      return;
+    }
+    const shippingValue = (key: keyof ShippingPackage): number | null => {
+      const input = form.elements.namedItem(key) as HTMLInputElement | null;
+      return input?.value ? input.valueAsNumber : null;
+    };
+    const shippingPackage: ShippingPackage | undefined = product.productType === 'physical'
+      ? {
+          lengthCm: shippingValue('lengthCm'),
+          widthCm: shippingValue('widthCm'),
+          heightCm: shippingValue('heightCm'),
+          weightKg: shippingValue('weightKg'),
+        }
+      : undefined;
+
     const changes = editor.buildChanges();
     if (!changes) return;
     const model = this.translationsModel();
@@ -238,7 +275,10 @@ export class AdminProductEdit {
           expectedVersion: product.version,
           pl: { name: model.plName.trim(), description: model.plDescription.trim() },
           en: { name: model.enName.trim(), description: model.enDescription.trim() },
-          digitalPriceInGrosz: price,
+          digitalPriceInGrosz: product.productType === 'digital' ? price : null,
+          ...(product.productType === 'physical' && price !== null ? { physicalPriceInGrosz: price } : {}),
+          ...(stockQuantity !== undefined ? { stockQuantity } : {}),
+          ...(shippingPackage !== undefined ? { shippingPackage } : {}),
           images: changes.images,
         },
         changes.files,
@@ -312,24 +352,22 @@ export class AdminProductEdit {
 
     const english = product.translations.find((translation) => translation.language === 'en');
 
-    if (!polish || !english) {
+    if ((!polish || !english) && (product.active || product.productType !== 'digital')) {
       this.product.set(null);
       this.errorKey.set('adminProducts.errors.translationsMissing');
       return;
     }
 
     this.translationsForm().reset({
-      plName: polish.name,
-      plDescription: polish.description,
-      enName: english.name,
-      enDescription: english.description,
+      plName: polish?.name ?? '',
+      plDescription: polish?.description ?? '',
+      enName: english?.name ?? '',
+      enDescription: english?.description ?? '',
     });
 
     if (resetPrice) {
-      this.priceForm().reset({
-        amount:
-          product.digitalPriceInGrosz === null ? '' : this.formatPrice(product.digitalPriceInGrosz),
-      });
+      const price = product.physicalConfiguration?.priceInGrosz ?? product.digitalPriceInGrosz;
+      this.priceForm().reset({ amount: price === null ? '' : this.formatPrice(price) });
     }
 
     this.product.set(product);

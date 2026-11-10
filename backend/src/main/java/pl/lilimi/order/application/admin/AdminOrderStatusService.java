@@ -10,11 +10,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import pl.lilimi.order.api.admin.AdminOrderDetailsResponse;
 import pl.lilimi.order.api.admin.ChangeOrderStatusRequest;
+import pl.lilimi.order.application.OrderStockReservationService;
 import pl.lilimi.order.domain.OrderStatus;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.payment.domain.PaymentAttemptStatus;
 import pl.lilimi.payment.persistence.PaymentAttemptRepository;
-import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
 
 import java.util.UUID;
 
@@ -25,18 +25,18 @@ public class AdminOrderStatusService {
   private final OrderRepository orders;
   private final AdminOrderQueryService queryService;
   private final PaymentAttemptRepository payments;
-  private final CheckoutExpirationQueue expirationQueue;
+  private final OrderStockReservationService stockReservations;
 
   public AdminOrderStatusService(
     OrderRepository orders,
     AdminOrderQueryService queryService,
     PaymentAttemptRepository payments,
-    CheckoutExpirationQueue expirationQueue
+    OrderStockReservationService stockReservations
   ) {
     this.orders = orders;
     this.queryService = queryService;
     this.payments = payments;
-    this.expirationQueue = expirationQueue;
+    this.stockReservations = stockReservations;
   }
 
   @Transactional
@@ -60,10 +60,10 @@ public class AdminOrderStatusService {
 
     var nextStatus = OrderStatus.fromValue(request.status());
 
+    boolean cancelling = nextStatus == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED;
+
     if (
-      nextStatus == OrderStatus.CANCELLED
-        && order.getStatus() != OrderStatus.CANCELLED
-        && payments.existsByOrderIdAndStatus(
+      cancelling && payments.existsByOrderIdAndStatus(
         id,
         PaymentAttemptStatus.SUCCEEDED
       )
@@ -85,8 +85,8 @@ public class AdminOrderStatusService {
 
     orders.flush();
 
-    if (order.getStatus() == OrderStatus.CANCELLED) {
-      expirationQueue.enqueueForOrder(id);
+    if (cancelling) {
+      stockReservations.onCancellation(order);
     }
 
     return queryService.findOrder(id);

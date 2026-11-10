@@ -10,7 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
 import pl.lilimi.PostgresTestConfiguration;
+import pl.lilimi.DigitalPackageTestData;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -78,6 +80,7 @@ class AdminProductVisibilityControllerTest {
       "pattern-001"
     );
     entityManager.clear();
+    DigitalPackageTestData.currentPackageId(jdbc, "pattern-001");
 
     var product = products.findById("pattern-001").orElseThrow();
     long originalVersion = product.getVersion();
@@ -134,6 +137,31 @@ class AdminProductVisibilityControllerTest {
 
     assertThat(saved.isActive()).isTrue();
     assertThat(saved.getVersion()).isEqualTo(originalVersion);
+  }
+
+  @Test
+  void shouldRejectPublishingAnIncompleteDigitalDraft() throws Exception {
+    var draft = Product.createDraft(
+      "incomplete-digital-draft",
+      "test-incomplete-draft",
+      ProductType.DIGITAL
+    );
+    entityManager.persist(draft);
+    entityManager.flush();
+
+    mockMvc.perform(
+        patch("/api/admin/products/{id}/visibility", draft.getId())
+          .with(user("admin@example.com").roles("ADMIN"))
+          .with(csrf())
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(requestBody(true, draft.getVersion()))
+      )
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("DIGITAL_PRODUCT_NOT_READY"));
+
+    entityManager.clear();
+
+    assertThat(products.findById(draft.getId()).orElseThrow().isActive()).isFalse();
   }
 
   @Test

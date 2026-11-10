@@ -1,15 +1,41 @@
 import type { AdminProductImages, ProductImageDraftRequest } from './admin-product-image.model';
 
-export type AdminProductType = 'digital' | 'sweatshirt' | 'tshirt' | 'tote';
+export type AdminProductType = 'digital' | 'physical' | 'sweatshirt' | 'tshirt' | 'tote';
 
 export interface AdminProductSummary {
   readonly id: string;
   readonly version: number;
   readonly slug: string;
+  readonly productCode: string | null;
   readonly productType: AdminProductType;
   readonly active: boolean;
+  readonly stockQuantity?: number | null;
   readonly madeToOrder: boolean;
   readonly personalizationAvailable: boolean;
+}
+
+export interface ShippingPackage {
+  readonly lengthCm: number | null;
+  readonly widthCm: number | null;
+  readonly heightCm: number | null;
+  readonly weightKg: number | null;
+}
+
+export interface PhysicalDraftConfiguration {
+  readonly shippingPackage?: ShippingPackage | null;
+  readonly category: string | null;
+  readonly priceInGrosz: number | null;
+  readonly variantAttributes: readonly { readonly name: string; readonly values: readonly string[] }[];
+}
+
+export interface CreateProductDraftRequest {
+  readonly productType: 'digital' | 'physical';
+  readonly pl: UpdateProductTranslationRequest;
+  readonly en: UpdateProductTranslationRequest;
+  readonly productCode?: string;
+  readonly physicalConfiguration?: PhysicalDraftConfiguration;
+  readonly digitalPriceInGrosz?: number;
+  readonly stockQuantity?: number;
 }
 
 export interface AdminProductPage {
@@ -35,6 +61,7 @@ export interface AdminProductTranslation {
 
 export interface AdminProductDetails extends AdminProductSummary {
   readonly digitalPriceInGrosz: number | null;
+  readonly physicalConfiguration?: PhysicalDraftConfiguration | null;
   readonly translations: readonly AdminProductTranslation[];
 }
 
@@ -65,6 +92,7 @@ export interface AdminGarmentVariant {
   readonly color: 'white' | 'navy' | 'grey' | 'black';
   readonly priceInGrosz: number;
   readonly currency: 'PLN';
+  readonly stockQuantity?: number;
   readonly active: boolean;
 }
 
@@ -89,6 +117,7 @@ export interface AdminGarmentVariantPage {
 
 export interface UpdateGarmentVariantRequest {
   readonly priceInGrosz: number;
+  readonly stockQuantity?: number;
   readonly active: boolean;
   readonly expectedVersion: number;
 }
@@ -98,6 +127,9 @@ export interface SaveProductRequest {
   readonly pl: UpdateProductTranslationRequest;
   readonly en: UpdateProductTranslationRequest;
   readonly digitalPriceInGrosz: number | null;
+  readonly physicalPriceInGrosz?: number;
+  readonly stockQuantity?: number;
+  readonly shippingPackage?: ShippingPackage;
   readonly images: readonly ProductImageDraftRequest[];
 }
 

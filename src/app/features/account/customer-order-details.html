@@ -87,6 +87,9 @@
     <li>
       <h3>{{ item.productName }}</h3>
 
+      @if (item.physicalOptions) {
+        <p>{{ item.physicalOptions }}</p>
+      }
       @if (item.kind === 'sweatshirt') {
       <dl class="order-details__configuration">
         <div>

@@ -282,6 +282,16 @@
               </li>
             }
 
+            @for (line of cart.physicalLines(); track line.key) {
+              <li class="checkout__review-item">
+                <h4>{{ line.product?.name[language()] ?? line.item.productId }}</h4>
+                @for (option of line.options; track option[0]) {
+                  <p>{{ option[0] }} · {{ option[1] }}</p>
+                }
+                <p>{{ line.item.quantity }} × {{ formatPrice(line.unitPriceInGrosz) }}</p>
+              </li>
+            }
+
             @for (line of cart.sweatshirtLines(); track line.key) {
               <li class="checkout__review-item">
                 <h4>
@@ -381,7 +391,9 @@
           @if (checkoutStep() === 'review') {
             <p>{{ 'checkout.order.demoNotice' | transloco }}</p>
 
-            @if (orderErrorKey(); as errorKey) {
+            @if (orderStockLimit(); as limit) {
+              <p role="alert">{{ limit.productName }} — {{ (limit.max === 0 ? 'cart.stockUnavailable' : 'cart.stockLimit') | transloco: { max: limit.max } }}</p>
+            } @else if (orderErrorKey(); as errorKey) {
               <p role="alert">{{ errorKey | transloco }}</p>
             }
 

@@ -131,6 +131,10 @@ fieldset {
   border-bottom: 0;
 }
 
+.variants__stock-empty {
+  color: var(--status-error);
+}
+
 .variants__matrix-cell {
   display: flex;
   flex-direction: column;
@@ -145,6 +149,10 @@ fieldset {
   background: rgb(249 246 255 / 30%);
   color: var(--text-primary);
   font: inherit;
+}
+
+.variants__matrix-cell--readonly:disabled {
+  opacity: 1;
 }
 
 .variants__matrix-cell > span:first-child {

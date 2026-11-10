@@ -1,7 +1,6 @@
 package pl.lilimi.catalog.admin.api;
 
 import org.springframework.data.domain.Page;
-import pl.lilimi.catalog.Product;
 
 import java.util.List;
 
@@ -13,12 +12,9 @@ public record AdminProductPageResponse(
   int totalPages
 ) {
 
-  public static AdminProductPageResponse from(Page<Product> products) {
+  public static AdminProductPageResponse from(Page<AdminProductSummaryResponse> products) {
     return new AdminProductPageResponse(
-      products.getContent()
-        .stream()
-        .map(AdminProductSummaryResponse::from)
-        .toList(),
+      products.getContent(),
       products.getNumber(),
       products.getSize(),
       products.getTotalElements(),

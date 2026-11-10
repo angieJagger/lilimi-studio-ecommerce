@@ -12,6 +12,9 @@ public record UpdateGarmentVariantRequest(
   @NotNull
   Boolean active,
 
+  @PositiveOrZero
+  Integer stockQuantity,
+
   @NotNull
   @PositiveOrZero
   Long expectedVersion

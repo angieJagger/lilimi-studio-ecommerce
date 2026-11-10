@@ -5,7 +5,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import pl.lilimi.catalog.admin.application.AdminCatalogRemovalService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,13 +24,25 @@ public class AdminGarmentVariantController {
 
   private final AdminGarmentVariantQueryService queryService;
   private final AdminGarmentVariantUpdateService updateService;
+  private final AdminCatalogRemovalService removalService;
 
   public AdminGarmentVariantController(
     AdminGarmentVariantQueryService queryService,
-    AdminGarmentVariantUpdateService updateService
+    AdminGarmentVariantUpdateService updateService,
+    AdminCatalogRemovalService removalService
   ) {
     this.queryService = queryService;
     this.updateService = updateService;
+    this.removalService = removalService;
+  }
+
+  @DeleteMapping("/{variantId}")
+  public AdminCatalogRemovalService.Result removeVariant(
+    @PathVariable String productId,
+    @PathVariable UUID variantId,
+    @RequestParam @Min(0) long expectedVersion
+  ) {
+    return removalService.removeVariant(productId, variantId, expectedVersion);
   }
 
   @GetMapping

@@ -5,6 +5,10 @@ export function getCartItemKey(item: CartItem): string {
     return JSON.stringify([item.kind, item.productId]);
   }
 
+  if (item.kind === 'physical') {
+    return JSON.stringify([item.kind, item.productId, Object.keys(item.options).sort().map((name) => [name, item.options[name]])]);
+  }
+
   return JSON.stringify([
     item.kind,
     item.productId,

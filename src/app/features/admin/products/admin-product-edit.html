@@ -25,12 +25,27 @@
       </button>
     }
   } @else if (product(); as details) {
-    <p class="product-edit__reference">{{ details.slug }} · {{ details.id }}</p>
+    <p class="product-edit__reference">
+      {{ details.slug }} · {{ details.productCode ?? details.id }}
+    </p>
 
-    @if (saved()) {
-      <output class="product-edit__success">
-        {{ 'adminProducts.edit.saved' | transloco }}
-      </output>
+    @if (details.physicalConfiguration; as configuration) {
+      <section aria-labelledby="physical-product-title">
+        <h2 id="physical-product-title">{{ 'adminProducts.create.physical' | transloco }}</h2>
+        @if (configuration.priceInGrosz === null) {
+          <p>{{ 'adminProducts.errors.physicalProductNotPublishable' | transloco }}</p>
+        }
+        @if (configuration.category; as category) {
+          <p>{{ 'adminProducts.create.categoryLabel' | transloco }} · {{ category }}</p>
+        }
+        @if (configuration.variantAttributes.length) {
+          <ul>
+            @for (attribute of configuration.variantAttributes; track attribute.name) {
+              <li>{{ attribute.name }} · {{ attribute.values.join(', ') }}</li>
+            }
+          </ul>
+        }
+      </section>
     }
 
     @if (saveErrorKey(); as message) {
@@ -62,15 +77,16 @@
     }
 
     <form
+      #editForm
       id="product-edit-form"
       novalidate
-      (submit)="onSubmit($event)"
+      (submit)="onSubmit($event, editForm)"
       (input)="onDraftInput()"
       (change)="onDraftInput()"
       [attr.aria-busy]="isSaving()"
     >
       <fieldset class="product-edit__fields" [disabled]="isSaving() || hasBlockingSaveError()">
-        @if (details.productType === 'digital') {
+        @if (details.productType === 'digital' || details.productType === 'physical') {
           <section aria-labelledby="product-price-title">
             <h2 id="product-price-title">{{ 'adminProducts.edit.price.title' | transloco }}</h2>
             <div class="form-field">
@@ -95,6 +111,25 @@
               }
             </div>
           </section>
+        }
+
+        @if (details.productType === 'physical') {
+          <div class="form-field">
+            <label for="stock-quantity">{{ 'adminProducts.create.stockQuantity' | transloco }}</label>
+            <input id="stock-quantity" name="stockQuantity" type="number" min="0" max="2147483647"
+              step="1" [value]="details.stockQuantity ?? ''" />
+          </div>
+          <fieldset>
+            <legend>{{ 'adminProducts.create.shippingPackage' | transloco }}</legend>
+            @for (field of shippingFields; track field.key) {
+              <div class="form-field">
+                <label [for]="'package-' + field.key">{{ 'adminProducts.create.' + field.label | transloco }}</label>
+                <input [id]="'package-' + field.key" [name]="field.key" type="number"
+                  min="0.001" max="9999.999" step="0.001"
+                  [value]="details.physicalConfiguration?.shippingPackage?.[field.key] ?? ''" />
+              </div>
+            }
+          </fieldset>
         }
 
         @for (group of translationGroups; track group.language) {
@@ -174,7 +209,9 @@
       <div class="product-edit__actions">
         <p>{{ 'adminProductImages.draftHint' | transloco }}</p>
         @if (saved()) {
-          <output>{{ 'adminProducts.edit.saved' | transloco }}</output>
+          <output class="product-edit__success">
+            {{ 'adminProducts.edit.saved' | transloco }}
+          </output>
         }
         <button
           type="submit"

@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import pl.lilimi.catalog.DigitalProductPriceRepository;
 import pl.lilimi.catalog.ProductImage;
 import pl.lilimi.catalog.ProductImageRepository;
+import pl.lilimi.catalog.DigitalProductPrice;
 import pl.lilimi.catalog.ProductRepository;
 import pl.lilimi.catalog.ProductTranslation;
 import pl.lilimi.catalog.ProductTranslationId;
@@ -67,7 +68,7 @@ public class AdminProductEditService {
     @NotBlank String productId, @NotNull @Valid SaveProductRequest request,
     @NotNull List<MultipartFile> files
   ) {
-    var product = products.findById(productId).orElseThrow(() ->
+    var product = products.findByIdForUpdate(productId).filter(value -> !value.isArchived()).orElseThrow(() ->
       new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
     if (product.getVersion() != request.expectedVersion()) {
       throw new ProductVersionConflictException();
@@ -76,6 +77,34 @@ public class AdminProductEditService {
       != (request.digitalPriceInGrosz() != null)) {
       throw invalid("A fixed price is required only for digital products");
     }
+    if (request.stockQuantity() != null) {
+      if (product.getProductType() != ProductType.PHYSICAL) {
+        throw invalid("Only physical products have a stock quantity");
+      }
+      product.changeStockQuantity(request.stockQuantity());
+      if (request.stockQuantity() == 0) {
+        product.changeVisibility(false);
+      }
+    }
+
+    if (request.physicalPriceInGrosz() != null) {
+      if (product.getProductType() != ProductType.PHYSICAL || product.getPhysicalConfiguration() == null) {
+        throw invalid("Only configured physical products have a physical price");
+      }
+      product.changePhysicalConfiguration(
+        product.getPhysicalConfiguration().withPrice(request.physicalPriceInGrosz())
+      );
+    }
+
+    if (request.shippingPackage() != null) {
+      if (product.getProductType() != ProductType.PHYSICAL || product.getPhysicalConfiguration() == null) {
+        throw invalid("Only configured physical products have package dimensions");
+      }
+      product.changePhysicalConfiguration(
+        product.getPhysicalConfiguration().withShippingPackage(request.shippingPackage())
+      );
+    }
+
     var existing = images.findAllByProductIdOrderBySortOrderAscIdAsc(productId);
     var byId = existing.stream().collect(Collectors.toMap(ProductImage::getId, Function.identity()));
     var retainedIds = new HashSet<UUID>();
@@ -97,12 +126,6 @@ public class AdminProductEditService {
       throw invalid("Use every file once and select exactly one primary image");
     }
     var validated = files.stream().map(validator::validate).toList();
-    var polish = translation(productId, "pl");
-    var english = translation(productId, "en");
-    var price = product.getProductType() == ProductType.DIGITAL
-      ? prices.findById(productId).orElseThrow(() -> new ResponseStatusException(
-          HttpStatus.CONFLICT, "Digital product price is missing"))
-      : null;
 
     // Reserve the product version before touching files or related rows.
     product.markImagesChanged();
@@ -117,9 +140,17 @@ public class AdminProductEditService {
       }
     });
 
-    polish.updateContent(request.pl().name(), request.pl().description());
-    english.updateContent(request.en().name(), request.en().description());
-    if (price != null) price.changePrice(request.digitalPriceInGrosz());
+    saveTranslation(productId, "pl", request.pl().name(), request.pl().description());
+    saveTranslation(productId, "en", request.en().name(), request.en().description());
+
+    if (product.getProductType() == ProductType.DIGITAL) {
+      int priceInGrosz = request.digitalPriceInGrosz();
+
+      prices.findById(productId).ifPresentOrElse(
+        price -> price.changePrice(priceInGrosz),
+        () -> prices.save(DigitalProductPrice.create(productId, priceInGrosz))
+      );
+    }
 
     // Flush removals and clear the unique primary flag before assigning it again.
     for (var image : existing) {
@@ -165,10 +196,20 @@ public class AdminProductEditService {
         images.findAllByProductIdOrderBySortOrderAscIdAsc(productId)));
   }
 
-  private ProductTranslation translation(String productId, String language) {
-    return translations.findById(new ProductTranslationId(productId, language))
-      .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT,
-        "Required product translation is missing"));
+  private void saveTranslation(
+    String productId,
+    String language,
+    String name,
+    String description
+  ) {
+    var id = new ProductTranslationId(productId, language);
+
+    translations.findById(id).ifPresentOrElse(
+      translation -> translation.updateContent(name, description),
+      () -> translations.save(
+        ProductTranslation.create(productId, language, name, description)
+      )
+    );
   }
 
   private ResponseStatusException invalid(String message) {

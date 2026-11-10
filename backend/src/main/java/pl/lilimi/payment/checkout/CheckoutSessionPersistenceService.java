@@ -67,14 +67,14 @@ public class CheckoutSessionPersistenceService {
         || attempt.getStatus() == PaymentAttemptStatus.PENDING;
 
     if (cancellation) {
-      if (order.getStatus() != OrderStatus.CANCELLED) {
+      if (order.getStatus() != OrderStatus.CANCELLED && !order.isReservationExpirationRequested()) {
         throw new ResponseStatusException(
           HttpStatus.CONFLICT,
           "ORDER_NOT_CANCELLED"
         );
       }
     } else {
-      if (active && order.getStatus() != OrderStatus.NEW) {
+      if (active && (order.getStatus() != OrderStatus.NEW || order.isReservationExpirationRequested())) {
         throw new ResponseStatusException(
           HttpStatus.CONFLICT,
           "ORDER_NOT_PAYABLE"

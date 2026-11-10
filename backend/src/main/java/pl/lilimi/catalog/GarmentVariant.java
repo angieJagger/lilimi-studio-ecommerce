@@ -44,6 +44,23 @@ public class GarmentVariant {
   @Column(name = "active", nullable = false)
   private boolean active;
 
+  @Column(name = "archived", nullable = false)
+  private boolean archived;
+
+  @Column(name = "stock_quantity", nullable = false)
+  private int stockQuantity;
+
+  public int getStockQuantity() {
+    return stockQuantity;
+  }
+
+  public void changeStockQuantity(int quantity) {
+    if (quantity < 0) {
+      throw new IllegalArgumentException("Stock quantity cannot be negative");
+    }
+    stockQuantity = quantity;
+  }
+
   protected GarmentVariant() {
     // Required by JPA.
   }
@@ -56,6 +73,15 @@ public class GarmentVariant {
     }
 
     this.priceInGrosz = priceInGrosz;
+  }
+
+  public boolean isArchived() {
+    return archived;
+  }
+
+  public void archive() {
+    active = false;
+    archived = true;
   }
 
   public void changeVisibility(boolean active) {

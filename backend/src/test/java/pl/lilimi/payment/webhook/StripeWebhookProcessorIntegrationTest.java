@@ -21,6 +21,7 @@ import pl.lilimi.order.domain.OrderDelivery;
 import pl.lilimi.order.domain.OrderStatus;
 import pl.lilimi.order.api.admin.ChangeOrderStatusRequest;
 import pl.lilimi.order.application.admin.AdminOrderStatusService;
+import pl.lilimi.order.application.OrderStockReservationService;
 import pl.lilimi.payment.domain.PaymentAttempt;
 import pl.lilimi.payment.domain.PaymentAttemptStatus;
 import pl.lilimi.payment.cancellation.CheckoutExpirationQueue;
@@ -66,6 +67,9 @@ class StripeWebhookProcessorIntegrationTest {
   private CheckoutExpirationQueue expirationQueue;
   @Autowired
   private OrderItemRepository items;
+
+  @Autowired
+  private OrderStockReservationService stockReservations;
 
   private final List<String> eventIds = new ArrayList<>();
 
@@ -423,6 +427,28 @@ class StripeWebhookProcessorIntegrationTest {
       String.class,
       attemptId
     )).isEqualTo("PAYMENT_AFTER_CANCELLATION");
+  }
+
+  @Test
+  void shouldDeliverDownloadsWhenPaymentWebhookArrivesDuringReservationExpiration() throws Exception {
+    addDigitalItemWithPackage();
+    var cutoff = Instant.now();
+    stockReservations.processDueOrder(orderId, cutoff);
+
+    var expiring = orders.findById(orderId).orElseThrow();
+    assertThat(expiring.getStatus()).isEqualTo(OrderStatus.NEW);
+    assertThat(expiring.isReservationExpirationRequested()).isTrue();
+
+    processor.process(event(
+      "checkout.session.completed", "complete", "paid", 2900, "pi_test_expiration_race"
+    ));
+    stockReservations.processDueOrder(orderId, cutoff);
+
+    assertThat(orders.findById(orderId).orElseThrow().getStatus()).isEqualTo(OrderStatus.NEW);
+    assertThat(savedAttempt().getStatus()).isEqualTo(PaymentAttemptStatus.SUCCEEDED);
+    assertThat(jdbc.queryForObject(
+      "SELECT count(*) FROM digital_download_emails WHERE order_id = ?", Long.class, orderId
+    )).isEqualTo(1L);
   }
 
   @Test

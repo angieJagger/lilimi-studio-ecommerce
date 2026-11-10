@@ -4,7 +4,8 @@ import {
   GarmentFit,
 } from '../products/embroidered-product-options';
 
-export const MAX_CART_ITEM_QUANTITY = 99;
+// Quantities are stored as signed 32-bit integers by the order API.
+export const MAX_CART_ITEM_QUANTITY = 2_147_483_647;
 
 export interface DigitalCartItem {
   readonly kind: 'digital';
@@ -27,4 +28,11 @@ export interface SweatshirtCartItem {
   readonly quantity: number;
 }
 
-export type CartItem = DigitalCartItem | SweatshirtCartItem;
+export interface PhysicalCartItem {
+  readonly kind: 'physical';
+  readonly productId: string;
+  readonly options: Readonly<Record<string, string>>;
+  readonly quantity: number;
+}
+
+export type CartItem = DigitalCartItem | SweatshirtCartItem | PhysicalCartItem;

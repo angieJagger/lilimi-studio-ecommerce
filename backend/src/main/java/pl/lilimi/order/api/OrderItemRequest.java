@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.Map;
+
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   property = "kind"
@@ -21,10 +23,22 @@ import jakarta.validation.constraints.Size;
   @JsonSubTypes.Type(
     value = OrderItemRequest.Sweatshirt.class,
     name = "sweatshirt"
-  )
+  ),
+  @JsonSubTypes.Type(value = OrderItemRequest.Physical.class, name = "physical")
 })
 public sealed interface OrderItemRequest
-  permits OrderItemRequest.Digital, OrderItemRequest.Sweatshirt {
+  permits OrderItemRequest.Digital, OrderItemRequest.Sweatshirt, OrderItemRequest.Physical {
+
+  String productId();
+
+  Integer quantity();
+
+  record Physical(
+    @NotBlank @Size(max = 100) String productId,
+    @NotNull @Size(max = 6) Map<@NotBlank @Size(max = 60) String, @NotBlank @Size(max = 60) String> options,
+    @NotNull @Min(1) Integer quantity
+  ) implements OrderItemRequest {
+  }
 
   record Digital(
     @NotBlank
@@ -53,7 +67,6 @@ public sealed interface OrderItemRequest
 
     @NotNull
     @Min(1)
-    @Max(99)
     Integer quantity
   ) implements OrderItemRequest {
   }

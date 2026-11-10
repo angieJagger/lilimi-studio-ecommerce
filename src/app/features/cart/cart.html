@@ -134,29 +134,72 @@
 
               <div class="cart__quantity-controls">
                 <button type="button" [disabled]="line.item.quantity <= 1" [attr.aria-label]="'cart.decreaseQuantity' | transloco"
-                  (click)="cart.updateSweatshirtQuantity(
-                    line.key,
-                    line.item.quantity - 1
-                  )">
+                  (click)="changeQuantity(line.key, line.item, line.product?.slug, line.item.quantity - 1, line.variantId)">
                   <span aria-hidden="true">−</span>
                 </button>
 
-                <output>{{ line.item.quantity }}</output>
+                <input #quantityInput type="number" min="1" [max]="maxItemQuantity" step="1" required
+                    [attr.aria-label]="'cart.quantity' | transloco" [value]="line.item.quantity"
+                    [disabled]="isCheckingQuantity(line.variantId ?? line.item.productId)"
+                    (change)="changeTypedQuantity(line.key, line.item, line.product?.slug, quantityInput, line.variantId)" />
 
-                <button type="button" [attr.aria-label]="'cart.increaseQuantity' | transloco" (click)="cart.updateSweatshirtQuantity(
-                    line.key,
-                    line.item.quantity + 1
-                  )" [disabled]="line.item.quantity >= maxItemQuantity">
+                <button type="button" [attr.aria-label]="'cart.increaseQuantity' | transloco" (click)="changeQuantity(line.key, line.item, line.product?.slug, line.item.quantity + 1, line.variantId)" [disabled]="!canIncreaseQuantity(line.item, line.variantId)">
                   <span aria-hidden="true">+</span>
                 </button>
               </div>
             </fieldset>
+
+            @if (quantityFeedback(line.variantId ?? line.item.productId); as feedback) {
+              <p role="alert">{{ feedback.key | transloco: { max: feedback.max } }}</p>
+            }
 
             <button class="cart__remove" type="button" (click)="cart.removeSweatshirt(line.key)">
               {{ 'cart.remove' | transloco }}
             </button>
           </div>
         </li>
+        }
+        @for (line of cart.physicalLines(); track line.key) {
+          <li class="cart__item">
+            <div class="cart__media" aria-hidden="true">
+              @if (line.product; as product) {
+                <app-product-image [slug]="product.slug" [image]="primaryImage(product.images)"
+                  [locale]="language()" [fallbackText]="'productDetail.imageUnavailable' | transloco" />
+              }
+            </div>
+            <div class="cart__item-content">
+              <h2 class="cart__item-title">
+                @if (line.product; as product) {
+                  <a [routerLink]="['/', language(), 'products', product.slug]">{{ product.name[language()] }}</a>
+                } @else {
+                  {{ 'cart.productReference' | transloco }} {{ line.item.productId }}
+                }
+              </h2>
+              @for (option of line.options; track option[0]) {
+                <p>{{ option[0] }} · {{ option[1] }}</p>
+              }
+              <p>{{ line.item.quantity }} × {{ formatPrice(line.unitPriceInGrosz) }}</p>
+              <fieldset class="cart__quantity">
+                <legend>{{ 'cart.quantity' | transloco }}</legend>
+                <div class="cart__quantity-controls">
+                  <button type="button" [attr.aria-label]="'cart.decreaseQuantity' | transloco"
+                    [disabled]="line.item.quantity <= 1" (click)="changeQuantity(line.key, line.item, line.product?.slug, line.item.quantity - 1)">−</button>
+                  <input #quantityInput type="number" min="1" [max]="maxItemQuantity" step="1" required
+                    [attr.aria-label]="'cart.quantity' | transloco" [value]="line.item.quantity"
+                    [disabled]="isCheckingQuantity(line.item.productId)"
+                    (change)="changeTypedQuantity(line.key, line.item, line.product?.slug, quantityInput)" />
+                  <button type="button" [attr.aria-label]="'cart.increaseQuantity' | transloco"
+                    [disabled]="!canIncreaseQuantity(line.item)" (click)="changeQuantity(line.key, line.item, line.product?.slug, line.item.quantity + 1)">+</button>
+                </div>
+              </fieldset>
+              @if (quantityFeedback(line.item.productId); as feedback) {
+                <p role="alert">{{ feedback.key | transloco: { max: feedback.max } }}</p>
+              }
+              <button class="cart__remove" type="button" (click)="cart.removePhysical(line.key)">
+                {{ 'cart.remove' | transloco }}
+              </button>
+            </div>
+          </li>
         }
       </ul>
 
@@ -177,14 +220,14 @@
             <dt>{{ 'cart.delivery' | transloco }}</dt>
             <dd>
               {{
-              (cart.sweatshirts().length > 0
+              (cart.requiresShipping()
               ? 'cart.physicalDelivery'
               : 'cart.digitalDelivery') | transloco
               }}
             </dd>
           </div>
         </dl>
-        @if (cart.pricingStatus() === 'ready') {
+        @if (canCheckout()) {
         <a class="button button--primary cart__checkout" [routerLink]="['/', language(), 'checkout']">
           {{ 'cart.proceedToCheckout' | transloco }}
         </a>

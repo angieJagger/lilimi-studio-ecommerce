@@ -41,7 +41,14 @@ export interface SweatshirtOrderItem {
   readonly quantity: number;
 }
 
-export type OrderItem = DigitalOrderItem | SweatshirtOrderItem;
+export interface PhysicalOrderItem {
+  readonly kind: 'physical';
+  readonly productId: string;
+  readonly options: Readonly<Record<string, string>>;
+  readonly quantity: number;
+}
+
+export type OrderItem = DigitalOrderItem | SweatshirtOrderItem | PhysicalOrderItem;
 
 export interface CreateOrderRequest {
   readonly language: 'pl' | 'en';

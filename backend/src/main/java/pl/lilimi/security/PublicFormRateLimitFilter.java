@@ -36,6 +36,9 @@ public class PublicFormRateLimitFilter
       "/api/digital-downloads/resend"
     );
 
+  private final PathPatternRequestMatcher order =
+    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/orders");
+
   public PublicFormRateLimitFilter(
     PublicFormRateLimiter limiter
   ) {
@@ -48,7 +51,8 @@ public class PublicFormRateLimitFilter
   ) {
     return !inquiry.matches(request)
       && !registration.matches(request)
-      && !downloadLink.matches(request);
+      && !downloadLink.matches(request)
+      && !order.matches(request);
   }
 
   @Override
@@ -66,6 +70,8 @@ public class PublicFormRateLimitFilter
         retryAfter = limiter.reserveInquiry(source);
       } else if (registration.matches(request)) {
         retryAfter = limiter.reserveRegistration(source);
+      } else if (order.matches(request)) {
+        retryAfter = limiter.reserveOrderRequest(source);
       } else {
         retryAfter = limiter.reserveDownloadLink(source);
       }

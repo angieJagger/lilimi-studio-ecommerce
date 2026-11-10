@@ -27,6 +27,39 @@ A failed deployment does not automatically roll back containers.
 After failure, running images may differ from `IMAGE_TAG` in `.env`.
 Always inspect both.
 
+## Off-host backup and restore check
+
+Run from the repository root with Python 3.12 or newer and Docker Desktop running.
+The SSH host must already have a verified entry in `known_hosts`.
+
+```powershell
+python deploy/backup_offhost.py create --host ubuntu@63.187.141.108 --check
+```
+
+The default destination is `D:/angelika/kopie-zapasowe/Lilimi`.
+Each timestamped folder contains a database dump, media archive, image versions
+and SHA-256 checksums. The script briefly stops the backend for a consistent
+snapshot and waits for it to become healthy before downloading.
+
+The off-host copy excludes `.env`. Keep credentials separately in your secure
+configuration storage. Backup folders contain private customer data and are
+restricted to the current Windows user.
+
+The restore check uses a temporary PostgreSQL container with no network or
+published ports. It restores the database and media, verifies stored ZIP hashes,
+media sizes and order-to-package references, then removes its temporary resources.
+Results are recorded in `restore-check.json`. Application smoke tests are a
+separate check after a real recovery.
+
+An existing copy can be checked again with the following command.
+
+```powershell
+python deploy/backup_offhost.py check "D:/angelika/kopie-zapasowe/Lilimi/<snapshot>"
+```
+
+These commands create manual recovery points. Run a fresh copy after important
+data changes and before a risky deployment.
+
 ## Inspect the current state
 
 Run on Lightsail:

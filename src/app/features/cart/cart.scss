@@ -181,8 +181,9 @@
   align-items: center;
   gap: var(--spacing-8);
 
-  output {
-    min-width: 2ch;
+  input {
+    width: 4rem;
+    min-height: 44px;
     text-align: center;
   }
 

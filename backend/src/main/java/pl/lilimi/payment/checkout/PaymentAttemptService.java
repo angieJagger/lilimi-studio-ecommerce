@@ -71,6 +71,10 @@ public class PaymentAttemptService {
         "ORDER_NOT_FOUND"
       ));
 
+    if (order.isReservationExpirationRequested()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "ORDER_NOT_PAYABLE");
+    }
+
     var existing = payments.findByIdempotencyKey(
       idempotencyKey
     );

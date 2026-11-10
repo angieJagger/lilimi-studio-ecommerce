@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "products")
@@ -33,12 +34,25 @@ public class Product {
   @Column(name = "slug", length = 160, nullable = false, unique = true)
   private String slug;
 
+  @Column(name = "product_code", length = 64)
+  private String productCode;
+
   @Convert(converter = ProductTypeConverter.class)
   @Column(name = "product_type", length = 32, nullable = false)
   private ProductType productType;
 
+  @Convert(converter = PhysicalDraftConfigurationConverter.class)
+  @Column(name = "physical_configuration", columnDefinition = "text")
+  private PhysicalDraftConfiguration physicalConfiguration;
+
+  @Column(name = "stock_quantity")
+  private Integer stockQuantity;
+
   @Column(name = "active", nullable = false)
   private boolean active;
+
+  @Column(name = "archived", nullable = false)
+  private boolean archived;
 
   @Column(name = "made_to_order", nullable = false)
   private boolean madeToOrder;
@@ -56,6 +70,52 @@ public class Product {
 
   protected Product() {
     // Required by JPA.
+  }
+
+  public static Product createDraft(
+    String slug,
+    String productCode,
+    ProductType productType
+  ) {
+    var product = new Product();
+    product.id = UUID.randomUUID().toString();
+    product.slug = slug;
+    product.productCode = productCode;
+    product.productType = productType;
+    product.active = false;
+    return product;
+  }
+
+  public void changePhysicalConfiguration(PhysicalDraftConfiguration configuration) {
+    if (productType != ProductType.PHYSICAL) {
+      throw new IllegalStateException("Only physical products have a physical configuration");
+    }
+    physicalConfiguration = configuration;
+  }
+
+  public PhysicalDraftConfiguration getPhysicalConfiguration() {
+    return physicalConfiguration;
+  }
+
+  public Integer getStockQuantity() {
+    return stockQuantity;
+  }
+
+  public void changeStockQuantity(int quantity) {
+    if (productType != ProductType.PHYSICAL || quantity < 0) {
+      throw new IllegalArgumentException("Invalid physical product stock quantity");
+    }
+
+    stockQuantity = quantity;
+  }
+
+  public boolean isArchived() {
+    return archived;
+  }
+
+  public void archive() {
+    active = false;
+    archived = true;
   }
 
   public void changeVisibility(boolean active) {
@@ -87,6 +147,10 @@ public class Product {
 
   public String getSlug() {
     return slug;
+  }
+
+  public String getProductCode() {
+    return productCode;
   }
 
   public ProductType getProductType() {

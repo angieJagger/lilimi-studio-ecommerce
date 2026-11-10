@@ -4,7 +4,7 @@ import {
   garmentFits,
   garmentSizes,
 } from '../products/embroidered-product-options';
-import { MAX_CART_ITEM_QUANTITY, SweatshirtCartItem } from './cart-item.model';
+import { MAX_CART_ITEM_QUANTITY, PhysicalCartItem, SweatshirtCartItem } from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -67,6 +67,48 @@ function readSweatshirt(value: unknown): SweatshirtCartItem | null {
     },
     quantity: Math.min(quantity, MAX_CART_ITEM_QUANTITY),
   };
+}
+
+export function readStoredPhysicalItems(value: unknown): PhysicalCartItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const items = new Map<string, PhysicalCartItem>();
+
+  for (const entry of value) {
+    if (!isRecord(entry) || entry['kind'] !== 'physical') {
+      continue;
+    }
+
+    const productId = entry['productId'];
+    const quantity = entry['quantity'];
+    const options = entry['options'];
+    if (typeof productId !== 'string' || !productId.trim() || productId.length > 100 ||
+      typeof quantity !== 'number' || !Number.isSafeInteger(quantity) || quantity < 1 ||
+      !isRecord(options)) {
+      continue;
+    }
+
+    const pairs = Object.entries(options);
+    if (pairs.length > 6 || !pairs.every(([name, option]) =>
+      name.trim() && name.length <= 60 &&
+      typeof option === 'string' && option.trim() && option.length <= 60,
+    )) {
+      continue;
+    }
+
+    const item: PhysicalCartItem = {
+      kind: 'physical', productId, options: options as Record<string, string>, quantity,
+    };
+    const key = getCartItemKey(item);
+    items.set(key, {
+      ...item,
+      quantity: Math.min(quantity + (items.get(key)?.quantity ?? 0), MAX_CART_ITEM_QUANTITY),
+    });
+  }
+
+  return [...items.values()];
 }
 
 export function readStoredSweatshirts(value: unknown): SweatshirtCartItem[] {

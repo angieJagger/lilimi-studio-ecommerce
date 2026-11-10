@@ -138,6 +138,26 @@ class PublicFormRateLimitFilterTest {
   }
 
   @Test
+  void shouldRejectExhaustedOrderRequestBudgetBeforeValidation() throws Exception {
+    when(limiter.reserveOrderRequest("127.0.0.1")).thenReturn(90L);
+
+    mvc.perform(post("/api/orders").with(csrf())
+        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+      .andExpect(status().isTooManyRequests())
+      .andExpect(header().string("Retry-After", "90"))
+      .andExpect(jsonPath("$.code").value("PUBLIC_FORM_RATE_LIMITED"));
+    verify(limiter).reserveOrderRequest("127.0.0.1");
+  }
+
+  @Test
+  void shouldCountInvalidOrderRequestsIndependentlyOfOrderCreation() throws Exception {
+    mvc.perform(post("/api/orders").with(csrf())
+        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+      .andExpect(status().isBadRequest());
+    verify(limiter).reserveOrderRequest("127.0.0.1");
+  }
+
+  @Test
   void shouldNotLimitPublicCatalog() throws Exception {
     mvc.perform(get("/api/products"))
       .andExpect(status().isOk());

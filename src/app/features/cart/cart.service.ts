@@ -1,6 +1,6 @@
 import { afterNextRender, computed, inject, Injectable, signal, effect, untracked } from '@angular/core';
 
-import { EmbroideryPattern } from '../products/product.model';
+import { EmbroideredProduct, EmbroideryPattern, Product } from '../products/product.model';
 import {
   garmentColors,
   garmentSizes,
@@ -8,11 +8,12 @@ import {
 } from '../products/embroidered-product-options';
 import {
   MAX_CART_ITEM_QUANTITY,
+  PhysicalCartItem,
   SweatshirtCartItem,
   SweatshirtConfiguration,
 } from './cart-item.model';
 import { getCartItemKey } from './cart-item-key';
-import { readStoredSweatshirts } from './cart-storage';
+import { readStoredPhysicalItems, readStoredSweatshirts } from './cart-storage';
 import { SweatshirtVariantsService } from '../products/sweatshirt-variants.service';
 import { ProductCatalogService } from '../products/product-catalog.service';
 
@@ -23,6 +24,8 @@ export class CartService {
   private readonly catalog = inject(ProductCatalogService);
   private readonly variantsService = inject(SweatshirtVariantsService);
   private readonly storageKey = 'lilimi.cart.v1';
+  private readonly physicalStorageKey = 'lilimi.cart.physical.v1';
+  private readonly physicalState = signal<readonly PhysicalCartItem[]>([]);
   private readonly sweatshirtStorageKey = 'lilimi.cart.sweatshirts.v1';
   private readonly patternIdsState = signal<readonly string[]>([]);
 
@@ -54,6 +57,18 @@ export class CartService {
   });
 
   readonly sweatshirts = this.sweatshirtsState.asReadonly();
+  readonly physicalItems = this.physicalState.asReadonly();
+  readonly requiresShipping = computed(() => this.sweatshirts().length + this.physicalItems().length > 0);
+  readonly physicalLines = computed(() => this.physicalItems().map((item) => {
+    const product = this.catalog.productsById().get(item.productId);
+    return {
+      key: getCartItemKey(item),
+      item,
+      product,
+      options: Object.entries(item.options),
+      unitPriceInGrosz: this.matchesPhysicalOptions(product, item.options) ? product.priceInGrosz : null,
+    };
+  }));
 
   private readonly sweatshirtSlugs = computed(() => {
     const slugs = new Set<string>();
@@ -78,6 +93,7 @@ export class CartService {
         item,
         product: this.catalog.productsById().get(item.productId),
         pattern: this.catalog.productsById().get(item.patternId),
+        variantId: variant?.id,
         embroidery: variant
           ? {
               id: variant.embroideryOptionId,
@@ -94,7 +110,8 @@ export class CartService {
   readonly itemCount = computed(
     () =>
       this.patternIdsState().length +
-      this.sweatshirts().reduce((total, item) => total + item.quantity, 0),
+      this.sweatshirts().reduce((total, item) => total + item.quantity, 0) +
+      this.physicalItems().reduce((total, item) => total + item.quantity, 0),
   );
 
   readonly subtotalInGrosz = computed<number | null>(() => {
@@ -103,7 +120,7 @@ export class CartService {
     }
     let total = this.patterns().reduce((sum, product) => sum + product.priceInGrosz, 0);
 
-    for (const { item, unitPriceInGrosz: price } of this.sweatshirtLines()) {
+    for (const { item, unitPriceInGrosz: price } of [...this.sweatshirtLines(), ...this.physicalLines()]) {
       if (price === null) {
         return null;
       }
@@ -115,7 +132,7 @@ export class CartService {
   });
 
   readonly pricingStatus = computed<'ready' | 'loading' | 'error' | 'unavailable'>(() => {
-    const needsCatalog = this.patternIdsState().length > 0 || this.sweatshirts().length > 0;
+    const needsCatalog = this.patternIdsState().length > 0 || this.requiresShipping();
     const catalogStatus = needsCatalog ? this.catalog.state().status : 'ready';
     const variantsStatuses = [...this.sweatshirtSlugs()].map(
       (slug) => this.variantsService.findSource(slug)?.state().status ?? 'loading',
@@ -136,7 +153,8 @@ export class CartService {
         this.findSweatshirtVariant(item) === undefined,
     );
 
-    return this.unavailablePatternIds().length > 0 || unavailableSweatshirt
+    return this.unavailablePatternIds().length > 0 || unavailableSweatshirt ||
+      this.physicalLines().some((line) => line.unitPriceInGrosz === null)
       ? 'unavailable'
       : 'ready';
   });
@@ -144,7 +162,7 @@ export class CartService {
   reloadPrices(): void {
     const slugs = this.sweatshirtSlugs();
 
-    if (this.patternIdsState().length > 0 || this.sweatshirts().length > 0) {
+    if (this.patternIdsState().length > 0 || this.requiresShipping()) {
       this.catalog.reload();
     }
 
@@ -177,6 +195,15 @@ export class CartService {
         readStoredSweatshirts([...savedSweatshirts, ...currentItems]),
       );
 
+      this.physicalState.update((items) => {
+        try {
+          const stored = readStoredPhysicalItems(JSON.parse(localStorage.getItem(this.physicalStorageKey) ?? '[]'));
+          return readStoredPhysicalItems([...stored, ...items]);
+        } catch {
+          return items;
+        }
+      });
+
       this.storageReady = true;
       this.readyState.set(true);
       this.save();
@@ -202,7 +229,54 @@ export class CartService {
   clear(): void {
     this.patternIdsState.set([]);
     this.sweatshirtsState.set([]);
+    this.physicalState.set([]);
     this.save();
+  }
+
+  addPhysical(product: EmbroideredProduct, options: Readonly<Record<string, string>>): boolean {
+    if (!this.matchesPhysicalOptions(product, options)) {
+      return false;
+    }
+
+    const item: PhysicalCartItem = { kind: 'physical', productId: product.id, options: { ...options }, quantity: 1 };
+    const key = getCartItemKey(item);
+    const existing = this.physicalItems().find((line) => getCartItemKey(line) === key);
+
+    if (existing?.quantity === MAX_CART_ITEM_QUANTITY) {
+      return false;
+    }
+
+    this.physicalState.update((items) => readStoredPhysicalItems([...items, item]));
+    this.save();
+    return true;
+  }
+
+  removePhysical(key: string): void {
+    this.physicalState.update((items) => items.filter((item) => getCartItemKey(item) !== key));
+    this.save();
+  }
+
+  updatePhysicalQuantity(key: string, quantity: number): void {
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_CART_ITEM_QUANTITY) {
+      return;
+    }
+
+    this.physicalState.update((items) =>
+      items.map((item) => getCartItemKey(item) === key ? { ...item, quantity } : item),
+    );
+    this.save();
+  }
+
+  private matchesPhysicalOptions(
+    product: Product | undefined, options: Readonly<Record<string, string>>,
+  ): product is EmbroideredProduct {
+    if (product?.category !== 'embroidered-products' || product.productType !== 'physical') {
+      return false;
+    }
+
+    const attributes = product.variantAttributes ?? [];
+    return Object.keys(options).length === attributes.length &&
+      attributes.every((attribute) => attribute.values.includes(options[attribute.name]));
   }
 
   addSweatshirt(
@@ -305,6 +379,7 @@ export class CartService {
 
       localStorage.setItem(this.storageKey, JSON.stringify(ids));
       localStorage.setItem(this.sweatshirtStorageKey, JSON.stringify(this.sweatshirts()));
+      localStorage.setItem(this.physicalStorageKey, JSON.stringify(this.physicalItems()));
     } catch {
       // The in-memory cart remains usable if persistence fails.
     }

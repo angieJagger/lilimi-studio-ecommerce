@@ -22,7 +22,7 @@ public class OrderDeliveryService {
 
     boolean requiresShipping = items.stream()
       .anyMatch(item ->
-        item.item() instanceof OrderItemRequest.Sweatshirt
+        !(item.item() instanceof OrderItemRequest.Digital)
       );
 
     if (!requiresShipping) {
