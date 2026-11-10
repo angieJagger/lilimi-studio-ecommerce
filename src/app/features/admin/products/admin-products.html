@@ -3,6 +3,10 @@
     {{ 'adminProducts.title' | transloco }}
   </h1>
 
+  @if (removalMessage(); as message) {
+    <output>{{ message | transloco }}</output>
+  }
+
   @if (isLoading()) {
   <output>{{ 'adminProducts.loading' | transloco }}</output>
   } @else if (errorKey(); as message) {
@@ -21,11 +25,19 @@
   </button>
   }
   } @else if (products(); as result) {
+    <button class="button button--secondary" type="button"
+      [attr.aria-pressed]="showArchived()" [disabled]="isLoading() || isSaving() || isCreatingDraft()"
+      (click)="toggleArchive()">
+      {{ (showArchived() ? 'adminProducts.removal.backToProducts' : 'adminProducts.removal.openArchive') | transloco }}
+    </button>
+
+    @if (!showArchived()) {
     <button class="button button--primary" type="button"
       [attr.aria-expanded]="showProductTypePicker()" [disabled]="isCreatingDraft()"
       (click)="showProductTypePicker.set(!showProductTypePicker())">
       {{ 'adminProducts.create.addProduct' | transloco }}
     </button>
+    }
 
     @if (showProductTypePicker()) {
       <fieldset class="product-type-picker" [disabled]="isCreatingDraft()">
@@ -291,16 +303,13 @@
         @for (product of result.items; track product.id) {
         <tr>
           <td>
-            <a [routerLink]="[
-                '/',
-                transloco.getActiveLang(),
-                'admin',
-                'products',
-                product.id,
-                'edit'
-              ]">
+            @if (showArchived()) {
               {{ product.slug }}
-            </a>
+            } @else {
+              <a [routerLink]="['/', transloco.getActiveLang(), 'admin', 'products', product.id, 'edit']">
+                {{ product.slug }}
+              </a>
+            }
             <small>{{ product.productCode ?? product.id }}</small>
           </td>
 
@@ -313,7 +322,7 @@
               <strong [class.stock-empty]="product.stockQuantity === 0">
                 {{ 'adminProducts.stock.units' | transloco: { count: product.stockQuantity } }}
               </strong>
-              @if (product.productType === 'sweatshirt' || product.productType === 'tshirt') {
+              @if (!showArchived() && (product.productType === 'sweatshirt' || product.productType === 'tshirt')) {
                 <small>{{ 'adminProducts.stock.variantTotal' | transloco }}</small>
                 <button class="product-stock-toggle" type="button"
                   [attr.aria-expanded]="expandedStockProductId() === product.id"
@@ -329,13 +338,14 @@
           </td>
 
           <td>
-            {{
-            (
-            product.active
-            ? 'adminProducts.active'
-            : 'adminProducts.inactive'
-            ) | transloco
-            }}
+            @if (showArchived()) {
+              {{ 'adminProducts.removal.archivedStatus' | transloco }}
+            } @else {
+            @if (product.active && product.stockQuantity === 0) {
+              {{ 'adminProducts.outOfStock' | transloco }}
+            } @else {
+              {{ (product.active ? 'adminProducts.active' : 'adminProducts.inactive') | transloco }}
+            }
 
             <button class="product-visibility-button" type="button" [attr.data-product-id]="product.id" [disabled]="
                 isSaving() ||
@@ -350,6 +360,11 @@
               ) | transloco
               }}
             </button>
+            <button type="button" [disabled]="isSaving() || pendingProduct() !== null"
+              (click)="removeProduct(product)">
+              {{ 'adminProducts.removal.removeProduct' | transloco }}
+            </button>
+            }
           </td>
 
           <td>

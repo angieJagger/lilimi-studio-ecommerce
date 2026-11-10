@@ -129,6 +129,7 @@ export interface SaveProductRequest {
   readonly digitalPriceInGrosz: number | null;
   readonly physicalPriceInGrosz?: number;
   readonly stockQuantity?: number;
+  readonly shippingPackage?: ShippingPackage;
   readonly images: readonly ProductImageDraftRequest[];
 }
 

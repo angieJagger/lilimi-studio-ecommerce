@@ -145,6 +145,48 @@ describe('AdminProductEdit', () => {
     await fixture.whenStable();
   }
 
+  it('should edit package dimensions and weight together with the physical product', async () => {
+    const physical: AdminProductDetails = {
+      ...product,
+      productType: 'physical',
+      digitalPriceInGrosz: null,
+      stockQuantity: 4,
+      physicalConfiguration: {
+        category: 'Accessories',
+        priceInGrosz: 2900,
+        variantAttributes: [],
+        shippingPackage: { lengthCm: 12, widthCm: 6, heightCm: 2, weightKg: 0.08 },
+      },
+    };
+    await respond(physical);
+    expect(element.querySelector<HTMLInputElement>('#package-weightKg')!.value).toBe('0.08');
+
+    await fillField('package-lengthCm', '15.5');
+    await fillField('package-weightKg', '0.125');
+    await submitForm();
+
+    expect(api.saveProduct).toHaveBeenCalledWith(
+      product.id,
+      expect.objectContaining({
+        shippingPackage: { lengthCm: 15.5, widthCm: 6, heightCm: 2, weightKg: 0.125 },
+      }),
+      [],
+    );
+  });
+
+  it('should reject a negative package dimension before sending a request', async () => {
+    await respond({
+      ...product,
+      productType: 'physical',
+      digitalPriceInGrosz: null,
+      stockQuantity: 1,
+      physicalConfiguration: { category: null, priceInGrosz: 2900, variantAttributes: [] },
+    });
+    await fillField('package-lengthCm', '-1');
+    await submitForm();
+    expect(api.saveProduct).not.toHaveBeenCalled();
+  });
+
   it('should request the product from the route and show loading', () => {
     expect(api.getProduct).toHaveBeenCalledExactlyOnceWith(product.id);
     expect(element.querySelector('output')).not.toBeNull();

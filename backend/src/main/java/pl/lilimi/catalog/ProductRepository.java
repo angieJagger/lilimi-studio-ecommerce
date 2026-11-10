@@ -1,6 +1,8 @@
 package pl.lilimi.catalog;
 
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +14,8 @@ import java.util.Optional;
 
 
 public interface ProductRepository extends JpaRepository<Product, String> {
+
+  Page<Product> findAllByArchived(boolean archived, Pageable pageable);
 
   @Query(value = "SELECT nextval('digital_product_code_seq')", nativeQuery = true)
   long nextDigitalProductCodeNumber();
@@ -70,6 +74,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
         FROM products p
         WHERE p.active = TRUE
           AND p.product_type = 'physical'
+          AND p.stock_quantity > 0
           AND (p.physical_configuration::jsonb ->> 'priceInGrosz')::integer > 0
           AND p.id IN (:productIds)
         """, nativeQuery = true)

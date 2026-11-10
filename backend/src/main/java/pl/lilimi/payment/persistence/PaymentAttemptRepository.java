@@ -29,6 +29,11 @@ public interface PaymentAttemptRepository
     Collection<PaymentAttemptStatus> statuses
   );
 
+  boolean existsByOrderIdAndStatusIn(
+    UUID orderId,
+    Collection<PaymentAttemptStatus> statuses
+  );
+
   boolean existsByOrderIdAndStatus(
     UUID orderId,
     PaymentAttemptStatus status

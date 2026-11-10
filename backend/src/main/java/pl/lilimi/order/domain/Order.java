@@ -36,6 +36,9 @@ public class Order {
   @Column(name = "status", length = 32, nullable = false)
   private OrderStatus status;
 
+  @Column(name = "reservation_expiration_requested", nullable = false)
+  private boolean reservationExpirationRequested;
+
   @Column(name = "language", length = 2, nullable = false)
   private String language;
 
@@ -108,6 +111,14 @@ public class Order {
     if (createdAt == null) {
       createdAt = Instant.now();
     }
+  }
+
+  public boolean isReservationExpirationRequested() {
+    return reservationExpirationRequested;
+  }
+
+  public void requestReservationExpiration() {
+    reservationExpirationRequested = true;
   }
 
   public void changeStatus(OrderStatus nextStatus) {

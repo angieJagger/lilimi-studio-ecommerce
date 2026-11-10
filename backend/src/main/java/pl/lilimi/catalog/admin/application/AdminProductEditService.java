@@ -68,7 +68,7 @@ public class AdminProductEditService {
     @NotBlank String productId, @NotNull @Valid SaveProductRequest request,
     @NotNull List<MultipartFile> files
   ) {
-    var product = products.findById(productId).orElseThrow(() ->
+    var product = products.findByIdForUpdate(productId).filter(value -> !value.isArchived()).orElseThrow(() ->
       new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
     if (product.getVersion() != request.expectedVersion()) {
       throw new ProductVersionConflictException();
@@ -82,6 +82,9 @@ public class AdminProductEditService {
         throw invalid("Only physical products have a stock quantity");
       }
       product.changeStockQuantity(request.stockQuantity());
+      if (request.stockQuantity() == 0) {
+        product.changeVisibility(false);
+      }
     }
 
     if (request.physicalPriceInGrosz() != null) {
@@ -90,6 +93,15 @@ public class AdminProductEditService {
       }
       product.changePhysicalConfiguration(
         product.getPhysicalConfiguration().withPrice(request.physicalPriceInGrosz())
+      );
+    }
+
+    if (request.shippingPackage() != null) {
+      if (product.getProductType() != ProductType.PHYSICAL || product.getPhysicalConfiguration() == null) {
+        throw invalid("Only configured physical products have package dimensions");
+      }
+      product.changePhysicalConfiguration(
+        product.getPhysicalConfiguration().withShippingPackage(request.shippingPackage())
       );
     }
 

@@ -15,7 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pl.lilimi.DigitalPackageTestData;
 import pl.lilimi.PostgresTestConfiguration;
+import pl.lilimi.order.application.OrderStockReservationService;
 import pl.lilimi.order.persistence.OrderItemRepository;
+import pl.lilimi.payment.domain.PaymentAttempt;
+import pl.lilimi.payment.persistence.PaymentAttemptRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
@@ -24,10 +27,12 @@ import pl.lilimi.auth.persistence.UserAccountRepository;
 import tools.jackson.databind.json.JsonMapper;
 
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -58,6 +63,12 @@ class OrderControllerTest {
 
   @Autowired
   private JdbcTemplate jdbc;
+
+  @Autowired
+  private OrderStockReservationService stockReservations;
+
+  @Autowired
+  private PaymentAttemptRepository paymentAttempts;
 
   @BeforeEach
   void prepareDigitalPackage() {
@@ -355,22 +366,55 @@ class OrderControllerTest {
           """))
       .andExpect(status().isOk());
 
-    var product = mapper.readTree(mockMvc.perform(get(created.getHeader("Location"))
+    mockMvc.perform(get(created.getHeader("Location"))
         .with(user("admin@example.com").roles("ADMIN")))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.stockQuantity").value(120))
-      .andExpect(jsonPath("$.active").value(false))
-      .andReturn().getResponse().getContentAsString());
+      .andExpect(jsonPath("$.active").value(true));
 
-    mockMvc.perform(patch(created.getHeader("Location") + "/visibility")
-        .with(user("admin@example.com").roles("ADMIN"))
-        .with(csrf())
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
-          {"active": true, "expectedVersion": %d}
-          """.formatted(product.get("version").asLong())))
+    mockMvc.perform(get("/api/products/breloczek-testowy"))
       .andExpect(status().isOk());
 
+    var secondOrder = mockMvc.perform(post("/api/orders")
+        .with(csrf())
+        .header("Idempotency-Key", UUID.randomUUID().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(body))
+      .andExpect(status().isCreated())
+      .andReturn().getResponse();
+    var secondOrderId = UUID.fromString(mapper.readTree(secondOrder.getContentAsString()).get("id").asText());
+
+    var now = Instant.now();
+    var attempt = new PaymentAttempt(secondOrderId, UUID.randomUUID(), 300000, "PLN", false, now);
+    attempt.attachCheckoutSession("cs_test_stock_reservation", now.plusSeconds(1800));
+    attempt = paymentAttempts.saveAndFlush(attempt);
+
+    assertThat(orderRepository.findDueStockReservationOrderIds(now.minusSeconds(3600)))
+      .doesNotContain(secondOrderId);
+    assertThat(orderRepository.findDueStockReservationOrderIds(now)).contains(secondOrderId);
+
+    stockReservations.processDueOrder(secondOrderId, now);
+    orderRepository.flush();
+
+    var expiringOrder = orderRepository.findById(secondOrderId).orElseThrow();
+    assertThat(expiringOrder.getStatus().getValue()).isEqualTo("new");
+    assertThat(expiringOrder.isReservationExpirationRequested()).isTrue();
+    mockMvc.perform(get("/api/products/breloczek-testowy"))
+      .andExpect(status().isNotFound());
+
+    attempt.markExpired("cs_test_stock_reservation");
+    paymentAttempts.flush();
+    assertThat(orderRepository.findDueStockReservationOrderIds(now)).contains(secondOrderId);
+
+    stockReservations.processDueOrder(secondOrderId, now);
+    stockReservations.processDueOrder(secondOrderId, now);
+    orderRepository.flush();
+
+    assertThat(orderRepository.findDueStockReservationOrderIds(now)).doesNotContain(secondOrderId);
+    mockMvc.perform(get(created.getHeader("Location"))
+        .with(user("admin@example.com").roles("ADMIN")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.stockQuantity").value(120));
     mockMvc.perform(get("/api/products/breloczek-testowy"))
       .andExpect(status().isOk());
   }
@@ -482,6 +526,13 @@ class OrderControllerTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.maxQuantity").value(0));
 
+    var variantVersion = jdbc.queryForObject("SELECT version FROM garment_variants WHERE id = ?", Long.class, variantId);
+    mockMvc.perform(delete("/api/admin/products/embroidered-002/variants/{id}", variantId)
+        .param("expectedVersion", Long.toString(variantVersion))
+        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.archived").value(true));
+
     mockMvc.perform(patch("/api/admin/orders/" + orderId + "/status")
         .with(user("admin@example.com").roles("ADMIN"))
         .with(csrf())
@@ -493,8 +544,12 @@ class OrderControllerTest {
 
     mockMvc.perform(get("/api/products/embroidered-sweatshirt/quantity-check")
         .param("quantity", "3").param("variantId", variantId.toString()))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.maxQuantity").value(2));
+      .andExpect(status().isNotFound());
+    orderRepository.flush();
+    assertThat(jdbc.queryForObject(
+      "SELECT stock_quantity FROM garment_variants WHERE id = ? AND archived = true AND active = false",
+      Integer.class, variantId
+    )).isEqualTo(2);
   }
 
   @Test

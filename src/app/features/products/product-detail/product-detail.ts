@@ -1,5 +1,5 @@
-import { Component, computed, inject, linkedSignal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, linkedSignal, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ProductGallery } from './product-gallery';
@@ -12,6 +12,7 @@ import {
   catchError,
   combineLatest,
   distinctUntilChanged,
+  finalize,
   map,
   of,
   startWith,
@@ -38,6 +39,7 @@ export class ProductDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly transloco = inject(TranslocoService);
   private readonly cart = inject(CartService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly productApi = inject(ProductApiService);
   private readonly reloadRequests = new Subject<void>();
@@ -100,22 +102,72 @@ export class ProductDetail {
 
   protected readonly cartReady = () => this.cart.isReady();
 
-  protected readonly physicalAdded = linkedSignal({
+  protected readonly physicalFeedback = linkedSignal({
     source: () => this.product()?.id,
-    computation: (): boolean | null => null,
+    computation: (): { key: string; max?: number } | null => null,
   });
+  protected readonly isCheckingPhysicalStock = signal(false);
 
   protected addPhysical(event: SubmitEvent, form: HTMLFormElement): void {
     event.preventDefault();
     const product = this.product();
-    if (product?.category !== 'embroidered-products' || product.productType !== 'physical') {
+    if (
+      product?.category !== 'embroidered-products' ||
+      product.productType !== 'physical' ||
+      !this.cartReady() ||
+      this.isCheckingPhysicalStock()
+    ) {
       return;
     }
 
     const options = Object.fromEntries(
       Array.from(new FormData(form), ([name, value]) => [name, String(value)]),
     );
-    this.physicalAdded.set(this.cart.addPhysical(product, options));
+    // Options share a single stock count for this product.
+    const quantityInCart = () =>
+      this.cart.physicalItems()
+        .filter((item) => item.productId === product.id)
+        .reduce((total, item) => total + item.quantity, 0);
+
+    const requested = quantityInCart() + 1;
+    this.physicalFeedback.set(null);
+    this.isCheckingPhysicalStock.set(true);
+    this.productApi.checkQuantity(product.slug, requested).pipe(
+      timeout(10_000),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.isCheckingPhysicalStock.set(false)),
+    ).subscribe({
+      next: (limit) => {
+        if (this.product() !== product) return;
+
+        if (limit) {
+          this.physicalFeedback.set({
+            key: limit.maxQuantity === 0 ? 'cart.stockUnavailable' : 'cart.stockLimit',
+            max: limit.maxQuantity,
+          });
+          return;
+        }
+
+        if (quantityInCart() + 1 > requested) {
+          this.physicalFeedback.set({ key: 'cart.stockCheckFailed' });
+          return;
+        }
+
+        const added = this.cart.addPhysical(product, options);
+        this.physicalFeedback.set({
+          key: added ? 'productDetail.physicalAdded' : 'productDetail.physicalAddFailed',
+        });
+      },
+      error: (error: unknown) => {
+        if (this.product() !== product) return;
+
+        this.physicalFeedback.set({
+          key: error instanceof HttpErrorResponse && error.status === 404
+            ? 'cart.stockUnavailable'
+            : 'cart.stockCheckFailed',
+        });
+      },
+    });
   }
 
   protected addToCart(): void {

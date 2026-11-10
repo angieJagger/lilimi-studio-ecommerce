@@ -72,7 +72,10 @@ public class AdminGarmentVariantQueryService {
 
     Specification<GarmentVariant> specification =
       (root, query, builder) ->
-        builder.equal(root.get("productId"), productId);
+        builder.and(
+          builder.equal(root.get("productId"), productId),
+          builder.isFalse(root.get("archived"))
+        );
 
     if (fit != null && !fit.isBlank()) {
       specification = specification.and(
@@ -119,7 +122,7 @@ public class AdminGarmentVariantQueryService {
   }
 
   private void requireGarmentProduct(String productId) {
-    var product = products.findById(productId)
+    var product = products.findById(productId).filter(value -> !value.isArchived())
       .orElseThrow(() -> new ResponseStatusException(
         HttpStatus.NOT_FOUND,
         "Product not found"

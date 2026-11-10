@@ -59,7 +59,7 @@
               @for (attribute of currentProduct.variantAttributes ?? []; track attribute.name) {
                 <label class="form-field">
                   {{ attribute.name }}
-                  <select [name]="attribute.name" required (change)="physicalAdded.set(null)">
+                  <select [name]="attribute.name" required [disabled]="isCheckingPhysicalStock()" (change)="physicalFeedback.set(null)">
                     <option value="" disabled selected>{{ 'productDetail.chooseVariantValue' | transloco }}</option>
                     @for (value of attribute.values; track value) {
                       <option [value]="value">{{ value }}</option>
@@ -67,14 +67,12 @@
                   </select>
                 </label>
               }
-              <button class="button button--primary" type="submit" [disabled]="!cartReady()">
+              <button class="button button--primary" type="submit" [disabled]="!cartReady() || isCheckingPhysicalStock()">
                 {{ 'productDetail.addToCart' | transloco }}
               </button>
               <output>
-                @if (physicalAdded() === true) {
-                  {{ 'productDetail.physicalAdded' | transloco }}
-                } @else if (physicalAdded() === false) {
-                  {{ 'productDetail.physicalAddFailed' | transloco }}
+                @if (physicalFeedback(); as feedback) {
+                  {{ feedback.key | transloco: { max: feedback.max } }}
                 }
               </output>
             </form>

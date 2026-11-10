@@ -19,7 +19,7 @@ import {
   takeUntil,
 } from 'rxjs';
 import { AdminProductApiService } from './admin-product-api.service';
-import type { AdminProductDetails } from './admin-product.model';
+import type { AdminProductDetails, ShippingPackage } from './admin-product.model';
 import { AdminProductImages } from './admin-product-images';
 import { AdminDigitalProductPackages } from './admin-digital-product-packages';
 
@@ -151,6 +151,13 @@ export class AdminProductEdit {
     }
   });
 
+  protected readonly shippingFields = [
+    { key: 'lengthCm', label: 'packageLength' },
+    { key: 'widthCm', label: 'packageWidth' },
+    { key: 'heightCm', label: 'packageHeight' },
+    { key: 'weightKg', label: 'packageWeight' },
+  ] as const;
+
   protected readonly translationGroups = [
     {
       language: 'pl',
@@ -235,6 +242,28 @@ export class AdminProductEdit {
       return;
     }
 
+    const shippingInputs = this.shippingFields.map(({ key }) =>
+      form.elements.namedItem(key) as HTMLInputElement | null,
+    );
+    const invalidShippingInput = shippingInputs.find((input) => input && !input.validity.valid);
+    if (invalidShippingInput) {
+      this.saveErrorKey.set('adminProducts.edit.errors.invalidRequest');
+      invalidShippingInput.focus();
+      return;
+    }
+    const shippingValue = (key: keyof ShippingPackage): number | null => {
+      const input = form.elements.namedItem(key) as HTMLInputElement | null;
+      return input?.value ? input.valueAsNumber : null;
+    };
+    const shippingPackage: ShippingPackage | undefined = product.productType === 'physical'
+      ? {
+          lengthCm: shippingValue('lengthCm'),
+          widthCm: shippingValue('widthCm'),
+          heightCm: shippingValue('heightCm'),
+          weightKg: shippingValue('weightKg'),
+        }
+      : undefined;
+
     const changes = editor.buildChanges();
     if (!changes) return;
     const model = this.translationsModel();
@@ -249,6 +278,7 @@ export class AdminProductEdit {
           digitalPriceInGrosz: product.productType === 'digital' ? price : null,
           ...(product.productType === 'physical' && price !== null ? { physicalPriceInGrosz: price } : {}),
           ...(stockQuantity !== undefined ? { stockQuantity } : {}),
+          ...(shippingPackage !== undefined ? { shippingPackage } : {}),
           images: changes.images,
         },
         changes.files,

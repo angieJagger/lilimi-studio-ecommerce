@@ -12,7 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CurrencyPipe } from '@angular/common';
 import { form, FormField, required, validate } from '@angular/forms/signals';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { AdminProductApiService } from './admin-product-api.service';
 import type {
@@ -33,6 +33,8 @@ export class AdminProductVariants {
   readonly readOnly = input(false);
 
   private readonly api = inject(AdminProductApiService);
+  private readonly transloco = inject(TranslocoService);
+  protected readonly removalMessage = signal<string | null>(null);
   private readonly destroyRef = inject(DestroyRef);
 
   private requestedPage = 0;
@@ -312,6 +314,46 @@ export class AdminProductVariants {
           this.saveErrorKey.set(this.getSaveErrorKey(error));
         },
       });
+  }
+
+  protected removeVariant(variant: AdminGarmentVariant): void {
+    if (this.readOnly() || this.isLoading() || this.isSaving() || this.saveErrorKey()) return;
+
+    const message = this.transloco.translate('adminProducts.removal.confirmVariant', {
+      fit: this.transloco.translate('adminProducts.variants.fits.' + variant.fit),
+      size: variant.size,
+      color: this.transloco.translate('adminProducts.variants.colors.' + variant.color),
+      pattern: variant.patternId,
+      option: variant.embroideryOptionId,
+    });
+    if (!globalThis.confirm(message)) return;
+
+    const productId = this.productId();
+    this.removalMessage.set(null);
+    this.isSaving.set(true);
+    this.api.removeVariant(productId, variant.id, variant.version).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.isSaving.set(false)),
+    ).subscribe({
+      next: ({ archived }) => {
+        if (this.productId() !== productId) return;
+
+        this.selectedVariant.set(null);
+        this.removalMessage.set(archived ? 'adminProducts.removal.archived' : 'adminProducts.removal.deleted');
+        const page = this.variants();
+        const targetPage = page?.items.length === 1 ? Math.max(0, page.page - 1) : this.requestedPage;
+        this.loadPage(targetPage);
+      },
+      error: (error: unknown) => {
+        if (this.productId() !== productId) return;
+
+        this.saveErrorKey.set(
+          error instanceof HttpErrorResponse && [401, 403, 404, 409].includes(error.status)
+            ? this.getSaveErrorKey(error)
+            : 'adminProducts.removal.failed',
+        );
+      },
+    });
   }
 
   private parsePrice(input: string): number | null {

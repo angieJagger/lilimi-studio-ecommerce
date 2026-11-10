@@ -80,7 +80,7 @@ public class AdminDigitalProductPackageService {
     String productId,
     ValidatedDigitalProductPackage validated
   ) {
-    var product = products.findByIdForUpdate(productId)
+    var product = products.findByIdForUpdate(productId).filter(value -> !value.isArchived())
       .orElseThrow(() -> new ResponseStatusException(
         HttpStatus.NOT_FOUND,
         "Product not found"

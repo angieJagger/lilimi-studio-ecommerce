@@ -115,7 +115,7 @@ public class AdminProductCreationService {
     }
 
     edits.save(product.getId(), new SaveProductRequest(
-      product.getVersion(), request.pl(), request.en(), request.digitalPriceInGrosz(), null, null, imageRequests
+      product.getVersion(), request.pl(), request.en(), request.digitalPriceInGrosz(), null, null, null, imageRequests
     ), images);
     if (digital) {
       packages.upload(product.getId(), digitalPackage);

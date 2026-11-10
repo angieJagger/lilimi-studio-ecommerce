@@ -31,6 +31,10 @@ public record PhysicalDraftConfiguration(
     return new PhysicalDraftConfiguration(category, priceInGrosz, variantAttributes, shippingPackage);
   }
 
+  public PhysicalDraftConfiguration withShippingPackage(ShippingPackage shippingPackage) {
+    return new PhysicalDraftConfiguration(category, priceInGrosz, variantAttributes, shippingPackage);
+  }
+
   public record VariantAttribute(
     @NotBlank @Size(max = 60) String name,
     @NotNull @Size(min = 1, max = 20) List<@NotBlank @Size(max = 60) String> values

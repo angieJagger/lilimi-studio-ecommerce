@@ -28,6 +28,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -78,6 +79,25 @@ class AdminProductControllerTest {
 
     mockMvc.perform(get("/api/products/wzor-haftu-laka"))
       .andExpect(status().isOk());
+
+    String location = result.getResponse().getHeader("Location");
+    String productId = location.substring(location.lastIndexOf('/') + 1);
+    String version = Long.toString(products.findById(productId).orElseThrow().getVersion());
+
+    mockMvc.perform(delete(location).param("expectedVersion", version)
+        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.archived").value(true));
+
+    mockMvc.perform(get("/api/products/wzor-haftu-laka"))
+      .andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/admin/products").param("archived", "true")
+        .with(user("admin@example.com").roles("ADMIN")))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.items[*].id").value(hasItem(productId)));
+    org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
+      "SELECT COUNT(*) FROM digital_product_packages WHERE product_id = ?", Long.class, productId
+    )).isEqualTo(1L);
   }
 
   @Test
@@ -165,6 +185,17 @@ class AdminProductControllerTest {
       )
       .andExpect(status().isConflict())
       .andExpect(jsonPath("$.code").value("PHYSICAL_PRODUCT_NOT_PUBLISHABLE"));
+
+    mockMvc.perform(delete(location).param("expectedVersion", Long.toString(version))
+        .with(user("admin@example.com").roles("ADMIN")))
+      .andExpect(status().isForbidden());
+
+    mockMvc.perform(delete(location).param("expectedVersion", Long.toString(version))
+        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.archived").value(false));
+    mockMvc.perform(get(location).with(user("admin@example.com").roles("ADMIN")))
+      .andExpect(status().isNotFound());
   }
 
   @Test

@@ -65,6 +65,34 @@ class AdminProductEditControllerTest {
   }
 
   @Test
+  void shouldSavePhysicalPackageDimensionsWithOtherProductChanges() throws Exception {
+    jdbc.update("DELETE FROM digital_product_prices WHERE product_id = ?", productId);
+    jdbc.update("""
+      UPDATE products SET product_type = 'physical', stock_quantity = 4,
+        physical_configuration = '{"category":"Accessories","priceInGrosz":2900,"variantAttributes":[]}'
+      WHERE id = ?
+      """, productId);
+
+    var request = new SaveProductRequest(0L,
+      new UpdateProductTranslationRequest("Updated PL", "Updated description"),
+      new UpdateProductTranslationRequest("Updated EN", "Updated description"),
+      null, 2900, 4,
+      new PhysicalDraftConfiguration.ShippingPackage(
+        new java.math.BigDecimal("15.5"), new java.math.BigDecimal("6"),
+        new java.math.BigDecimal("2"), new java.math.BigDecimal("0.125")
+      ),
+      List.of(item(imageId, null, true)));
+    var metadata = new MockMultipartFile(
+      "metadata", "", "application/json", json.writeValueAsBytes(request));
+
+    mvc.perform(multipart("/api/admin/products/{id}/edit", productId).file(metadata)
+        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.product.physicalConfiguration.shippingPackage.lengthCm").value(15.5))
+      .andExpect(jsonPath("$.product.physicalConfiguration.shippingPackage.weightKg").value(0.125));
+  }
+
+  @Test
   void shouldSaveTranslationsAndPriceOnFirstDraftEdit() throws Exception {
     jdbc.update("DELETE FROM product_images WHERE product_id = ?", productId);
     jdbc.update("DELETE FROM digital_product_prices WHERE product_id = ?", productId);
@@ -169,7 +197,7 @@ class AdminProductEditControllerTest {
   private MockMultipartFile metadata(List<SaveProductImageRequest> manifest, long version) {
     var request = new SaveProductRequest(version,
       new UpdateProductTranslationRequest("Updated PL", "Updated description"),
-      new UpdateProductTranslationRequest("Updated EN", "Updated description"), 3550, null, null, manifest);
+      new UpdateProductTranslationRequest("Updated EN", "Updated description"), 3550, null, null, null, manifest);
     return new MockMultipartFile("metadata", "", "application/json", json.writeValueAsBytes(request));
   }
   private MockMultipartFile image() throws Exception {

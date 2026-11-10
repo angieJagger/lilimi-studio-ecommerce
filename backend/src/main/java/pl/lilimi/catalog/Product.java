@@ -51,6 +51,9 @@ public class Product {
   @Column(name = "active", nullable = false)
   private boolean active;
 
+  @Column(name = "archived", nullable = false)
+  private boolean archived;
+
   @Column(name = "made_to_order", nullable = false)
   private boolean madeToOrder;
 
@@ -104,9 +107,15 @@ public class Product {
     }
 
     stockQuantity = quantity;
-    if (quantity == 0) {
-      active = false;
-    }
+  }
+
+  public boolean isArchived() {
+    return archived;
+  }
+
+  public void archive() {
+    active = false;
+    archived = true;
   }
 
   public void changeVisibility(boolean active) {

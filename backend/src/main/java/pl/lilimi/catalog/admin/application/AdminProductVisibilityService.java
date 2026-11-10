@@ -51,7 +51,7 @@ public class AdminProductVisibilityService {
     @NotBlank String id,
     @NotNull @Valid ChangeProductVisibilityRequest request
   ) {
-    var product = repository.findById(id)
+    var product = repository.findByIdForUpdate(id).filter(value -> !value.isArchived())
       .orElseThrow(() -> new ResponseStatusException(
         HttpStatus.NOT_FOUND,
         "Product not found"

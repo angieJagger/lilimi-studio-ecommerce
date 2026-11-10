@@ -31,7 +31,7 @@ public interface GarmentVariantRepository
       variant.patternId as patternId,
       variant.embroideryOptionId as embroideryOptionId
     from GarmentVariant variant
-    where variant.productId = :productId
+    where variant.productId = :productId and variant.archived = false
     order by variant.patternId, variant.embroideryOptionId
     """)
   List<EmbroiderySelection> findEmbroiderySelectionsByProductId(

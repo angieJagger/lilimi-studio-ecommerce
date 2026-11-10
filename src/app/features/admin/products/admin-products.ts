@@ -36,6 +36,8 @@ export class AdminProducts {
   protected readonly isLoading = signal(false);
   protected readonly errorKey = signal<string | null>(null);
   protected readonly isSaving = signal(false);
+  protected readonly showArchived = signal(false);
+  protected readonly removalMessage = signal<string | null>(null);
   protected readonly pendingProduct = signal<AdminProductSummary | null>(null);
   protected readonly visibilityErrorKey = signal<string | null>(null);
   protected readonly showProductTypePicker = signal(false);
@@ -293,6 +295,44 @@ export class AdminProducts {
       });
   }
 
+  protected toggleArchive(): void {
+    if (this.isLoading() || this.isSaving() || this.isCreatingDraft()) return;
+
+    this.showArchived.update((archived) => !archived);
+    this.showProductTypePicker.set(false);
+    this.removalMessage.set(null);
+    this.loadPage(0);
+  }
+
+  protected removeProduct(product: AdminProductSummary): void {
+    if (this.isLoading() || this.isSaving() || this.pendingProduct() || this.showArchived()) return;
+
+    const message = this.transloco.translate('adminProducts.removal.confirmProduct', { name: product.slug });
+    if (!globalThis.confirm(message)) return;
+
+    this.removalMessage.set(null);
+    this.isSaving.set(true);
+    this.api.removeProduct(product.id, product.version).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.isSaving.set(false)),
+    ).subscribe({
+      next: ({ archived }) => {
+        this.removalMessage.set(archived ? 'adminProducts.removal.archived' : 'adminProducts.removal.deleted');
+        const page = this.products();
+        const targetPage = page && page.items.length === 1 ? Math.max(0, page.page - 1) : this.requestedPage;
+        this.isSaving.set(false);
+        this.loadPage(targetPage);
+      },
+      error: (error: unknown) => {
+        this.visibilityErrorKey.set(
+          error instanceof HttpErrorResponse && [401, 403, 409].includes(error.status)
+            ? this.getVisibilityErrorKey(error)
+            : 'adminProducts.removal.failed',
+        );
+      },
+    });
+  }
+
   protected previousPage(): void {
     const page = this.products();
 
@@ -325,9 +365,8 @@ export class AdminProducts {
     this.pendingProduct.set(null);
     this.visibilityErrorKey.set(null);
 
-    this.api
-      .getProducts(page)
-      .pipe(
+    const request = this.showArchived() ? this.api.getProducts(page, 20, true) : this.api.getProducts(page);
+    request.pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.isLoading.set(false)),
       )

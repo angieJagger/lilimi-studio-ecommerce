@@ -14,6 +14,8 @@ public class PublicFormRateLimiter {
   private static final int REGISTRATION_ATTEMPTS = 10;
   private static final Duration REGISTRATION_WINDOW =
     Duration.ofHours(1);
+  private static final int ORDER_REQUEST_ATTEMPTS = 60;
+  private static final Duration ORDER_REQUEST_WINDOW = Duration.ofMinutes(15);
   private static final int ORDER_ATTEMPTS = 10;
   private static final Duration ORDER_WINDOW =
     Duration.ofMinutes(15);
@@ -52,6 +54,10 @@ public class PublicFormRateLimiter {
       REGISTRATION_ATTEMPTS,
       REGISTRATION_WINDOW
     );
+  }
+
+  public long reserveOrderRequest(String source) {
+    return limiter.reserve("order-request-source", source, ORDER_REQUEST_ATTEMPTS, ORDER_REQUEST_WINDOW);
   }
 
   public long reserveOrder(String source) {

@@ -42,7 +42,7 @@ public class AdminProductQueryService {
   }
 
   @Transactional(readOnly = true)
-  public Page<AdminProductSummaryResponse> findProducts(int page, int size) {
+  public Page<AdminProductSummaryResponse> findProducts(int page, int size, boolean archived) {
     if (page < 0 || size < 1 || size > 100) {
       throw new IllegalArgumentException(
         "Page must be non-negative and size must be between 1 and 100"
@@ -55,7 +55,7 @@ public class AdminProductQueryService {
       Sort.by(Sort.Direction.ASC, "id")
     );
 
-    var products = repository.findAll(pageable);
+    var products = repository.findAllByArchived(archived, pageable);
     var garmentIds = products.stream().filter(this::hasGarmentVariants).map(Product::getId).toList();
     if (garmentIds.isEmpty()) {
       return products.map(AdminProductSummaryResponse::from);
@@ -85,7 +85,7 @@ public class AdminProductQueryService {
 
   @Transactional(readOnly = true)
   public AdminProductDetailsResponse findProduct(String id) {
-    var product = repository.findById(id)
+    var product = repository.findById(id).filter(value -> !value.isArchived())
       .orElseThrow(() -> new ResponseStatusException(
         HttpStatus.NOT_FOUND,
         "Product not found"

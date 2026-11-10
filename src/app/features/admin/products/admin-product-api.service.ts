@@ -61,8 +61,9 @@ export class AdminProductApiService {
     );
   }
 
-  getProducts(page = 0, size = 20): Observable<AdminProductPage> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  getProducts(page = 0, size = 20, archived = false): Observable<AdminProductPage> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (archived) params = params.set('archived', true);
 
     return this.http.get<AdminProductPage>(`${this.baseUrl}/admin/products`, { params });
   }
@@ -169,6 +170,21 @@ export class AdminProductApiService {
           ),
         ),
       );
+  }
+
+  removeProduct(id: string, expectedVersion: number): Observable<{ archived: boolean }> {
+    return this.remove(`${this.baseUrl}/admin/products/${encodeURIComponent(id)}`, expectedVersion);
+  }
+
+  removeVariant(productId: string, variantId: string, expectedVersion: number): Observable<{ archived: boolean }> {
+    const url = `${this.baseUrl}/admin/products/${encodeURIComponent(productId)}/variants/${encodeURIComponent(variantId)}`;
+    return this.remove(url, expectedVersion);
+  }
+
+  private remove(url: string, expectedVersion: number): Observable<{ archived: boolean }> {
+    return this.csrf.initialize().pipe(
+      switchMap(() => this.http.delete<{ archived: boolean }>(url, { params: { expectedVersion } })),
+    );
   }
 
   changeVisibility(

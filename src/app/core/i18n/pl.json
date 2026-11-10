@@ -373,6 +373,18 @@
     "remove": "Usuń"
   },
   "adminProducts": {
+    "removal": {
+      "openArchive": "Archiwum produktów",
+      "backToProducts": "Wróć do produktów",
+      "archivedStatus": "W archiwum",
+      "removeProduct": "Usuń produkt",
+      "removeVariant": "Usuń wariant",
+      "confirmProduct": "Usunąć produkt „{{ name }}” z oferty? Jeśli jest powiązany z innymi danymi, trafi do archiwum.",
+      "confirmVariant": "Usunąć wariant {{ fit }} · {{ size }} · {{ color }} · {{ pattern }} · {{ option }}? Jeśli występuje w zamówieniu, trafi do archiwum.",
+      "archived": "Pozycja została przeniesiona do archiwum.",
+      "deleted": "Pozycja została trwale usunięta.",
+      "failed": "Nie udało się usunąć pozycji. Odśwież listę i spróbuj ponownie."
+    },
     "stock": {
       "title": "Stan magazynowy",
       "units": "{{ count }} szt.",
@@ -394,6 +406,7 @@
     "madeToOrder": "Na zamówienie",
     "personalization": "Personalizacja",
     "active": "Widoczny",
+    "outOfStock": "Wyprzedany",
     "inactive": "Ukryty",
     "yes": "Tak",
     "no": "Nie",

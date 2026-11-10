@@ -20,6 +20,7 @@ describe('AdminProducts', () => {
   const api = {
     getProducts: vi.fn(),
     changeVisibility: vi.fn(),
+    removeProduct: vi.fn(),
     createProduct: vi.fn(),
     getVariants: vi.fn(),
     getEmbroiderySelections: vi.fn(),
@@ -49,6 +50,7 @@ describe('AdminProducts', () => {
     visibilityResult = new Subject<AdminProductSummary>();
 
     api.createProduct.mockReset();
+    api.removeProduct.mockReset();
     api.getProducts.mockReset();
     api.getProducts.mockReturnValue(result.asObservable());
     api.changeVisibility.mockReset();
@@ -76,6 +78,30 @@ describe('AdminProducts', () => {
     result = new Subject<AdminProductPage>();
     api.getProducts.mockReturnValue(result.asObservable());
   }
+
+  it('should ask for confirmation before removing a product', async () => {
+    await respond(page);
+    const confirm = vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+    api.removeProduct.mockReturnValue(of({ archived: true }));
+
+    try {
+      const button = Array.from(element.querySelectorAll('button'))
+        .find((candidate) => candidate.textContent?.includes('Usuń produkt'))!;
+
+      button.click();
+      expect(confirm).toHaveBeenCalledWith(expect.stringContaining('forest-dragon'));
+      expect(api.removeProduct).not.toHaveBeenCalled();
+
+      confirm.mockReturnValue(true);
+      prepareNextResponse();
+      button.click();
+      expect(api.removeProduct).toHaveBeenCalledExactlyOnceWith('pattern-001', 0);
+      await respond({ ...page, items: [] });
+      expect(element.textContent).toContain('Pozycja została przeniesiona do archiwum.');
+    } finally {
+      confirm.mockRestore();
+    }
+  });
 
     it('should publish a digital product and open its editor', async () => {
       const draft = {

@@ -19,6 +19,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,6 +38,21 @@ class AdminGarmentVariantUpdateControllerTest {
 
   @Autowired
   private EntityManager entityManager;
+
+  @Test
+  void shouldDeleteOnlyTheSelectedVariantWithoutOrderHistory() throws Exception {
+    var variant = firstVariant();
+    long countBefore = variants.count();
+
+    mockMvc.perform(delete("/api/admin/products/embroidered-002/variants/{id}", variant.getId())
+        .param("expectedVersion", Long.toString(variant.getVersion()))
+        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.archived").value(false));
+
+    assertThat(variants.findById(variant.getId())).isEmpty();
+    assertThat(variants.count()).isEqualTo(countBefore - 1);
+  }
 
   @Test
   void shouldSavePriceAndVisibilityAndIncreaseVersion()

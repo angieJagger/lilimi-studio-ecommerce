@@ -370,6 +370,18 @@
     "remove": "Remove"
   },
   "adminProducts": {
+    "removal": {
+      "openArchive": "Product archive",
+      "backToProducts": "Back to products",
+      "archivedStatus": "Archived",
+      "removeProduct": "Remove product",
+      "removeVariant": "Remove variant",
+      "confirmProduct": "Remove “{{ name }}” from the shop? If linked to other records, it will be archived.",
+      "confirmVariant": "Remove variant {{ fit }} · {{ size }} · {{ color }} · {{ pattern }} · {{ option }}? If it appears in an order, it will be archived.",
+      "archived": "The entry was moved to the archive.",
+      "deleted": "The entry was permanently deleted.",
+      "failed": "Could not remove the entry. Reload the list and try again."
+    },
     "stock": {
       "title": "Stock",
       "units": "{{ count }} in stock",
@@ -391,6 +403,7 @@
     "madeToOrder": "Made to order",
     "personalization": "Personalization",
     "active": "Visible",
+    "outOfStock": "Sold out",
     "inactive": "Hidden",
     "yes": "Yes",
     "no": "No",

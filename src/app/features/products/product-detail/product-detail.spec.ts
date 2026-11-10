@@ -9,6 +9,7 @@ import { of, throwError } from 'rxjs';
 import { ProductApiService } from '../product-api.service';
 import type { ProductApiResponse } from '../product-api.model';
 import { vi } from 'vitest';
+import { CartService } from '../../cart/cart.service';
 import { provideProductCatalogTesting } from '../../../testing/product-catalog-testing';
 import { testSweatshirtVariants } from '../../../testing/sweatshirt-variants-testing';
 
@@ -81,6 +82,7 @@ describe('ProductDetail', () => {
           useValue: {
             getProducts: () => of([...apiProducts, relatedPattern]),
             getVariants: vi.fn(() => of(testSweatshirtVariants)),
+            checkQuantity: vi.fn(() => of(null)),
             getProduct: (slug: string) => {
               const product = apiProducts.find((item) => item.slug === slug);
 
@@ -127,6 +129,40 @@ describe('ProductDetail', () => {
 
     expect(harness.routeNativeElement?.querySelector('app-sweatshirt-configurator')).not.toBeNull();
     expect(api.getVariants).toHaveBeenCalledExactlyOnceWith(sweatshirt.slug);
+  });
+
+  it('should enforce shared stock when adding different options to the cart', async () => {
+    const api = TestBed.inject(ProductApiService);
+    const cart = TestBed.inject(CartService);
+    const keyring: ProductApiResponse = {
+      ...apiProducts[1]!,
+      id: 'stock-test-keyring',
+      slug: 'stock-test-keyring',
+      productType: 'physical',
+      priceType: 'fixed',
+      variantAttributes: [{ name: 'Color', values: ['Green', 'Black'] }],
+    };
+    vi.spyOn(api, 'getProduct').mockReturnValueOnce(of(keyring));
+    const checkQuantity = vi.mocked(api.checkQuantity)
+      .mockReturnValueOnce(of(null))
+      .mockReturnValueOnce(of({ maxQuantity: 1 }));
+
+    await harness.navigateByUrl('/pl/products/stock-test-keyring', ProductDetail);
+    await harness.fixture.whenStable();
+
+    const form = harness.routeNativeElement!.querySelector('form')!;
+    const select = form.querySelector('select')!;
+    select.value = 'Green';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    select.value = 'Black';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    harness.detectChanges();
+
+    expect(checkQuantity.mock.calls).toEqual([[keyring.slug, 1], [keyring.slug, 2]]);
+    const items = cart.physicalItems().filter((item) => item.productId === keyring.id);
+    expect(items).toMatchObject([{ options: { Color: 'Green' }, quantity: 1 }]);
+    expect(form.querySelector('output')?.textContent).toContain('maksymalnie 1');
+    cart.clear();
   });
 
   it('should update the product when the slug changes', async () => {

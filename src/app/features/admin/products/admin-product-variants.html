@@ -3,6 +3,10 @@
     {{ 'adminProducts.variants.title' | transloco }}
   </h2>
 
+  @if (removalMessage(); as message) {
+    <output>{{ message | transloco }}</output>
+  }
+
     <div class="variants__field">
       <label for="variant-fit-filter">
         {{ 'adminProducts.variants.fit' | transloco }}
@@ -123,6 +127,9 @@
           }}
         </button>
 
+        <button type="button" (click)="removeVariant(variant)">
+          {{ 'adminProducts.removal.removeVariant' | transloco }}
+        </button>
         <button type="button" (click)="cancelEdit()">
           {{ 'adminProducts.variants.cancel' | transloco }}
         </button>
@@ -323,6 +330,10 @@
             <td>
               <button type="button" [disabled]="isSaving() || selectedVariant() !== null" (click)="editVariant(variant)">
                 {{ 'adminProducts.variants.edit' | transloco }}
+              </button>
+              <button type="button" [disabled]="isSaving() || selectedVariant() !== null"
+                (click)="removeVariant(variant)">
+                {{ 'adminProducts.removal.removeVariant' | transloco }}
               </button>
             </td>
           }

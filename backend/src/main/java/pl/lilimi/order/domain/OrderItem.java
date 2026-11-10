@@ -201,6 +201,10 @@ public class OrderItem {
     return reservedVariantId;
   }
 
+  public void markStockReleased() {
+    stockReserved = false;
+  }
+
   public boolean isStockReserved() {
     return stockReserved;
   }

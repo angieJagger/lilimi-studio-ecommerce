@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import pl.lilimi.catalog.admin.application.AdminCatalogRemovalService;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,7 @@ public class AdminProductController {
   private final AdminProductPriceService priceService;
   private final AdminProductEditService editService;
   private final AdminProductCreationService creationService;
+  private final AdminCatalogRemovalService removalService;
 
   public AdminProductController(
     AdminProductQueryService queryService,
@@ -44,7 +47,8 @@ public class AdminProductController {
     AdminProductTranslationService translationService,
     AdminProductPriceService priceService,
     AdminProductEditService editService,
-    AdminProductCreationService creationService
+    AdminProductCreationService creationService,
+    AdminCatalogRemovalService removalService
   ) {
     this.queryService = queryService;
     this.visibilityService = visibilityService;
@@ -52,6 +56,7 @@ public class AdminProductController {
     this.priceService = priceService;
     this.editService = editService;
     this.creationService = creationService;
+    this.removalService = removalService;
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -66,13 +71,22 @@ public class AdminProductController {
       .body(product);
   }
 
+  @DeleteMapping("/{id}")
+  public AdminCatalogRemovalService.Result removeProduct(
+    @PathVariable String id,
+    @RequestParam @Min(0) long expectedVersion
+  ) {
+    return removalService.removeProduct(id, expectedVersion);
+  }
+
   @GetMapping
   public AdminProductPageResponse findProducts(
     @RequestParam(defaultValue = "0") @Min(0) int page,
-    @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+    @RequestParam(defaultValue = "false") boolean archived
   ) {
     return AdminProductPageResponse.from(
-      queryService.findProducts(page, size)
+      queryService.findProducts(page, size, archived)
     );
   }
 
