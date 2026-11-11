@@ -19,13 +19,13 @@ describe('AuthSessionService', () => {
   };
 
   const api = {
-    getCurrentUser: vi.fn(),
+    getSession: vi.fn(),
     login: vi.fn(),
     logout: vi.fn(),
   };
 
   beforeEach(() => {
-    api.getCurrentUser.mockReset();
+    api.getSession.mockReset();
     api.login.mockReset();
     api.logout.mockReset();
 
@@ -37,12 +37,12 @@ describe('AuthSessionService', () => {
   });
 
   function restoreAdminSession(): void {
-    api.getCurrentUser.mockReturnValue(of(admin));
+    api.getSession.mockReturnValue(of(admin));
     service.refresh().subscribe();
   }
 
   it('should update the current customer name and trim whitespace', () => {
-    api.getCurrentUser.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    api.getSession.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
     service.refresh().subscribe();
 
     service.updateCustomerName(customer.email, '  Maria  ');
@@ -54,7 +54,7 @@ describe('AuthSessionService', () => {
   });
 
   it('should clear the customer name when it is empty', () => {
-    api.getCurrentUser.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    api.getSession.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
     service.refresh().subscribe();
 
     service.updateCustomerName(customer.email, '   ');
@@ -64,7 +64,7 @@ describe('AuthSessionService', () => {
   });
 
   it('should ignore a profile belonging to another customer', () => {
-    api.getCurrentUser.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    api.getSession.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
     service.refresh().subscribe();
 
     service.updateCustomerName('another@example.com', 'Maria');
@@ -96,13 +96,13 @@ describe('AuthSessionService', () => {
   it('should restore an administrator session', () => {
     let result: CurrentUser | null | undefined;
 
-    api.getCurrentUser.mockReturnValue(of(admin));
+    api.getSession.mockReturnValue(of(admin));
 
     service.refresh().subscribe((user) => {
       result = user;
     });
 
-    expect(api.getCurrentUser).toHaveBeenCalledOnce();
+    expect(api.getSession).toHaveBeenCalledOnce();
     expect(result).toEqual(admin);
     expect(service.user()).toEqual(admin);
     expect(service.isAuthenticated()).toBe(true);
@@ -110,7 +110,7 @@ describe('AuthSessionService', () => {
   });
 
   it('should recognize a customer without administrator access', () => {
-    api.getCurrentUser.mockReturnValue(of(customer));
+    api.getSession.mockReturnValue(of(customer));
 
     service.refresh().subscribe();
 
@@ -122,7 +122,7 @@ describe('AuthSessionService', () => {
   it('should clear an expired session and return null', () => {
     restoreAdminSession();
 
-    api.getCurrentUser.mockReturnValue(
+    api.getSession.mockReturnValue(
       throwError(
         () =>
           new HttpErrorResponse({
@@ -152,7 +152,7 @@ describe('AuthSessionService', () => {
       statusText: 'Unknown Error',
     });
 
-    api.getCurrentUser.mockReturnValue(throwError(() => connectionError));
+    api.getSession.mockReturnValue(throwError(() => connectionError));
 
     let receivedError: unknown;
 

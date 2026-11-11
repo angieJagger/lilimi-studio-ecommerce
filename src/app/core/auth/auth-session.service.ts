@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, of, tap, throwError, type Observable } from 'rxjs';
+import { catchError, finalize, of, shareReplay, tap, throwError, type Observable } from 'rxjs';
 import { AuthApiService } from './auth-api.service';
 import type { CurrentUser, LoginRequest } from './auth.model';
 
@@ -11,6 +11,8 @@ export class AuthSessionService {
   private readonly api = inject(AuthApiService);
   private readonly currentUser = signal<CurrentUser | null>(null);
 
+  private pendingRefresh?: Observable<CurrentUser | null>;
+
   readonly user = this.currentUser.asReadonly();
 
   readonly isAuthenticated = computed(() => this.user() !== null);
@@ -18,7 +20,11 @@ export class AuthSessionService {
   readonly isAdmin = computed(() => this.user()?.roles.includes('ADMIN') ?? false);
 
   refresh(): Observable<CurrentUser | null> {
-    return this.api.getCurrentUser().pipe(
+    if (this.pendingRefresh) {
+      return this.pendingRefresh;
+    }
+
+    this.pendingRefresh = this.api.getSession().pipe(
       tap((user) => this.currentUser.set(user)),
       catchError((error: unknown) => {
         this.currentUser.set(null);
@@ -29,7 +35,13 @@ export class AuthSessionService {
 
         return throwError(() => error);
       }),
+      finalize(() => {
+        this.pendingRefresh = undefined;
+      }),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
+
+    return this.pendingRefresh;
   }
 
   login(request: LoginRequest): Observable<CurrentUser> {

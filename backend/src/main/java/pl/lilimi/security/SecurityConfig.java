@@ -75,6 +75,7 @@ public class SecurityConfig {
           "/api/products/**",
           "/actuator/health",
           "/api/auth/csrf",
+          "/api/auth/session",
           "/api/security/turnstile",
           "/api/payments/attempts/*",
           "/api/orders/*/items/*/download",

@@ -21,7 +21,7 @@ describe('CustomerLogin', () => {
   };
 
   const api = {
-    getCurrentUser: vi.fn(),
+    getSession: vi.fn(),
     login: vi.fn(),
     logout: vi.fn(),
   };
@@ -30,8 +30,8 @@ describe('CustomerLogin', () => {
     loginResult = new Subject<CurrentUser>();
     logoutResult = new Subject<void>();
 
-    api.getCurrentUser.mockReset();
-    api.getCurrentUser.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
+    api.getSession.mockReset();
+    api.getSession.mockReturnValue(of(null));
 
     api.login.mockReset();
     api.login.mockReturnValue(loginResult.asObservable());
@@ -135,7 +135,7 @@ describe('CustomerLogin', () => {
 
   it('should restore an existing customer session', async () => {
     fixture.destroy();
-    api.getCurrentUser.mockReturnValue(of(customer));
+    api.getSession.mockReturnValue(of(customer));
 
     await openPage();
 
@@ -145,7 +145,7 @@ describe('CustomerLogin', () => {
 
   it('should show the administrator panel link for an administrator', async () => {
     fixture.destroy();
-    api.getCurrentUser.mockReturnValue(
+    api.getSession.mockReturnValue(
       of({
         email: 'admin@example.com',
         roles: ['ADMIN'],
@@ -159,7 +159,7 @@ describe('CustomerLogin', () => {
 
   it('should show a session check failure', async () => {
     fixture.destroy();
-    api.getCurrentUser.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 503 })));
+    api.getSession.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 503 })));
 
     await openPage();
 
@@ -170,7 +170,7 @@ describe('CustomerLogin', () => {
 
   it('should clear the session after logout', async () => {
     fixture.destroy();
-    api.getCurrentUser.mockReturnValue(of(customer));
+    api.getSession.mockReturnValue(of(customer));
 
     await openPage();
 
@@ -189,7 +189,7 @@ describe('CustomerLogin', () => {
 
   it('should preserve the session when logout fails', async () => {
     fixture.destroy();
-    api.getCurrentUser.mockReturnValue(of(customer));
+    api.getSession.mockReturnValue(of(customer));
 
     await openPage();
 

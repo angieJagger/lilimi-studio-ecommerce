@@ -17,6 +17,12 @@ export class AuthApiService {
     return this.http.get<CurrentUser>(`${this.baseUrl}/auth/me`);
   }
 
+  getSession(): Observable<CurrentUser | null> {
+    return this.http.get<CurrentUser | null>(`${this.baseUrl}/auth/session`, {
+      transferCache: false,
+    });
+  }
+
   register(
     request: RegisterCustomerRequest,
     turnstileToken: string | null = null,
