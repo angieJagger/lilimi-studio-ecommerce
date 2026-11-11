@@ -87,6 +87,11 @@ class AuthSessionTest {
       .andExpect(status().isOk())
       .andExpect(content().string("ok"));
 
+    mockMvc.perform(get("/api/auth/session").session(session))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.email").value("admin-test@example.com"))
+      .andExpect(jsonPath("$.roles[0]").value("ADMIN"));
+
     var logoutCsrf = getCsrfCookie(session);
 
     mockMvc.perform(post("/api/auth/logout")
@@ -102,6 +107,13 @@ class AuthSessionTest {
 
     mockMvc.perform(get("/api/auth/me"))
       .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void shouldReturnNoContentForGuestSession() throws Exception {
+    mockMvc.perform(get("/api/auth/session"))
+      .andExpect(status().isNoContent())
+      .andExpect(content().string(""));
   }
 
   @Test
@@ -194,8 +206,9 @@ class AuthSessionTest {
 
     assertThat(account.getCredentialsVersion()).isEqualTo(1);
 
-    mockMvc.perform(get("/api/auth/me").session(firstSession))
-      .andExpect(status().isUnauthorized());
+    mockMvc.perform(get("/api/auth/session").session(firstSession))
+      .andExpect(status().isNoContent())
+      .andExpect(content().string(""));
 
     mockMvc.perform(get("/api/auth/me").session(secondSession))
       .andExpect(status().isUnauthorized());

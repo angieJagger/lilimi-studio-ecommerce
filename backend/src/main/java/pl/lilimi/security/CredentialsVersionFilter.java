@@ -4,7 +4,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pl.lilimi.auth.application.AccountPrincipal;
 import pl.lilimi.auth.persistence.UserAccountRepository;
@@ -12,6 +14,9 @@ import pl.lilimi.auth.persistence.UserAccountRepository;
 import java.io.IOException;
 
 public class CredentialsVersionFilter extends OncePerRequestFilter {
+
+  private static final PathPatternRequestMatcher SESSION_STATUS =
+    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/auth/session");
 
   private final UserAccountRepository accounts;
 
@@ -53,8 +58,10 @@ public class CredentialsVersionFilter extends OncePerRequestFilter {
         }
 
         SecurityContextHolder.clearContext();
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return;
+        if (!SESSION_STATUS.matches(request)) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          return;
+        }
       }
     }
 

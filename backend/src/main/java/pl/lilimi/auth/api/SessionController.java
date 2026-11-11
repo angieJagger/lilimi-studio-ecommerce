@@ -1,5 +1,7 @@
 package pl.lilimi.auth.api;
 
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,17 @@ public class SessionController {
   ) {
     this.currentAccountService = currentAccountService;
     this.profileService = profileService;
+  }
+
+  @GetMapping("/session")
+  public ResponseEntity<CurrentUserResponse> session(Authentication authentication) {
+    if (authentication == null) {
+      return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
+    }
+
+    return ResponseEntity.ok()
+      .cacheControl(CacheControl.noStore())
+      .body(currentUser(authentication));
   }
 
   @GetMapping("/me")
