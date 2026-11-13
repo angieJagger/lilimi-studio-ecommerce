@@ -13,7 +13,7 @@ import java.time.Duration;
 public class OrderStockReservationCleanup {
 
   private static final Logger log = LoggerFactory.getLogger(OrderStockReservationCleanup.class);
-  private static final Duration RESERVATION_DURATION = Duration.ofHours(1);
+  private static final Duration RESERVATION_DURATION = Duration.ofMinutes(15);
 
   private final OrderRepository orders;
   private final OrderStockReservationService reservations;

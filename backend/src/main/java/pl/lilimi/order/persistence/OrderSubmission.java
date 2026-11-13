@@ -5,6 +5,7 @@ import java.util.UUID;
 public record OrderSubmission(
   UUID idempotencyKey,
   String requestHash,
-  UUID orderId
+  UUID orderId,
+  UUID guestOwner
 ) {
 }

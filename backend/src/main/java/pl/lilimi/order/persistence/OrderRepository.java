@@ -41,7 +41,12 @@ public interface OrderRepository
       WHERE payment.order_id = customer_order.id AND payment.status = 'succeeded'
     )
     AND (
-      (customer_order.status = 'new' AND customer_order.created_at <= :cutoff)
+      (customer_order.status = 'new' AND customer_order.created_at <= :cutoff AND (
+        NOT customer_order.reservation_expiration_requested OR NOT EXISTS (
+          SELECT 1 FROM order_payment_attempts payment
+          WHERE payment.order_id = customer_order.id AND payment.status IN ('created', 'pending')
+        )
+      ))
       OR (
         customer_order.status = 'cancelled' AND NOT EXISTS (
           SELECT 1 FROM order_payment_attempts payment

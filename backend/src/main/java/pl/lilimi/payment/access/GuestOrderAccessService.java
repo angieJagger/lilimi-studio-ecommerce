@@ -14,7 +14,21 @@ public class GuestOrderAccessService {
   private static final String ATTRIBUTE =
     GuestOrderAccessService.class.getName() + ".orders";
 
+  private static final String SUBMISSION_OWNER_ATTRIBUTE =
+    GuestOrderAccessService.class.getName() + ".submissionOwner";
+
   private static final int MAX_ORDERS = 50;
+
+  public UUID submissionOwner(HttpSession session) {
+    synchronized (session) {
+      if (session.getAttribute(SUBMISSION_OWNER_ATTRIBUTE) instanceof UUID owner) {
+        return owner;
+      }
+      var owner = UUID.randomUUID();
+      session.setAttribute(SUBMISSION_OWNER_ATTRIBUTE, owner);
+      return owner;
+    }
+  }
 
   public void grant(HttpSession session, UUID orderId) {
     Objects.requireNonNull(session, "Session is required");

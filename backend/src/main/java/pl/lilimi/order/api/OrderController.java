@@ -52,16 +52,20 @@ public class OrderController {
       authentication
     );
 
+    var guestSession = accountId == null ? servletRequest.getSession(true) : null;
+    var guestOwner = guestSession == null ? null : guestAccess.submissionOwner(guestSession);
+
     var order = submissionService.submitFromSource(
       idempotencyKey,
       request,
       accountId,
-      servletRequest.getRemoteAddr()
+      servletRequest.getRemoteAddr(),
+      guestOwner
     );
 
-    if (order.getCustomerAccountId() == null) {
+    if (guestSession != null) {
       guestAccess.grant(
-        servletRequest.getSession(true),
+        guestSession,
         order.getId()
       );
     }
