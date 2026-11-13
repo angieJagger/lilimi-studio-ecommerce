@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
@@ -17,11 +17,18 @@ export class MobileMenu {
   protected readonly transloco = inject(TranslocoService);
   protected readonly session = inject(AuthSessionService);
   protected readonly shopNavigation = shopNavigation.filter(
-  (item) => item.path !== 'account/login',
-);
+    (item) => item.path !== 'account/login',
+  );
 
-  open(): void {
-    this.dialog().nativeElement.showModal();
+  readonly isOpen = signal(false);
+
+  open(trigger: HTMLButtonElement): void {
+    const dialog = this.dialog().nativeElement;
+    const { top, left } = trigger.getBoundingClientRect();
+    dialog.style.setProperty('--menu-toggle-top', `${top}px`);
+    dialog.style.setProperty('--menu-toggle-left', `${left}px`);
+    dialog.showModal();
+    this.isOpen.set(true);
   }
 
   close(): void {
