@@ -83,10 +83,13 @@
   text-decoration: none;
 }
 
-.mobile-menu a:focus-visible,
-.mobile-menu__close:focus-visible {
+.mobile-menu a:focus-visible {
   outline: 2px solid var(--border-brand);
   outline-offset: 4px;
+}
+
+.mobile-menu__close:focus-visible {
+  outline: 2px solid transparent;
 }
 
 .mobile-menu[open] .mobile-menu__panel {
