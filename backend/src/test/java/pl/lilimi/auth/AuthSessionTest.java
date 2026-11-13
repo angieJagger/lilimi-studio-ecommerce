@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -113,6 +114,7 @@ class AuthSessionTest {
   void shouldReturnNoContentForGuestSession() throws Exception {
     mockMvc.perform(get("/api/auth/session"))
       .andExpect(status().isNoContent())
+      .andExpect(header().string("Cache-Control", "no-store"))
       .andExpect(content().string(""));
   }
 

@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -402,6 +403,7 @@ class OrderControllerTest {
     mockMvc.perform(get("/api/products/breloczek-testowy"))
       .andExpect(status().isNotFound());
 
+    assertThat(orderRepository.findDueStockReservationOrderIds(now)).doesNotContain(secondOrderId);
     attempt.markExpired("cs_test_stock_reservation");
     paymentAttempts.flush();
     assertThat(orderRepository.findDueStockReservationOrderIds(now)).contains(secondOrderId);
@@ -576,12 +578,21 @@ class OrderControllerTest {
       .andReturn();
 
     var second = mockMvc.perform(post("/api/orders")
+        .session((MockHttpSession) first.getRequest().getSession(false))
         .with(csrf())
         .header("Idempotency-Key", key)
         .contentType(MediaType.APPLICATION_JSON)
         .content(body))
       .andExpect(status().isCreated())
       .andReturn();
+
+    mockMvc.perform(post("/api/orders")
+        .with(csrf())
+        .header("Idempotency-Key", key)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(body))
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.code").value("ORDER_SUBMISSION_CONFLICT"));
 
     var mapper = JsonMapper.builder().build();
 

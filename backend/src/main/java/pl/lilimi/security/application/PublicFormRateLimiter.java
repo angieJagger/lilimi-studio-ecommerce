@@ -56,6 +56,10 @@ public class PublicFormRateLimiter {
     );
   }
 
+  public long reserveQuantityCheck(String source) {
+    return limiter.reserve("quantity-check-source", source, 60, Duration.ofMinutes(1));
+  }
+
   public long reserveOrderRequest(String source) {
     return limiter.reserve("order-request-source", source, ORDER_REQUEST_ATTEMPTS, ORDER_REQUEST_WINDOW);
   }

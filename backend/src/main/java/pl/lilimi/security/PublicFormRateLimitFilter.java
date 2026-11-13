@@ -39,6 +39,11 @@ public class PublicFormRateLimitFilter
   private final PathPatternRequestMatcher order =
     PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/orders");
 
+  private final PathPatternRequestMatcher quantityCheck =
+    PathPatternRequestMatcher.withDefaults().matcher(
+      HttpMethod.GET, "/api/products/{slug}/quantity-check"
+    );
+
   public PublicFormRateLimitFilter(
     PublicFormRateLimiter limiter
   ) {
@@ -52,7 +57,8 @@ public class PublicFormRateLimitFilter
     return !inquiry.matches(request)
       && !registration.matches(request)
       && !downloadLink.matches(request)
-      && !order.matches(request);
+      && !order.matches(request)
+      && !quantityCheck.matches(request);
   }
 
   @Override
@@ -70,6 +76,8 @@ public class PublicFormRateLimitFilter
         retryAfter = limiter.reserveInquiry(source);
       } else if (registration.matches(request)) {
         retryAfter = limiter.reserveRegistration(source);
+      } else if (quantityCheck.matches(request)) {
+        retryAfter = limiter.reserveQuantityCheck(source);
       } else if (order.matches(request)) {
         retryAfter = limiter.reserveOrderRequest(source);
       } else {

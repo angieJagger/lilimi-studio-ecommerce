@@ -1245,6 +1245,8 @@
         "productContext": "Zapytanie dotyczy: {{ name }}",
     "attachments": {
       "label": "Załączniki (opcjonalnie)",
+      "chooseFiles": "Wybierz pliki",
+      "noFilesSelected": "Nie wybrano plików",
       "hint": "Dodaj inspiracje, logo lub grafikę do wyceny. JPG, PNG, WebP lub PDF. Maksymalnie 5 plików, każdy do 10 MiB.",
       "remove": "Usuń",
       "removeNamed": "Usuń załącznik {{name}}",
@@ -1302,6 +1304,32 @@
     "privacy": "Polityka prywatności"
   },
   "studioServices": {
+    "homeCards": {
+      "websiteTitle": "Strony internetowe",
+      "websiteAddress": "mojastrona.pl",
+      "save": "Zapisz",
+      "cancel": "Anuluj",
+      "stores": {
+        "title": "Dedykowane sklepy internetowe",
+        "catalog": "Katalog produktów",
+        "cart": "Koszyk",
+        "orders": "Zamówienia",
+        "payments": "Płatności",
+        "delivery": "Opcje dostawy",
+        "admin": "Panel administracyjny",
+        "order": "Zamówienie",
+        "paid": "Zapłacono"
+      },
+      "maintenance": {
+        "bugFixes": "Naprawa błędów",
+        "improvements": "Poprawa wydajności i wyglądu",
+        "updates": "Aktualizacje",
+        "seo": "Poprawki techniczne SEO",
+        "security": "Zabezpieczenia strony",
+        "features": "Nowe funkcje",
+        "merged": "Scalono"
+      }
+    },
     "eyebrow": "Usługi",
     "homeTitle": "Od pomysłu do konkretnego rozwiązania.",
     "pageTitle": "Wszystko, czego potrzeba, aby zaistnieć w internecie",

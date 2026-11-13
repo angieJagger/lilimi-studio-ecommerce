@@ -57,6 +57,7 @@ public class OrderSubmissionService {
       idempotencyKey,
       request,
       null,
+      null,
       null
     );
   }
@@ -71,6 +72,7 @@ public class OrderSubmissionService {
       idempotencyKey,
       request,
       customerAccountId,
+      null,
       null
     );
   }
@@ -80,32 +82,32 @@ public class OrderSubmissionService {
     @NotNull UUID idempotencyKey,
     @NotNull @Valid CreateOrderRequest request,
     UUID customerAccountId,
-    @NotBlank String source
+    @NotBlank String source,
+    UUID guestOwner
   ) {
-    return submitInternal(
-      idempotencyKey,
-      request,
-      customerAccountId,
-      source
-    );
+    if (customerAccountId == null) {
+      Objects.requireNonNull(guestOwner, "Guest order submission requires a session owner");
+    }
+    return submitInternal(idempotencyKey, request, customerAccountId, source, guestOwner);
   }
 
   private Order submitInternal(
     UUID idempotencyKey,
     CreateOrderRequest request,
     UUID customerAccountId,
-    String source
+    String source, UUID guestOwner
   ) {
     String requestHash = hash(request);
 
     submissionRepository.reserve(
       idempotencyKey,
-      requestHash
+      requestHash, guestOwner
     );
 
     var submission = submissionRepository.lock(idempotencyKey);
 
-    if (!submission.requestHash().equals(requestHash)) {
+    if (!submission.requestHash().equals(requestHash)
+      || !Objects.equals(submission.guestOwner(), guestOwner)) {
       throw new OrderSubmissionConflictException();
     }
 

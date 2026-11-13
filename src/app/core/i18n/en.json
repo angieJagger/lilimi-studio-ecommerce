@@ -1243,6 +1243,8 @@
     "productContext": "Your inquiry concerns: {{ name }}",
     "attachments": {
       "label": "Attachments (optional)",
+      "chooseFiles": "Choose files",
+      "noFilesSelected": "No files selected",
       "hint": "Add references, a logo or artwork for your quote. JPG, PNG, WebP or PDF. Up to 5 files, each no larger than 10 MiB.",
       "remove": "Remove",
       "removeNamed": "Remove attachment {{name}}",
@@ -1300,6 +1302,32 @@
     "privacy": "Privacy policy"
   },
   "studioServices": {
+    "homeCards": {
+      "websiteTitle": "Websites",
+      "websiteAddress": "mywebsite.com",
+      "save": "Save",
+      "cancel": "Cancel",
+      "stores": {
+        "title": "Custom online stores",
+        "catalog": "Product catalogue",
+        "cart": "Shopping cart",
+        "orders": "Orders",
+        "payments": "Payments",
+        "delivery": "Delivery options",
+        "admin": "Admin panel",
+        "order": "Order",
+        "paid": "Paid"
+      },
+      "maintenance": {
+        "bugFixes": "Bug fixes",
+        "improvements": "Performance and design improvements",
+        "updates": "Updates",
+        "seo": "Technical SEO fixes",
+        "security": "Website security",
+        "features": "New features",
+        "merged": "Merged"
+      }
+    },
     "eyebrow": "Services",
     "homeTitle": "From an idea to a clear solution.",
     "pageTitle": "Everything needed to get your business online",

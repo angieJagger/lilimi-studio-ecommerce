@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, finalize, of, shareReplay, tap, throwError, type Observable } from 'rxjs';
+import { catchError, finalize, map, of, shareReplay, tap, throwError, type Observable } from 'rxjs';
 import { AuthApiService } from './auth-api.service';
 import type { CurrentUser, LoginRequest } from './auth.model';
 
@@ -24,9 +24,20 @@ export class AuthSessionService {
       return this.pendingRefresh;
     }
 
-    this.pendingRefresh = this.api.getSession().pipe(
-      tap((user) => this.currentUser.set(user)),
+    const refresh: Observable<CurrentUser | null> = this.api.getSession().pipe(
+      map((user) => {
+        if (this.pendingRefresh !== refresh) {
+          return this.currentUser();
+        }
+
+        this.currentUser.set(user);
+        return user;
+      }),
       catchError((error: unknown) => {
+        if (this.pendingRefresh !== refresh) {
+          return of(this.currentUser());
+        }
+
         this.currentUser.set(null);
 
         if (error instanceof HttpErrorResponse && error.status === 401) {
@@ -36,20 +47,28 @@ export class AuthSessionService {
         return throwError(() => error);
       }),
       finalize(() => {
-        this.pendingRefresh = undefined;
+        if (this.pendingRefresh === refresh) {
+          this.pendingRefresh = undefined;
+        }
       }),
       shareReplay({ bufferSize: 1, refCount: true }),
     );
 
-    return this.pendingRefresh;
+    this.pendingRefresh = refresh;
+    return refresh;
   }
 
   login(request: LoginRequest): Observable<CurrentUser> {
-    return this.api.login(request).pipe(tap((user) => this.currentUser.set(user)));
+    return this.api.login(request).pipe(tap((user) => this.replaceSession(user)));
   }
 
   logout(): Observable<void> {
-    return this.api.logout().pipe(tap(() => this.currentUser.set(null)));
+    return this.api.logout().pipe(tap(() => this.replaceSession(null)));
+  }
+
+  private replaceSession(user: CurrentUser | null): void {
+    this.pendingRefresh = undefined;
+    this.currentUser.set(user);
   }
 
   updateCustomerName(email: string, firstName: string | null): void {

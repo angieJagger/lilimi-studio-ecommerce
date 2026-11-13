@@ -19,7 +19,7 @@ export class OrderApiService {
     request: CreateOrderRequest,
     idempotencyKey: string,
   ): Observable<CreateOrderResponse> {
-    return this.csrf.initialize().pipe(
+    return this.csrf.initialize(true).pipe(
       switchMap(() =>
         this.http.post<CreateOrderResponse>(`${this.baseUrl}/orders`, request, {
           headers: {

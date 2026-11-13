@@ -62,7 +62,7 @@ describe('OrderApiService', () => {
       received = value;
     });
 
-    const csrfRequest = http.expectOne('/api/auth/csrf');
+    const csrfRequest = http.expectOne('/api/auth/csrf?checkout=true');
 
     expect(csrfRequest.request.method).toBe('GET');
     http.expectNone('/api/orders');
@@ -99,7 +99,7 @@ describe('OrderApiService', () => {
       },
     });
 
-    const csrfRequest = http.expectOne('/api/auth/csrf');
+    const csrfRequest = http.expectOne('/api/auth/csrf?checkout=true');
 
     expect(csrfRequest.request.method).toBe('GET');
     http.expectNone('/api/orders');
@@ -138,7 +138,7 @@ describe('OrderApiService', () => {
       },
     });
 
-    const csrfRequest = http.expectOne('/api/auth/csrf');
+    const csrfRequest = http.expectOne('/api/auth/csrf?checkout=true');
 
     csrfRequest.flush(
       {},

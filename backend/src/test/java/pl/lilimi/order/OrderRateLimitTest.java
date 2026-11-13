@@ -38,6 +38,7 @@ class OrderRateLimitTest {
     Instant.parse("2026-10-26T12:00:00Z");
 
   private static final String SOURCE = "203.0.113.10";
+  private static final UUID GUEST_OWNER = UUID.randomUUID();
 
   @Autowired
   private OrderSubmissionService submissions;
@@ -74,7 +75,8 @@ class OrderRateLimitTest {
         rejectedKey,
         request(),
         null,
-        SOURCE
+        SOURCE,
+        GUEST_OWNER
       )
     )
       .isInstanceOf(OrderRateLimitExceededException.class)
@@ -106,7 +108,8 @@ class OrderRateLimitTest {
       originalKey,
       request(),
       null,
-      SOURCE
+      SOURCE,
+      GUEST_OWNER
     );
 
     createOrders(9);
@@ -115,7 +118,8 @@ class OrderRateLimitTest {
       originalKey,
       request(),
       null,
-      SOURCE
+      SOURCE,
+      GUEST_OWNER
     );
 
     assertThat(repeated.getId()).isEqualTo(original.getId());
@@ -144,7 +148,8 @@ class OrderRateLimitTest {
       UUID.randomUUID(),
       request(),
       null,
-      SOURCE
+      SOURCE,
+      GUEST_OWNER
     );
 
     assertThat(order.getId()).isNotNull();
@@ -174,7 +179,8 @@ class OrderRateLimitTest {
         UUID.randomUUID(),
         unavailableRequest,
         null,
-        SOURCE
+        SOURCE,
+        GUEST_OWNER
       )
     ).isInstanceOf(OrderProductUnavailableException.class);
 
@@ -189,7 +195,8 @@ class OrderRateLimitTest {
         UUID.randomUUID(),
         request(),
         null,
-        SOURCE
+        SOURCE,
+        GUEST_OWNER
       );
     }
   }

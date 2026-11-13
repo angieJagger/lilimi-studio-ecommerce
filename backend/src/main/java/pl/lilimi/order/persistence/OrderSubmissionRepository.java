@@ -17,23 +17,24 @@ public class OrderSubmissionRepository {
     this.jdbcTemplate = jdbcTemplate;
   }
 
-  public void reserve(UUID idempotencyKey, String requestHash) {
+  public void reserve(UUID idempotencyKey, String requestHash, UUID guestOwner) {
     jdbcTemplate.update("""
             INSERT INTO order_submissions (
                 idempotency_key,
-                request_hash
+                request_hash,
+                guest_owner
             )
-            VALUES (?, ?)
+            VALUES (?, ?, ?)
             ON CONFLICT (idempotency_key) DO NOTHING
             """,
       idempotencyKey,
-      requestHash
+      requestHash, guestOwner
     );
   }
 
   public OrderSubmission lock(UUID idempotencyKey) {
     return jdbcTemplate.queryForObject("""
-            SELECT idempotency_key, request_hash, order_id
+            SELECT idempotency_key, request_hash, order_id, guest_owner
             FROM order_submissions
             WHERE idempotency_key = ?
             FOR UPDATE
@@ -41,7 +42,8 @@ public class OrderSubmissionRepository {
       (resultSet, rowNumber) -> new OrderSubmission(
         resultSet.getObject("idempotency_key", UUID.class),
         resultSet.getString("request_hash"),
-        resultSet.getObject("order_id", UUID.class)
+        resultSet.getObject("order_id", UUID.class),
+        resultSet.getObject("guest_owner", UUID.class)
       ),
       idempotencyKey
     );

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { AuthApiService } from './auth-api.service';
 import type { CurrentUser, LoginRequest } from './auth.model';
 import { AuthSessionService } from './auth-session.service';
@@ -91,6 +91,63 @@ describe('AuthSessionService', () => {
     expect(service.user()).toBeNull();
     expect(service.isAuthenticated()).toBe(false);
     expect(service.isAdmin()).toBe(false);
+  });
+
+  it('shares a pending refresh and requests a fresh session after completion', () => {
+    const response = new Subject<CurrentUser | null>();
+    api.getSession.mockReturnValueOnce(response).mockReturnValueOnce(of(null));
+
+    const first = vi.fn();
+    const second = vi.fn();
+    service.refresh().subscribe(first);
+    service.refresh().subscribe(second);
+
+    expect(api.getSession).toHaveBeenCalledOnce();
+    response.next(customer);
+    response.complete();
+    expect(first).toHaveBeenCalledWith(customer);
+    expect(second).toHaveBeenCalledWith(customer);
+
+    service.refresh().subscribe();
+    expect(api.getSession).toHaveBeenCalledTimes(2);
+    expect(service.user()).toBeNull();
+  });
+
+  it('ignores an earlier guest response after login and keeps the new refresh pending', () => {
+    const earlier = new Subject<CurrentUser | null>();
+    const latest = new Subject<CurrentUser | null>();
+    api.getSession.mockReturnValueOnce(earlier).mockReturnValueOnce(latest);
+    api.login.mockReturnValue(of(customer));
+
+    const result = vi.fn();
+    service.refresh().subscribe(result);
+    service.login({ email: customer.email, password: 'test' }).subscribe();
+    service.refresh().subscribe();
+
+    earlier.next(null);
+    earlier.complete();
+    expect(service.user()).toEqual(customer);
+    expect(result).toHaveBeenCalledWith(customer);
+
+    service.refresh().subscribe();
+    expect(api.getSession).toHaveBeenCalledTimes(2);
+    latest.next(customer);
+    latest.complete();
+  });
+
+  it('ignores an earlier authenticated response after logout', () => {
+    const earlier = new Subject<CurrentUser | null>();
+    api.getSession.mockReturnValue(earlier);
+    api.logout.mockReturnValue(of(undefined));
+
+    const result = vi.fn();
+    service.refresh().subscribe(result);
+    service.logout().subscribe();
+    earlier.next(customer);
+    earlier.complete();
+
+    expect(service.user()).toBeNull();
+    expect(result).toHaveBeenCalledWith(null);
   });
 
   it('should restore an administrator session', () => {

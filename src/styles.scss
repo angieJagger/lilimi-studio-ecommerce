@@ -7,6 +7,7 @@
 @use './styles/forms';
 @use './styles/surfaces';
 @use './styles/studio';
+@use './styles/home-service-cards';
 @use './styles/payment-status';
 
 *,
@@ -45,3 +46,33 @@ button:disabled { cursor:not-allowed; opacity:.6; }
 }
 
 @include forms.glass-forms;
+
+.menu-toggle-icon {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 4.2px;
+  width: 24px;
+  height: 24px;
+}
+
+.menu-toggle-icon > span {
+  width: 17.8px;
+  height: 1.8px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.menu-toggle-icon > span:first-child {
+  transform-origin: left center;
+}
+
+.menu-toggle-icon > span:last-child {
+  transform-origin: right center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-toggle-icon > span {
+    transition: transform 380ms ease, opacity 260ms ease;
+  }
+}

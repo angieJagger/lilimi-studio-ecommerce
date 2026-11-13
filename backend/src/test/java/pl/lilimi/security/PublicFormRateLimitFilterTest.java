@@ -158,6 +158,17 @@ class PublicFormRateLimitFilterTest {
   }
 
   @Test
+  void shouldRateLimitPublicQuantityChecks() throws Exception {
+    when(limiter.reserveQuantityCheck("127.0.0.1")).thenReturn(30L);
+
+    mvc.perform(get("/api/products/example/quantity-check").param("quantity", "10"))
+      .andExpect(status().isTooManyRequests())
+      .andExpect(header().string("Retry-After", "30"));
+
+    verify(limiter).reserveQuantityCheck("127.0.0.1");
+  }
+
+  @Test
   void shouldNotLimitPublicCatalog() throws Exception {
     mvc.perform(get("/api/products"))
       .andExpect(status().isOk());

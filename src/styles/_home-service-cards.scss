@@ -1,0 +1,369 @@
+.offer {
+  .offer-card__heading {
+    display: grid;
+    grid-template-columns: 35px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  .card-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .store,
+  .fix {
+    width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .devices {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: #b9aef0;
+  }
+  .devices svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .store,
+  .fix {
+    font:
+      12px/1.45 'Cascadia Mono',
+      Consolas,
+      monospace;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 3px 0;
+  }
+  .store .row,
+  .order {
+    justify-content: space-between;
+  }
+  .check {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 15px;
+    height: 15px;
+    border: 1px solid #8975a1;
+    border-radius: 50%;
+    color: transparent;
+    font-size: 11px;
+  }
+  .order {
+    display: flex;
+    border-top: 1px dashed #8975a1;
+    margin-top: 5px;
+    padding-top: 6px;
+    font-size: 11px;
+  }
+  .stamp-area {
+    min-height: 38px;
+    text-align: right;
+    padding: 9px 5px 1px;
+  }
+  .stamp {
+    display: inline-block;
+    color: #2f9e6f;
+    border: 2px solid #2f9e6f;
+    border-radius: 4px;
+    padding: 1px 7px;
+    opacity: 0;
+    transform: rotate(-9deg) scale(1.35);
+  }
+  .box {
+    display: grid;
+    flex: none;
+  }
+  .box span {
+    grid-area: 1/1;
+  }
+  .box span + span {
+    color: #20694e;
+    opacity: 0;
+  }
+  .progress {
+    height: 4px;
+    margin: 10px 0;
+    background: #a894bf75;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: #387e61;
+  }
+  .merged {
+    display: inline-block;
+    background: #6d4be8;
+    color: white;
+    border-radius: 12px;
+    padding: 3px 9px;
+    opacity: 0;
+    transform: scale(0.8);
+    transform-origin: left;
+  }
+  .offer-card:is(:hover, :focus-visible) .check {
+    background: #2f9e6f;
+    border-color: #2f9e6f;
+    color: white;
+  }
+  .offer-card:is(:hover, :focus-visible) .stamp {
+    opacity: 1;
+    transform: rotate(-9deg);
+  }
+  .offer-card:is(:hover, :focus-visible) .box span:first-child {
+    opacity: 0;
+  }
+  .offer-card:is(:hover, :focus-visible) .box span + span,
+  .offer-card:is(:hover, :focus-visible) .merged {
+    opacity: 1;
+    transform: none;
+  }
+  .offer-card:is(:hover, :focus-visible) .progress i {
+    width: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .devices svg:hover {
+      color: #6d4be8;
+    }
+    .check,
+    .box span {
+      transition:
+        background 0.18s,
+        border-color 0.18s,
+        color 0.18s,
+        opacity 0.18s;
+      transition-delay: calc(var(--step) * 0.17s);
+    }
+    .stamp {
+      transition:
+        opacity 0.2s 0.85s,
+        transform 0.23s 0.85s;
+    }
+    .progress i {
+      transition: width 1s ease;
+    }
+    .merged {
+      transition:
+        opacity 0.2s 1s,
+        transform 0.2s 1s;
+    }
+  }
+  @media (hover: none) {
+    .check {
+      background: #2f9e6f;
+      border-color: #2f9e6f;
+      color: white;
+    }
+    .stamp {
+      opacity: 1;
+      transform: rotate(-9deg);
+    }
+    .box span:first-child {
+      opacity: 0;
+    }
+    .box span + span,
+    .merged {
+      opacity: 1;
+      transform: none;
+    }
+    .progress i {
+      width: 100%;
+    }
+  }
+  .website-preview {
+    display: grid;
+    gap: 19px;
+    width: 100%;
+  }
+  .editable {
+    position: relative;
+    width: 100%;
+    padding: 9px;
+    border: 1.5px dashed transparent;
+    border-radius: 6px;
+  }
+  .edit-toolbar {
+    position: absolute;
+    right: 5px;
+    top: calc(100% + 4px);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #2a2150;
+    color: #f6f3ff;
+    opacity: 0;
+  }
+  .edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 9px;
+  }
+  .edit-action {
+    display: inline-grid;
+    place-items: center;
+    min-height: 29px;
+    padding: 2px 10px;
+    border: 1px solid #bdb6cc;
+    border-radius: 5px;
+    background: #faf8ff;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .edit-action--save {
+    background: #d9ccf5;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .edit-action:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px #30283d24;
+    }
+  }
+  .offer-card:is(:hover, :focus-visible) .edit-toolbar {
+    opacity: 1;
+  }
+  .offer-card:is(:hover, :focus-visible) .editable {
+    border-color: #6d4be8;
+  }
+
+  .edit-toolbar svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .edit-toolbar {
+      transform: translateY(6px);
+      transition:
+        opacity 0.3s 0.15s,
+        transform 0.3s 0.15s;
+    }
+    .offer-card:is(:hover, :focus-visible) .edit-toolbar {
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .editable {
+      transition: border-color 0.3s;
+    }
+    .edit-action {
+      transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+    }
+    .devices svg {
+      transition: color 0.2s;
+    }
+  }
+  .browser-bar {
+    display: flex;
+    margin-bottom: 9px;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: #ece7fd;
+  }
+  .browser-bar i {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #b9aef0;
+  }
+  .browser-bar span {
+    flex: 1;
+    margin-left: 5px;
+    padding: 1px 8px;
+    border-radius: 12px;
+    background: #fff;
+    color: #6a5fa0;
+    font-size: 11px;
+  }
+  .check {
+    position: relative;
+    top: -2px;
+    line-height: 1;
+  }
+  .git-commands {
+    display: grid;
+    gap: 3px;
+    margin-bottom: 7px;
+    color: #583c76;
+  }
+  @media (min-width: 48rem) {
+    .offer__grid {
+      grid-template-rows: auto 1fr;
+    }
+    .offer__grid > li {
+      display: grid;
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+    }
+    .offer-card {
+      display: grid;
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+      min-width: 0;
+      align-items: start;
+    }
+    .offer__grid > li {
+      min-width: 0;
+    }
+    .fix {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .fix .card-checklist {
+      order: -1;
+      width: 100%;
+    }
+    .fix .git-commands {
+      margin-block: 8px 0;
+    }
+    .fix .progress {
+      width: 100%;
+    }
+  }
+  .git-command {
+    display: block;
+    width: max-content;
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .git-command {
+      clip-path: inset(0 100% 0 0);
+    }
+    .offer-card:is(:hover, :focus-visible) .git-command {
+      animation: lilimi-service-git-type 0.55s steps(10, end) both;
+    }
+  }
+}
+
+@keyframes lilimi-service-git-type {
+  to {
+    clip-path: inset(0);
+  }
+}
