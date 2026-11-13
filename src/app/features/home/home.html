@@ -5,7 +5,10 @@
         {{ 'home.hero.eyebrow' | transloco }}
       </p>
 
-      <h1 class="heading-1">{{ 'home.hero.lead' | transloco }}<br><span>{{ 'home.hero.highlight' | transloco }}</span><br>{{ 'home.hero.closing' | transloco }}</h1>
+      <h1 class="heading-1">
+        {{ 'home.hero.lead' | transloco }}<br /><span>{{ 'home.hero.highlight' | transloco }}</span
+        ><br />{{ 'home.hero.closing' | transloco }}
+      </h1>
 
       <p class="hero__description">
         {{ 'home.hero.description' | transloco }}
@@ -50,16 +53,117 @@
     <ol class="offer__grid">
       @for (item of primaryServices; track item.id; let index = $index) {
         <li>
-          <a class="offer-card"
-            [routerLink]="['/', transloco.getActiveLang(), 'services']"
-            [fragment]="'service-' + item.id">
-            <span class="offer-card__number" aria-hidden="true">{{ index + 1 }}</span>
-            <h3 class="offer-card__title">
-              {{ 'studioServices.items.' + item.id + '.title' | transloco }}
-            </h3>
-            <p class="offer-card__description">
-              {{ 'studioServices.items.' + item.id + '.description' | transloco }}
-            </p>
+          <a
+            class="offer-card"
+            [class.offer-card--store]="item.id === 'stores'"
+            [class.offer-card--maintenance]="item.id === 'maintenance'"
+            [routerLink]="['/', language(), 'services']"
+            [fragment]="'service-' + item.id"
+          >
+            <div class="offer-card__heading">
+              <span class="offer-card__number" aria-hidden="true">{{ index + 1 }}</span>
+              <h3 class="offer-card__title">
+                @if (item.id === 'websites') {
+                  {{ 'studioServices.homeCards.websiteTitle' | transloco }}
+                } @else if (item.id === 'stores') {
+                  {{ 'studioServices.homeCards.stores.title' | transloco }}
+                } @else {
+                  {{ 'studioServices.items.' + item.id + '.title' | transloco }}
+                }
+              </h3>
+            </div>
+
+            @switch (item.id) {
+              @case ('websites') {
+                <div class="website-preview">
+                  <div class="editable">
+                    <div class="browser-bar" aria-hidden="true">
+                      <i></i><i></i><i></i>
+                      <span>{{ 'studioServices.homeCards.websiteAddress' | transloco }}</span>
+                    </div>
+                    <div class="edit-toolbar" aria-hidden="true">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M7 12h6a3 3 0 0 1 0 6H7zm0 0V6h5a3 3 0 0 1 0 6" /></svg
+                      ><svg viewBox="0 0 24 24"><path d="M11 6h7M6 18h7m2-12L9 18" /></svg
+                      ><svg viewBox="0 0 24 24">
+                        <path
+                          d="M10 13a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1.5 1.5m2.5 5.5a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1.5-1.5"
+                        /></svg
+                      ><svg viewBox="0 0 24 24">
+                        <path d="m4 20 4-.8L20 7a2.8 2.8 0 0 0-4-4L4 15zM14 5l4 4" />
+                      </svg>
+                    </div>
+                    <p class="offer-card__description">
+                      {{ 'studioServices.items.websites.description' | transloco }}
+                    </p>
+                    <div class="edit-actions" aria-hidden="true">
+                      <span class="edit-action edit-action--save">
+                        {{ 'studioServices.homeCards.save' | transloco }}
+                      </span>
+                      <span class="edit-action">
+                        {{ 'studioServices.homeCards.cancel' | transloco }}
+                      </span>
+                    </div>
+                  </div>
+                  <div aria-hidden="true">
+                    <div class="devices">
+                      <svg viewBox="0 0 24 24">
+                        <rect x="2" y="3" width="20" height="13" rx="1" />
+                        <path d="M12 16v4m-5 0h10" /></svg
+                      ><svg viewBox="0 0 24 24">
+                        <rect x="4" y="2" width="16" height="20" rx="2" />
+                        <path d="M11 18h2" /></svg
+                      ><svg viewBox="0 0 24 24">
+                        <rect x="6" y="2" width="12" height="20" rx="2" />
+                        <path d="M11 18h2" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              }
+              @case ('stores') {
+                <div class="store">
+                  <ul class="card-checklist">
+                    @for (feature of storeFeatures; track feature; let step = $index) {
+                      <li class="row" [style.--step]="step">
+                        {{ 'studioServices.homeCards.stores.' + feature | transloco }}
+                        <span class="check" aria-hidden="true">✓</span>
+                      </li>
+                    }
+                  </ul>
+                  <div aria-hidden="true">
+                    <div class="order">
+                      <span>{{ 'studioServices.homeCards.stores.order' | transloco }}</span>
+                      <span>#1042</span>
+                    </div>
+                    <div class="stamp-area">
+                      <span class="stamp">{{
+                        'studioServices.homeCards.stores.paid' | transloco
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+              @case ('maintenance') {
+                <div class="fix">
+                  <div class="git-commands" aria-hidden="true">
+                    <code class="git-command">$ git push</code>
+                  </div>
+                  <ul class="card-checklist">
+                    @for (feature of maintenanceFeatures; track feature; let step = $index) {
+                      <li class="row" [style.--step]="step">
+                        <span class="box" aria-hidden="true"><span>[ ]</span><span>[x]</span></span>
+                        {{ 'studioServices.homeCards.maintenance.' + feature | transloco }}
+                      </li>
+                    }
+                  </ul>
+                  <div class="progress" aria-hidden="true"><i></i></div>
+                  <span class="merged" aria-hidden="true">
+                    ⑂ {{ 'studioServices.homeCards.maintenance.merged' | transloco }}
+                  </span>
+                </div>
+              }
+            }
           </a>
         </li>
       }
@@ -115,7 +219,10 @@
           {{ 'home.featured.title' | transloco }}
         </h2>
 
-        <a class="button button--secondary featured__view-all" [routerLink]="['/', language(), 'products']">
+        <a
+          class="button button--secondary featured__view-all"
+          [routerLink]="['/', language(), 'products']"
+        >
           {{ 'home.featured.viewAll' | transloco }}
         </a>
       </div>

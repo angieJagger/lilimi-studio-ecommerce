@@ -41,4 +41,20 @@ export class Home {
 
   protected readonly primaryServices = primaryStudioServices;
   protected readonly additionalServices = additionalStudioServices;
+  protected readonly storeFeatures = [
+    'catalog',
+    'cart',
+    'orders',
+    'payments',
+    'delivery',
+    'admin',
+  ] as const;
+  protected readonly maintenanceFeatures = [
+    'bugFixes',
+    'improvements',
+    'updates',
+    'seo',
+    'security',
+    'features',
+  ] as const;
 }

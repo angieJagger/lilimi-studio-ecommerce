@@ -1302,6 +1302,32 @@
     "privacy": "Polityka prywatności"
   },
   "studioServices": {
+    "homeCards": {
+      "websiteTitle": "Strony internetowe",
+      "websiteAddress": "mojastrona.pl",
+      "save": "Zapisz",
+      "cancel": "Anuluj",
+      "stores": {
+        "title": "Dedykowane sklepy internetowe",
+        "catalog": "Katalog produktów",
+        "cart": "Koszyk",
+        "orders": "Zamówienia",
+        "payments": "Płatności",
+        "delivery": "Opcje dostawy",
+        "admin": "Panel administracyjny",
+        "order": "Zamówienie",
+        "paid": "Zapłacono"
+      },
+      "maintenance": {
+        "bugFixes": "Naprawa błędów",
+        "improvements": "Poprawa wydajności i wyglądu",
+        "updates": "Aktualizacje",
+        "seo": "Poprawki techniczne SEO",
+        "security": "Zabezpieczenia strony",
+        "features": "Nowe funkcje",
+        "merged": "Scalono"
+      }
+    },
     "eyebrow": "Usługi",
     "homeTitle": "Od pomysłu do konkretnego rozwiązania.",
     "pageTitle": "Wszystko, czego potrzeba, aby zaistnieć w internecie",
