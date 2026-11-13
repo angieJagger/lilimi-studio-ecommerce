@@ -206,6 +206,26 @@ jobs:
           fi
 
           compose ps
+          rotate_deployment_backups() {
+            local dump stamp media environment complete_count=0
+            while IFS= read -r dump; do
+              stamp=${dump#lilimi-before-deploy-}
+              stamp=${stamp%.dump}
+              [[ "$stamp" =~ ^[0-9]{8}-[0-9]{6}$ ]] || continue
+              media="backups/lilimi-media-before-deploy-$stamp.tar.gz"
+              environment="backups/environment-before-deploy-$stamp"
+              [[ -s "$media" && -s "$environment" && -s "backups/$dump" ]] || continue
+              complete_count=$((complete_count + 1))
+              if (( complete_count > 10 )) && [[ "backups/$dump" != "$backup_file" ]]; then
+                rm -- "backups/$dump" "$media" "$environment" || return 1
+              fi
+            done < <(find backups -maxdepth 1 -type f -name 'lilimi-before-deploy-*.dump' -printf '%f\n' | LC_ALL=C sort -r)
+          }
+
+          if ! rotate_deployment_backups; then
+            echo "::warning::Could not finish rotating deployment backups."
+          fi
+
           echo "Deployment completed: $image_tag"
           REMOTE
 

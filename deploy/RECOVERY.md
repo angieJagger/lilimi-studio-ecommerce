@@ -18,7 +18,9 @@ A deployment creates:
 
 The backend is stopped while the database and media backups are created.
 Use database and media backups with the same timestamp when restoring
-a complete recovery point. Backups remain on the application server.
+a complete recovery point. After a successful deployment, the workflow keeps
+the ten newest complete pre-deployment sets. Incomplete sets and off-host
+snapshots are outside this rotation.
 
 The deployment updates `.env` with the selected image tag only after
 the deployment checks succeed.
