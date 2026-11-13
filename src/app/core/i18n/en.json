@@ -1243,6 +1243,8 @@
     "productContext": "Your inquiry concerns: {{ name }}",
     "attachments": {
       "label": "Attachments (optional)",
+      "chooseFiles": "Choose files",
+      "noFilesSelected": "No files selected",
       "hint": "Add references, a logo or artwork for your quote. JPG, PNG, WebP or PDF. Up to 5 files, each no larger than 10 MiB.",
       "remove": "Remove",
       "removeNamed": "Remove attachment {{name}}",

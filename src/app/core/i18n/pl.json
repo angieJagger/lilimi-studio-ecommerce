@@ -1245,6 +1245,8 @@
         "productContext": "Zapytanie dotyczy: {{ name }}",
     "attachments": {
       "label": "Załączniki (opcjonalnie)",
+      "chooseFiles": "Wybierz pliki",
+      "noFilesSelected": "Nie wybrano plików",
       "hint": "Dodaj inspiracje, logo lub grafikę do wyceny. JPG, PNG, WebP lub PDF. Maksymalnie 5 plików, każdy do 10 MiB.",
       "remove": "Usuń",
       "removeNamed": "Usuń załącznik {{name}}",

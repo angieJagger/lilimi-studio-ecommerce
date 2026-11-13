@@ -166,7 +166,7 @@
       </div>
 
             <div class="form-field">
-        <label for="inquiry-attachments">
+        <label for="inquiry-attachments-button">
           {{ 'projectInquiry.attachments.label' | transloco }}
         </label>
 
@@ -174,8 +174,20 @@
           {{ 'projectInquiry.attachments.hint' | transloco }}
         </p>
 
+        <button
+          id="inquiry-attachments-button"
+          class="button button--secondary"
+          type="button"
+          aria-describedby="inquiry-attachments-hint"
+          (click)="attachmentInput.click()"
+        >
+          {{ 'projectInquiry.attachments.chooseFiles' | transloco }}
+        </button>
+
         <input
+          #attachmentInput
           id="inquiry-attachments"
+          hidden
           type="file"
           multiple
           accept=".jpg,.jpeg,.png,.webp,.pdf"
@@ -194,6 +206,12 @@
             role="alert"
           >
             {{ message | transloco }}
+          </p>
+        }
+
+        @if (attachments().length === 0) {
+          <p class="project-inquiry__attachment-hint">
+            {{ 'projectInquiry.attachments.noFilesSelected' | transloco }}
           </p>
         }
 
