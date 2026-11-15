@@ -44,6 +44,7 @@ public class OrderController {
   @PostMapping
   public ResponseEntity<CreateOrderResponse> createOrder(
     @RequestHeader("Idempotency-Key") UUID idempotencyKey,
+    @RequestHeader(name = "X-Turnstile-Token", required = false) String turnstileToken,
     @Valid @RequestBody CreateOrderRequest request,
     Authentication authentication,
     HttpServletRequest servletRequest
@@ -60,7 +61,8 @@ public class OrderController {
       request,
       accountId,
       servletRequest.getRemoteAddr(),
-      guestOwner
+      guestOwner,
+      turnstileToken
     );
 
     if (guestSession != null) {

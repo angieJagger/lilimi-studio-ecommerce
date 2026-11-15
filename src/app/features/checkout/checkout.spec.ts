@@ -1,11 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { AuthSessionService } from '../../core/auth/auth-session.service';
 import type { CurrentUser } from '../../core/auth/auth.model';
 import { CustomerProfileApiService } from '../../core/customer/customer-profile-api.service';
 import type { CustomerProfile } from '../../core/customer/customer-profile.model';
+import { TurnstileWidget } from '../../core/turnstile/turnstile-widget';
 import { TranslocoService } from '@jsverse/transloco';
 import { vi } from 'vitest';
 
@@ -18,6 +20,7 @@ import { Checkout } from './checkout';
 import { OrderApiService } from './order-api.service';
 import { OrderSubmissionKeyService } from './order-submission-key.service';
 import type { CreateOrderResponse } from './order.model';
+import { provideDisabledTurnstileTesting } from '../../testing/turnstile-testing';
 
 describe('Checkout', () => {
   let fixture: ComponentFixture<Checkout>;
@@ -110,6 +113,7 @@ describe('Checkout', () => {
           provide: OrderSubmissionKeyService,
           useValue: submissionKeysMock,
         },
+        provideDisabledTurnstileTesting()
       ],
     }).compileComponents();
 
@@ -174,6 +178,81 @@ describe('Checkout', () => {
 
     await fixture.whenStable();
   }
+
+  it('should wait for guest verification and submit the Turnstile token', async () => {
+    await reviewDigitalOrder();
+
+    const widget = fixture.debugElement.query(By.directive(TurnstileWidget))
+      .componentInstance as TurnstileWidget;
+    const submitButton = element.querySelector<HTMLButtonElement>('button[aria-busy]')!;
+
+    widget.stateChange.emit({ ready: false, token: null });
+    await fixture.whenStable();
+
+    expect(submitButton.disabled).toBe(true);
+    submitButton.click();
+    expect(orderApiMock.createOrder).not.toHaveBeenCalled();
+
+    widget.stateChange.emit({ ready: true, token: 'test-checkout-token' });
+    await fixture.whenStable();
+
+    expect(submitButton.disabled).toBe(false);
+    await submitReviewedOrder();
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledExactlyOnceWith(
+      expect.any(Object),
+      '7c82dd0f-9289-4a9e-bf58-05b415d6da48',
+      'test-checkout-token',
+    );
+  });
+
+  it('should retry a rejected guest order with a fresh Turnstile token', async () => {
+    await reviewDigitalOrder();
+
+    const widget = fixture.debugElement.query(By.directive(TurnstileWidget))
+      .componentInstance as TurnstileWidget;
+    const submitButton = element.querySelector<HTMLButtonElement>('button[aria-busy]')!;
+
+    // The disabled test widget does not emit a pending state on reset.
+    const reset = vi.spyOn(widget, 'reset').mockImplementation(() => {
+      widget.stateChange.emit({ ready: false, token: null });
+    });
+
+    widget.stateChange.emit({ ready: true, token: 'rejected-token' });
+    await fixture.whenStable();
+    await submitReviewedOrder();
+
+    const [firstRequest, firstKey] = orderApiMock.createOrder.mock.calls[0];
+
+    orderResult.error(
+      new HttpErrorResponse({
+        status: 403,
+        error: { code: 'TURNSTILE_REJECTED' },
+      }),
+    );
+    await fixture.whenStable();
+
+    expect(reset).toHaveBeenCalledOnce();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Weryfikacja wygasła lub nie powiodła się. Spróbuj ponownie.',
+    );
+    expect(submitButton.disabled).toBe(true);
+    submitButton.click();
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(1);
+
+    orderApiMock.createOrder.mockReturnValue(new Subject<CreateOrderResponse>().asObservable());
+    widget.stateChange.emit({ ready: true, token: 'fresh-token' });
+    await fixture.whenStable();
+    await submitReviewedOrder();
+
+    expect(orderApiMock.createOrder).toHaveBeenCalledTimes(2);
+    expect(orderApiMock.createOrder).toHaveBeenNthCalledWith(
+      2,
+      firstRequest,
+      firstKey,
+      'fresh-token',
+    );
+  });
 
   it('should show a return to products for an empty cart', () => {
     expect(element.textContent).toContain('Twój koszyk jest pusty');
@@ -443,6 +522,7 @@ describe('Checkout', () => {
         ],
       },
       expect.any(String),
+      null
     );
   });
 

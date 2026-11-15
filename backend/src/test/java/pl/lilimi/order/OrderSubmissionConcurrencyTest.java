@@ -13,6 +13,9 @@ import pl.lilimi.order.api.OrderContactRequest;
 import pl.lilimi.order.api.OrderDeliveryRequest;
 import pl.lilimi.order.api.OrderItemRequest;
 import pl.lilimi.order.application.OrderSubmissionService;
+import pl.lilimi.order.api.OrderAddressRequest;
+import pl.lilimi.order.api.SweatshirtConfigurationRequest;
+import pl.lilimi.order.application.OrderStockLimitException;
 
 import java.util.List;
 import java.util.UUID;
@@ -138,6 +141,94 @@ class OrderSubmissionConcurrencyTest {
           packageId
         );
       }
+    }
+  }
+
+  @Test
+  void shouldReserveLastGarmentUnitOnlyOnceForConcurrentOrders() throws Exception {
+    var variantId = jdbcTemplate.queryForObject("""
+    SELECT id FROM garment_variants
+    WHERE product_id = 'embroidered-002'
+      AND pattern_id = 'pattern-001'
+      AND fit = 'men' AND size = 'M' AND color = 'black'
+      AND embroidery_option_id = 'large-back'
+    """, UUID.class);
+    var originalStock = jdbcTemplate.queryForObject(
+      "SELECT stock_quantity FROM garment_variants WHERE id = ?",
+      Integer.class,
+      variantId
+    );
+
+    var request = new CreateOrderRequest(
+      "pl",
+      new OrderContactRequest("Test Customer", "customer@example.com", null),
+      new OrderDeliveryRequest.Courier(
+        "dpd-courier",
+        new OrderAddressRequest("Testowa 10", null, "65-001", "Zielona Góra", "PL")
+      ),
+      List.of(new OrderItemRequest.Sweatshirt(
+        "embroidered-002",
+        "pattern-001",
+        new SweatshirtConfigurationRequest("men", "M", "black", "large-back"),
+        1
+      ))
+    );
+
+    var firstKey = UUID.randomUUID();
+    var secondKey = UUID.randomUUID();
+    var ready = new CountDownLatch(2);
+    var start = new CountDownLatch(1);
+    var executor = Executors.newFixedThreadPool(2);
+
+    try {
+      jdbcTemplate.update("UPDATE garment_variants SET stock_quantity = 1 WHERE id = ?", variantId);
+      long ordersBefore = count("orders");
+
+      var results = List.of(firstKey, secondKey).stream()
+        .map(key -> executor.submit(() -> {
+          ready.countDown();
+          if (!start.await(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Start signal timed out");
+          }
+
+          try {
+            submissionService.submit(key, request);
+            return true;
+          } catch (OrderStockLimitException exception) {
+            assertThat(exception.getVariantId()).isEqualTo(variantId);
+            assertThat(exception.getMaxQuantity()).isZero();
+            return false;
+          }
+        }))
+        .toList();
+
+      assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+      start.countDown();
+
+      assertThat(List.of(
+        results.get(0).get(30, TimeUnit.SECONDS),
+        results.get(1).get(30, TimeUnit.SECONDS)
+      )).containsExactlyInAnyOrder(true, false);
+      assertThat(count("orders")).isEqualTo(ordersBefore + 1);
+      assertThat(jdbcTemplate.queryForObject(
+        "SELECT stock_quantity FROM garment_variants WHERE id = ?",
+        Integer.class,
+        variantId
+      )).isZero();
+    } finally {
+      start.countDown();
+      executor.shutdownNow();
+      if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+        throw new IllegalStateException("Submission threads did not terminate");
+      }
+
+      cleanUp(firstKey);
+      cleanUp(secondKey);
+      jdbcTemplate.update(
+        "UPDATE garment_variants SET stock_quantity = ? WHERE id = ?",
+        originalStock,
+        variantId
+      );
     }
   }
 

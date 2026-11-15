@@ -18,15 +18,22 @@ export class OrderApiService {
   createOrder(
     request: CreateOrderRequest,
     idempotencyKey: string,
+    turnstileToken?: string | null,
   ): Observable<CreateOrderResponse> {
-    return this.csrf.initialize(true).pipe(
-      switchMap(() =>
-        this.http.post<CreateOrderResponse>(`${this.baseUrl}/orders`, request, {
-          headers: {
-            'Idempotency-Key': idempotencyKey,
-          },
-        }),
-      ),
-    );
+    const headers: Record<string, string> = {
+      'Idempotency-Key': idempotencyKey,
+    };
+
+    if (turnstileToken) {
+      headers['X-Turnstile-Token'] = turnstileToken;
+    }
+
+    return this.csrf
+      .initialize(true)
+      .pipe(
+        switchMap(() =>
+          this.http.post<CreateOrderResponse>(`${this.baseUrl}/orders`, request, { headers }),
+        ),
+      );
   }
 }

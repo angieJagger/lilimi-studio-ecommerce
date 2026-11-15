@@ -13,6 +13,8 @@ import pl.lilimi.order.application.OrderProductUnavailableException;
 import pl.lilimi.order.application.OrderSubmissionConflictException;
 import pl.lilimi.order.application.OrderStockLimitException;
 import pl.lilimi.order.application.OrderRateLimitExceededException;
+import pl.lilimi.security.turnstile.TurnstileRejectedException;
+import pl.lilimi.security.turnstile.TurnstileUnavailableException;
 
 @RestControllerAdvice(assignableTypes = OrderController.class)
 public class OrderExceptionHandler {
@@ -129,6 +131,33 @@ public class OrderExceptionHandler {
       .header("Cache-Control", "no-store")
       .body(body);
   }
+
+  @ExceptionHandler(TurnstileRejectedException.class)
+  public ProblemDetail handleTurnstileRejected() {
+    return problem(
+      HttpStatus.FORBIDDEN,
+      "Verification rejected",
+      "Verify again before submitting the order.",
+      "TURNSTILE_REJECTED"
+    );
+  }
+
+  @ExceptionHandler(TurnstileUnavailableException.class)
+  public ResponseEntity<ProblemDetail> handleTurnstileUnavailable() {
+    var body = problem(
+      HttpStatus.SERVICE_UNAVAILABLE,
+      "Verification unavailable",
+      "Try submitting the order again later.",
+      "TURNSTILE_UNAVAILABLE"
+    );
+
+    return ResponseEntity
+      .status(HttpStatus.SERVICE_UNAVAILABLE)
+      .header("Retry-After", "30")
+      .header("Cache-Control", "no-store")
+      .body(body);
+  }
+
   private ProblemDetail problem(
     HttpStatus status,
     String title,

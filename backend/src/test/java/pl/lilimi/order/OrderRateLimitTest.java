@@ -76,7 +76,8 @@ class OrderRateLimitTest {
         request(),
         null,
         SOURCE,
-        GUEST_OWNER
+        GUEST_OWNER,
+        null
       )
     )
       .isInstanceOf(OrderRateLimitExceededException.class)
@@ -109,7 +110,8 @@ class OrderRateLimitTest {
       request(),
       null,
       SOURCE,
-      GUEST_OWNER
+      GUEST_OWNER,
+      null
     );
 
     createOrders(9);
@@ -119,7 +121,8 @@ class OrderRateLimitTest {
       request(),
       null,
       SOURCE,
-      GUEST_OWNER
+      GUEST_OWNER,
+      null
     );
 
     assertThat(repeated.getId()).isEqualTo(original.getId());
@@ -149,7 +152,8 @@ class OrderRateLimitTest {
       request(),
       null,
       SOURCE,
-      GUEST_OWNER
+      GUEST_OWNER,
+      null
     );
 
     assertThat(order.getId()).isNotNull();
@@ -180,7 +184,8 @@ class OrderRateLimitTest {
         unavailableRequest,
         null,
         SOURCE,
-        GUEST_OWNER
+        GUEST_OWNER,
+        null
       )
     ).isInstanceOf(OrderProductUnavailableException.class);
 
@@ -196,7 +201,8 @@ class OrderRateLimitTest {
         request(),
         null,
         SOURCE,
-        GUEST_OWNER
+        GUEST_OWNER,
+        null
       );
     }
   }

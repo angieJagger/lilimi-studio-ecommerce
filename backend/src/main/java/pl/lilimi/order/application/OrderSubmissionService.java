@@ -14,6 +14,7 @@ import pl.lilimi.order.persistence.OrderConfirmationEmailRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.order.persistence.OrderSubmissionRepository;
 import pl.lilimi.security.application.PublicFormRateLimiter;
+import pl.lilimi.security.turnstile.TurnstileVerifier;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -33,19 +34,22 @@ public class OrderSubmissionService {
   private final OrderConfirmationEmailRepository confirmationEmails;
   private final JsonMapper mapper = JsonMapper.builder().build();
   private final PublicFormRateLimiter rateLimiter;
+  private final TurnstileVerifier turnstileVerifier;
 
   public OrderSubmissionService(
     OrderService orderService,
     OrderRepository orderRepository,
     OrderSubmissionRepository submissionRepository,
     OrderConfirmationEmailRepository confirmationEmails,
-    PublicFormRateLimiter rateLimiter
+    PublicFormRateLimiter rateLimiter,
+    TurnstileVerifier turnstileVerifier
   ) {
     this.orderService = orderService;
     this.orderRepository = orderRepository;
     this.submissionRepository = submissionRepository;
     this.confirmationEmails = confirmationEmails;
     this.rateLimiter = rateLimiter;
+    this.turnstileVerifier = turnstileVerifier;
   }
 
   @Transactional
@@ -53,13 +57,7 @@ public class OrderSubmissionService {
     @NotNull UUID idempotencyKey,
     @NotNull @Valid CreateOrderRequest request
   ) {
-    return submitInternal(
-      idempotencyKey,
-      request,
-      null,
-      null,
-      null
-    );
+    return submitInternal(idempotencyKey, request, null, null, null, null);
   }
 
   @Transactional
@@ -68,13 +66,7 @@ public class OrderSubmissionService {
     @NotNull @Valid CreateOrderRequest request,
     UUID customerAccountId
   ) {
-    return submitInternal(
-      idempotencyKey,
-      request,
-      customerAccountId,
-      null,
-      null
-    );
+    return submitInternal(idempotencyKey, request, customerAccountId, null, null, null);
   }
 
   @Transactional
@@ -83,19 +75,21 @@ public class OrderSubmissionService {
     @NotNull @Valid CreateOrderRequest request,
     UUID customerAccountId,
     @NotBlank String source,
-    UUID guestOwner
+    UUID guestOwner,
+    String turnstileToken
   ) {
     if (customerAccountId == null) {
       Objects.requireNonNull(guestOwner, "Guest order submission requires a session owner");
     }
-    return submitInternal(idempotencyKey, request, customerAccountId, source, guestOwner);
+    return submitInternal(idempotencyKey, request, customerAccountId, source, guestOwner, turnstileToken);
   }
 
   private Order submitInternal(
     UUID idempotencyKey,
     CreateOrderRequest request,
     UUID customerAccountId,
-    String source, UUID guestOwner
+    String source, UUID guestOwner,
+    String turnstileToken
   ) {
     String requestHash = hash(request);
 
@@ -135,6 +129,10 @@ public class OrderSubmissionService {
       if (retryAfter > 0) {
         throw new OrderRateLimitExceededException(retryAfter);
       }
+    }
+
+    if (guestOwner != null) {
+      turnstileVerifier.verify(turnstileToken, "checkout");
     }
 
     var order = orderService.createOrder(
