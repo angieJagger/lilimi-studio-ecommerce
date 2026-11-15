@@ -110,7 +110,6 @@ describe('OrderApiService', () => {
       statusText: 'No Content',
     });
     const pending = http.expectOne('/api/orders');
-    
     expect(pending.request.headers.has('X-Turnstile-Token')).toBe(false);
 
     pending.flush(
