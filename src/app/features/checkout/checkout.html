@@ -397,10 +397,14 @@
               <p role="alert">{{ errorKey | transloco }}</p>
             }
 
+            @if (isGuestCheckout()) {
+            <app-turnstile-widget action="checkout" [language]="language()" (stateChange)="turnstileState.set($event)" />
+            }
+
             <button
               class="button button--primary"
               type="button"
-              [disabled]="isSubmitting() || !canContinue()"
+              [disabled]="isSubmitting() || !canContinue() || !canSubmitOrder()"
               [attr.aria-busy]="isSubmitting()"
               (click)="submitOrder()"
             >

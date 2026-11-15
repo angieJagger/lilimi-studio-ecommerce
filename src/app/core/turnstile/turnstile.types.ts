@@ -1,4 +1,4 @@
-export type TurnstileAction = 'project-inquiry' | 'registration';
+export type TurnstileAction = 'project-inquiry' | 'registration' | 'checkout';
 
 export interface TurnstileRenderOptions {
   sitekey: string;

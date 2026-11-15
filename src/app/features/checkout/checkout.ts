@@ -1,4 +1,12 @@
-import { Component, computed, DestroyRef, inject, linkedSignal, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  linkedSignal,
+  signal,
+  viewChild
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { email, form, FormField, required, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
@@ -19,10 +27,11 @@ import type { CustomerProfile } from '../../core/customer/customer-profile.model
 import { OrderApiService } from './order-api.service';
 import { OrderSubmissionKeyService } from './order-submission-key.service';
 import { PaymentApiService } from './payment-api.service';
+import { TurnstileWidget, type TurnstileState } from '../../core/turnstile/turnstile-widget';
 
 @Component({
   selector: 'app-checkout',
-  imports: [RouterLink, TranslocoPipe, FormField],
+  imports: [RouterLink, TranslocoPipe, FormField, TurnstileWidget],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
@@ -30,6 +39,16 @@ export class Checkout {
   protected readonly cart = inject(CartService);
 
   private readonly session = inject(AuthSessionService);
+  private readonly turnstile = viewChild(TurnstileWidget);
+
+  protected readonly isGuestCheckout = computed(() => this.session.user() == null);
+  protected readonly turnstileState = signal<TurnstileState>({
+    ready: false,
+    token: null,
+  });
+  protected readonly canSubmitOrder = computed(
+    () => !this.isGuestCheckout() || this.turnstileState().ready,
+  );
   private readonly profileApi = inject(CustomerProfileApiService);
   protected readonly isLoadingProfile = signal(false);
   protected readonly profileLoadFailed = signal(false);
@@ -399,7 +418,12 @@ export class Checkout {
   }
 
   protected async submitOrder(): Promise<void> {
-    if (this.checkoutStep() !== 'review' || this.isSubmitting() || this.createdOrder() !== null) {
+    if (
+      this.checkoutStep() !== 'review' ||
+      this.isSubmitting() ||
+      this.createdOrder() !== null ||
+      !this.canSubmitOrder()
+    ) {
       return;
     }
 
@@ -421,7 +445,11 @@ export class Checkout {
       }
 
       this.orderApi
-        .createOrder(request, idempotencyKey)
+        .createOrder(
+          request,
+          idempotencyKey,
+          this.isGuestCheckout() ? this.turnstileState().token : null,
+        )
         .pipe(
           takeUntilDestroyed(this.destroyRef),
           finalize(() => this.isSubmitting.set(false)),
@@ -433,6 +461,7 @@ export class Checkout {
             this.cart.clear();
           },
           error: (error: unknown) => {
+            this.turnstile()?.reset();
             const limit = this.getOrderStockLimit(error);
             this.orderStockLimit.set(limit);
             if (!limit) this.orderErrorKey.set(this.getOrderErrorKey(error));
@@ -517,15 +546,21 @@ export class Checkout {
   }
 
   private getOrderStockLimit(error: unknown): { max: number; productName: string } | null {
-    if (!(error instanceof HttpErrorResponse) || error.status !== 409 ||
-      error.error?.code !== 'ORDER_STOCK_LIMIT') return null;
+    if (
+      !(error instanceof HttpErrorResponse) ||
+      error.status !== 409 ||
+      error.error?.code !== 'ORDER_STOCK_LIMIT'
+    )
+      return null;
 
     const { maxQuantity, productId, variantId } = error.error;
-    if (!Number.isInteger(maxQuantity) || maxQuantity < 0 || typeof productId !== 'string') return null;
+    if (!Number.isInteger(maxQuantity) || maxQuantity < 0 || typeof productId !== 'string')
+      return null;
 
-    const line = typeof variantId === 'string'
-      ? this.cart.sweatshirtLines().find((entry) => entry.variantId === variantId)
-      : this.cart.physicalLines().find(({ item }) => item.productId === productId);
+    const line =
+      typeof variantId === 'string'
+        ? this.cart.sweatshirtLines().find((entry) => entry.variantId === variantId)
+        : this.cart.physicalLines().find(({ item }) => item.productId === productId);
     return { max: maxQuantity, productName: line?.product?.name[this.language()] ?? productId };
   }
 
@@ -545,6 +580,11 @@ export class Checkout {
     switch (error.error?.code) {
       case 'ORDER_PRODUCT_UNAVAILABLE':
         return 'checkout.orderErrors.unavailable';
+      case 'TURNSTILE_REJECTED':
+        return 'turnstile.rejected';
+
+      case 'TURNSTILE_UNAVAILABLE':
+        return 'turnstile.unavailable';
 
       case 'ORDER_DELIVERY_INVALID':
         return 'checkout.orderErrors.delivery';

@@ -58,7 +58,7 @@ describe('OrderApiService', () => {
 
     let received: CreateOrderResponse | undefined;
 
-    service.createOrder(request, idempotencyKey).subscribe((value) => {
+    service.createOrder(request, idempotencyKey, 'test-checkout-token').subscribe((value) => {
       received = value;
     });
 
@@ -75,6 +75,7 @@ describe('OrderApiService', () => {
 
     expect(pending.request.method).toBe('POST');
     expect(pending.request.headers.get('Idempotency-Key')).toBe(idempotencyKey);
+    expect(pending.request.headers.get('X-Turnstile-Token')).toBe('test-checkout-token');
     expect(pending.request.body).toEqual(request);
 
     pending.flush(response, {
@@ -109,6 +110,7 @@ describe('OrderApiService', () => {
       statusText: 'No Content',
     });
     const pending = http.expectOne('/api/orders');
+    expect(pending.request.headers.has('X-Turnstile-Token')).toBe(false);
 
     pending.flush(
       {
@@ -152,5 +154,5 @@ describe('OrderApiService', () => {
     http.expectNone('/api/orders');
   });
 
-  
+
 });

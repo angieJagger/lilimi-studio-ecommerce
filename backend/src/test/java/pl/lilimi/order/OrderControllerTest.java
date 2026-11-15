@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import pl.lilimi.DigitalPackageTestData;
@@ -24,6 +25,9 @@ import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
 import pl.lilimi.auth.persistence.UserAccountRepository;
+import pl.lilimi.security.turnstile.TurnstileVerifier;
+import pl.lilimi.security.turnstile.TurnstileRejectedException;
+
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -42,6 +46,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 
 @SpringBootTest
@@ -70,6 +79,9 @@ class OrderControllerTest {
 
   @Autowired
   private PaymentAttemptRepository paymentAttempts;
+
+  @MockitoBean
+  private TurnstileVerifier turnstileVerifier;
 
   @BeforeEach
   void prepareDigitalPackage() {
@@ -332,18 +344,36 @@ class OrderControllerTest {
       .andExpect(jsonPath("$.code").value("ORDER_STOCK_LIMIT"))
       .andExpect(jsonPath("$.maxQuantity").value(120));
 
-    var response = mockMvc.perform(post("/api/orders")
+    var orderKey = UUID.randomUUID().toString();
+
+    var submission = mockMvc.perform(post("/api/orders")
         .with(csrf())
-        .header("Idempotency-Key", UUID.randomUUID().toString())
+        .header("Idempotency-Key", orderKey)
         .contentType(MediaType.APPLICATION_JSON)
         .content(body))
       .andExpect(status().isCreated())
       .andExpect(jsonPath("$.subtotalInGrosz").value(298800))
       .andExpect(jsonPath("$.deliveryPriceInGrosz").value(1200))
       .andExpect(jsonPath("$.totalInGrosz").value(300000))
-      .andReturn().getResponse();
+      .andReturn();
+
+    var response = submission.getResponse();
 
     var orderId = UUID.fromString(mapper.readTree(response.getContentAsString()).get("id").asText());
+    mockMvc.perform(post("/api/orders")
+        .session((MockHttpSession) submission.getRequest().getSession(false))
+        .with(csrf())
+        .header("Idempotency-Key", orderKey)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(body))
+      .andExpect(status().isCreated())
+      .andExpect(jsonPath("$.id").value(orderId.toString()));
+
+    assertThat(jdbc.queryForObject(
+      "SELECT stock_quantity FROM products WHERE id = ?",
+      Integer.class,
+      productId
+    )).isZero();
     assertThat(jdbc.queryForObject(
       "SELECT physical_options FROM order_items WHERE order_id = ?", String.class, orderId
     )).isEqualTo("Color: Green");
@@ -572,6 +602,7 @@ class OrderControllerTest {
     var first = mockMvc.perform(post("/api/orders")
         .with(csrf())
         .header("Idempotency-Key", key)
+        .header("X-Turnstile-Token", "test-checkout-token")
         .contentType(MediaType.APPLICATION_JSON)
         .content(body))
       .andExpect(status().isCreated())
@@ -607,6 +638,38 @@ class OrderControllerTest {
     assertThat(secondResponse).isEqualTo(firstResponse);
     assertThat(orderRepository.count()).isEqualTo(ordersBefore + 1);
     assertThat(orderItemRepository.count()).isEqualTo(itemsBefore + 1);
+
+    verify(turnstileVerifier).verify("test-checkout-token", "checkout");
+    verifyNoMoreInteractions(turnstileVerifier);
+  }
+
+  @Test
+  void shouldRejectGuestOrderWhenTurnstileRejectsToken() throws Exception {
+    String token = "rejected-checkout-token";
+    doThrow(new TurnstileRejectedException())
+      .when(turnstileVerifier).verify(token, "checkout");
+
+    long ordersBefore = orderRepository.count();
+
+    var body = request(
+      "pattern-001",
+      "customer@example.com",
+      """
+      {"kind": "digital"}
+      """
+    );
+
+    mockMvc.perform(post("/api/orders")
+        .with(csrf())
+        .header("Idempotency-Key", UUID.randomUUID().toString())
+        .header("X-Turnstile-Token", token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(body))
+      .andExpect(status().isForbidden())
+      .andExpect(jsonPath("$.code").value("TURNSTILE_REJECTED"));
+
+    verify(turnstileVerifier).verify(token, "checkout");
+    assertThat(orderRepository.count()).isEqualTo(ordersBefore);
   }
 
   @Test
@@ -642,6 +705,8 @@ class OrderControllerTest {
       .isEqualTo(account.getId());
     assertThat(savedOrder.getContact().getEmail())
       .isEqualTo("different-contact@example.com");
+
+    verifyNoInteractions(turnstileVerifier);
   }
 
   @Test
