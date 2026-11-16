@@ -845,7 +845,6 @@ class AdminOrderControllerTest {
       UPDATE garment_stock SET quantity = 2
       WHERE product_id = 'embroidered-002'
         AND fit = 'men' AND size = 'M' AND color = 'black'
-        AND embroidery_option_id = 'small-front'
       """);
     var creation = mockMvc.perform(
         post("/api/orders")
