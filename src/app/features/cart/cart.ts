@@ -136,8 +136,19 @@ export class Cart {
   }
 
   private productQuantity(productId: string): number {
-    const variantQuantity = this.cart.sweatshirtLines().find((line) => line.variantId === productId)?.item.quantity;
-    return variantQuantity ?? this.cart.physicalItems()
+    const garment = this.cart.sweatshirtLines().find((line) => line.variantId === productId)?.item;
+    if (garment) {
+      const { fit, size, color } = garment.configuration;
+      return this.cart.sweatshirts().reduce((total, item) =>
+        item.productId === garment.productId &&
+        item.configuration.fit === fit &&
+        item.configuration.size === size &&
+        item.configuration.color === color
+          ? total + item.quantity
+          : total, 0);
+    }
+
+    return this.cart.physicalItems()
       .reduce((total, item) => item.productId === productId ? total + item.quantity : total, 0);
   }
 

@@ -56,11 +56,12 @@ public interface ProductRepository extends JpaRepository<Product, String> {
             'from' AS "priceType"
         FROM products p
         JOIN garment_variants v ON v.product_id = p.id
+        JOIN garment_stock stock ON stock.id = v.stock_id
         JOIN products pattern ON pattern.id = v.pattern_id
         WHERE p.active = TRUE
           AND p.product_type IN ('sweatshirt', 'tshirt')
           AND v.active = TRUE
-          AND v.stock_quantity > 0
+          AND stock.quantity > 0
           AND pattern.active = TRUE
           AND pattern.product_type = 'digital'
           AND p.id IN (:productIds)
@@ -93,8 +94,10 @@ public interface ProductRepository extends JpaRepository<Product, String> {
             e.width_mm AS "widthMm",
             e.height_mm AS "heightMm",
             e.placement AS "placement",
-            v.price_in_grosz AS "priceInGrosz"
+            v.price_in_grosz AS "priceInGrosz",
+            (stock.quantity > 0) AS "available"
         FROM garment_variants v
+        JOIN garment_stock stock ON stock.id = v.stock_id
         JOIN products p ON p.id = v.product_id
         JOIN products pattern ON pattern.id = v.pattern_id
         JOIN embroidery_options e
@@ -104,7 +107,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
           AND p.active = TRUE
           AND p.product_type IN ('sweatshirt', 'tshirt')
           AND v.active = TRUE
-          AND v.stock_quantity > 0
           AND pattern.active = TRUE
           AND pattern.product_type = 'digital'
         ORDER BY

@@ -109,10 +109,16 @@ export class SweatshirtConfigurator {
 
   protected addToCart(): void {
     const variant = this.selectedVariant();
-    if (!variant || this.isCheckingStock() || this.quantityLimitReached()) return;
+    if (!variant || this.variantUnavailable() || this.isCheckingStock() || this.quantityLimitReached()) return;
 
     const product = this.product();
-    const quantity = this.cart.sweatshirtLines().find((line) => line.variantId === variant.id)?.item.quantity ?? 0;
+    const quantity = this.cart.sweatshirts().reduce((total, item) =>
+      item.productId === product.id &&
+      item.configuration.fit === variant.fit &&
+      item.configuration.size === variant.size &&
+      item.configuration.color === variant.color
+        ? total + item.quantity
+        : total, 0);
     this.rejectedStock.set(null);
     this.stockCheckFailed.set(false);
     this.isCheckingStock.set(true);
@@ -234,23 +240,35 @@ export class SweatshirtConfigurator {
     },
   });
 
-  protected readonly availableSizes = computed(() => {
+  protected readonly sizeVariants = computed(() => {
     const fit = this.selectedFit();
 
     if (!fit) {
       return [];
     }
 
-    return garmentSizes[fit].filter((size) =>
-      this.patternVariants().some(
-        (variant) =>
-          variant.fit === fit &&
-          variant.color === this.selectedColor() &&
-          variant.embroideryOptionId === this.selectedEmbroidery() &&
-          variant.size === size,
-      ),
+    return this.patternVariants().filter(
+      (variant) =>
+        variant.fit === fit &&
+        variant.color === this.selectedColor() &&
+        variant.embroideryOptionId === this.selectedEmbroidery(),
     );
   });
+
+  protected readonly availableSizes = computed(() => {
+    const fit = this.selectedFit();
+    return fit ? garmentSizes[fit].filter((size) =>
+      this.sizeVariants().some((variant) => variant.size === size),
+    ) : [];
+  });
+
+  protected readonly unavailableSizes = computed(() => new Set(
+    this.sizeVariants().filter((variant) => variant.available === false).map((variant) => variant.size),
+  ));
+
+  protected readonly variantUnavailable = computed(
+    () => this.selectedVariant()?.available === false || this.rejectedStock() === 0,
+  );
 
   protected readonly selectedSize = linkedSignal<readonly string[], string>({
     source: this.availableSizes,

@@ -579,7 +579,7 @@ class OrderControllerTest {
       .andExpect(status().isNotFound());
     orderRepository.flush();
     assertThat(jdbc.queryForObject(
-      "SELECT stock_quantity FROM garment_variants WHERE id = ? AND archived = true AND active = false",
+      "SELECT s.quantity FROM garment_stock s JOIN garment_variants v ON v.stock_id = s.id WHERE v.id = ? AND v.archived = true AND v.active = false",
       Integer.class, variantId
     )).isEqualTo(2);
   }

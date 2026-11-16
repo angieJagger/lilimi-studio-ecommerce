@@ -48,7 +48,9 @@
         </option>
 
         @for (size of availableSizes(); track size) {
-        <option [value]="size">{{ size }}</option>
+        <option [value]="size">
+          {{ size }}@if (unavailableSizes().has(size)) { — {{ 'configurator.outOfStock' | transloco }} }
+        </option>
         }
       </select>
     </label>
@@ -79,11 +81,15 @@
     </label>
   </div>
 
-  <output class="configurator__price">
-    {{ 'configurator.price' | transloco }}: {{ formattedPrice() }}
-  </output>
+  @if (variantUnavailable()) {
+    <p class="configurator__unavailable" role="status">{{ 'configurator.variantUnavailable' | transloco }}</p>
+  } @else if (configurationComplete()) {
+    <output class="configurator__price">
+      {{ 'configurator.price' | transloco }}: {{ formattedPrice() }}
+    </output>
+  }
   <div class="configurator__actions">
-    <button class="button button--primary" type="button" [disabled]="!configurationComplete() || quantityLimitReached() || isCheckingStock()" (click)="addToCart()">
+    <button class="button button--primary" type="button" [disabled]="!configurationComplete() || variantUnavailable() || quantityLimitReached() || isCheckingStock()" (click)="addToCart()">
       {{ 'productDetail.addToCart' | transloco }}
     </button>
 
@@ -99,8 +105,8 @@
   }
 
   @let max = rejectedStock();
-  @if (max !== null) {
-    <p role="alert">{{ (max === 0 ? 'cart.stockUnavailable' : 'cart.stockLimit') | transloco: { max } }}</p>
+  @if (max !== null && max > 0) {
+    <p role="alert">{{ 'cart.stockLimit' | transloco: { max } }}</p>
   } @else if (stockCheckFailed()) {
     <p role="alert">{{ 'cart.stockCheckFailed' | transloco }}</p>
   }

@@ -3,6 +3,9 @@ package pl.lilimi.catalog;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -47,18 +50,20 @@ public class GarmentVariant {
   @Column(name = "archived", nullable = false)
   private boolean archived;
 
-  @Column(name = "stock_quantity", nullable = false)
-  private int stockQuantity;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "stock_id", nullable = false)
+  private GarmentStock stock;
+
+  public GarmentStock getStock() {
+    return stock;
+  }
 
   public int getStockQuantity() {
-    return stockQuantity;
+    return stock.getAvailableQuantity();
   }
 
   public void changeStockQuantity(int quantity) {
-    if (quantity < 0) {
-      throw new IllegalArgumentException("Stock quantity cannot be negative");
-    }
-    stockQuantity = quantity;
+    stock.setAvailableQuantity(quantity);
   }
 
   protected GarmentVariant() {

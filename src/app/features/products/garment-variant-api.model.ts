@@ -12,4 +12,5 @@ export interface GarmentVariantApiResponse {
   readonly placement: 'chest' | 'back';
   readonly priceInGrosz: number;
   readonly currency: 'PLN';
+  readonly available?: boolean;
 }

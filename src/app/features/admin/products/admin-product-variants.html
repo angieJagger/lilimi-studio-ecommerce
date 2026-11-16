@@ -100,7 +100,7 @@
       </div>
 
       <div class="variants__field">
-        <label for="variant-stock">{{ 'adminProducts.create.stockQuantity' | transloco }}</label>
+        <label for="variant-stock">{{ 'adminProducts.stock.sharedGarment' | transloco }}</label>
         <input id="variant-stock" type="text" inputmode="numeric" [formField]="editForm.stock"
           [attr.aria-invalid]="editForm.stock().touched() && editForm.stock().invalid() ? 'true' : null"
           [attr.aria-describedby]="editForm.stock().touched() && editForm.stock().invalid() ? 'variant-stock-error' : null" />

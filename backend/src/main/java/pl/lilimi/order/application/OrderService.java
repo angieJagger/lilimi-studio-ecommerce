@@ -198,7 +198,7 @@ public class OrderService {
     var quantities = new HashMap<UUID, Long>();
     for (var item : items) {
       if (item.garmentVariant() != null) {
-        quantities.merge(item.garmentVariant().getId(), (long) item.quantity(), Long::sum);
+        quantities.merge(item.garmentVariant().getStock().getId(), (long) item.quantity(), Long::sum);
       }
     }
 
@@ -206,7 +206,7 @@ public class OrderService {
       var variant = item.garmentVariant();
       if (variant == null) continue;
 
-      var requested = quantities.remove(variant.getId());
+      var requested = quantities.remove(variant.getStock().getId());
       if (requested == null) continue;
 
       int available = variant.getStockQuantity();
