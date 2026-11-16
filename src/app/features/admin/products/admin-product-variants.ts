@@ -277,7 +277,9 @@ export class AdminProductVariants {
     this.api
       .updateVariant(productId, variant.id, {
         priceInGrosz,
-        ...(this.editModel().stock !== '' ? { stockQuantity: Number(this.editModel().stock) } : {}),
+        ...(this.editModel().stock !== '' && Number(this.editModel().stock) !== variant.stockQuantity
+          ? { stockQuantity: Number(this.editModel().stock) }
+          : {}),
         active: this.editModel().active,
         expectedVersion: variant.version,
       })
@@ -291,17 +293,25 @@ export class AdminProductVariants {
             return;
           }
 
+          const updateRow = (item: AdminGarmentVariant): AdminGarmentVariant => {
+            if (item.id === updated.id) return updated;
+            if (item.fit === updated.fit && item.size === updated.size && item.color === updated.color) {
+              return { ...item, stockQuantity: updated.stockQuantity };
+            }
+            return item;
+          };
+
           this.variants.update((page) =>
             page
               ? {
                   ...page,
-                  items: page.items.map((item) => (item.id === updated.id ? updated : item)),
+                  items: page.items.map(updateRow),
                 }
               : page,
           );
 
           this.matrixVariants.update((variants) =>
-            variants.map((item) => (item.id === updated.id ? updated : item)),
+            variants.map(updateRow),
           );
 
           this.selectedVariant.set(null);

@@ -14,4 +14,5 @@ public interface GarmentVariantView {
   Integer getHeightMm();
   String getPlacement();
   Integer getPriceInGrosz();
+  boolean getAvailable();
 }

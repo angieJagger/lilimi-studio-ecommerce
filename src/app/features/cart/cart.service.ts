@@ -430,6 +430,7 @@ export class CartService {
       ?.variants()
       .find(
         (variant) =>
+          variant.available !== false &&
           variant.patternId === item.patternId &&
           variant.fit === item.configuration.fit &&
           variant.size === item.configuration.size &&

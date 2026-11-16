@@ -47,6 +47,10 @@
   }
 }
 
+.configurator__unavailable {
+  color: var(--status-error);
+}
+
 .configurator__price {
   display: block;
   margin-top: var(--spacing-24);

@@ -30,6 +30,7 @@ export interface TurnstileState {
   styleUrl: './turnstile-widget.scss',
 })
 export class TurnstileWidget {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly configuration = inject(TurnstileApiService);
   private readonly script = inject(TurnstileScriptService);
   private readonly destroyRef = inject(DestroyRef);
@@ -48,9 +49,22 @@ export class TurnstileWidget {
   private widgetId: string | null = null;
   private initialization = 0;
   private widgetGeneration = 0;
+  private renderedSize: 'compact' | 'flexible' = 'flexible';
 
   constructor() {
-    afterNextRender(() => void this.initialize());
+    afterNextRender(() => {
+      if (typeof ResizeObserver !== 'undefined') {
+        const observer = new ResizeObserver(() => {
+          if (this.widgetId !== null && this.renderedSize !== this.getWidgetSize(this.action())) {
+            this.renderWidget(this.action(), this.language());
+          }
+        });
+        observer.observe(this.host);
+        this.destroyRef.onDestroy(() => observer.disconnect());
+      }
+
+      void this.initialize();
+    });
 
     effect(() => {
       const action = this.action();
@@ -149,13 +163,14 @@ export class TurnstileWidget {
     this.stateChange.emit({ ready: false, token: null });
 
     try {
+      this.renderedSize = this.getWidgetSize(action);
       const widgetId = this.api.render(this.container().nativeElement, {
         sitekey: this.siteKey,
         action,
         language,
         theme: 'light',
         appearance: 'interaction-only',
-        size: 'flexible',
+        size: this.renderedSize,
         'response-field': false,
         callback: (token) => {
           if (!isCurrent()) {
@@ -199,6 +214,10 @@ export class TurnstileWidget {
     } catch {
       this.fail();
     }
+  }
+
+  private getWidgetSize(action: TurnstileAction): 'compact' | 'flexible' {
+    return action === 'checkout' && this.host.clientWidth < 300 ? 'compact' : 'flexible';
   }
 
   private removeWidget(): void {

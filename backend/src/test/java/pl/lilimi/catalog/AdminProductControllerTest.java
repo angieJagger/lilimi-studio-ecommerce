@@ -251,14 +251,13 @@ class AdminProductControllerTest {
   @Test
   void shouldAllowAdministratorWithDefaultPagination()
     throws Exception {
-    jdbc.update("UPDATE garment_variants SET stock_quantity = 0 WHERE product_id = 'embroidered-002'");
+    jdbc.update("UPDATE garment_stock SET quantity = 0 WHERE product_id = 'embroidered-002'");
     jdbc.update("""
-      UPDATE garment_variants SET stock_quantity = 5
-      WHERE product_id = 'embroidered-002' AND pattern_id = 'pattern-001'
-        AND fit = 'men' AND size = 'M' AND color = 'black' AND embroidery_option_id = 'small-front'
+      UPDATE garment_stock SET quantity = 5
+      WHERE product_id = 'embroidered-002' AND fit = 'men' AND size = 'M' AND color = 'black'
       """);
     jdbc.update("""
-      UPDATE garment_variants SET stock_quantity = 9, active = FALSE
+      UPDATE garment_variants SET active = FALSE
       WHERE product_id = 'embroidered-002' AND pattern_id = 'pattern-001'
         AND fit = 'men' AND size = 'M' AND color = 'black' AND embroidery_option_id = 'large-back'
       """);

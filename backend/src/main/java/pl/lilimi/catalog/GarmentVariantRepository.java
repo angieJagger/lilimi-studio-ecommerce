@@ -42,10 +42,11 @@ public interface GarmentVariantRepository
     SELECT EXISTS (
       SELECT 1
       FROM garment_variants variant
+      JOIN garment_stock stock ON stock.id = variant.stock_id
       JOIN products pattern ON pattern.id = variant.pattern_id
       WHERE variant.product_id = :productId
         AND variant.active = TRUE
-        AND variant.stock_quantity > 0
+        AND stock.quantity > 0
         AND pattern.active = TRUE
         AND pattern.product_type = 'digital'
     )
@@ -53,14 +54,17 @@ public interface GarmentVariantRepository
   boolean existsSellableVariant(@Param("productId") String productId);
 
   @Query(value = """
-    SELECT variant.product_id AS "productId", SUM(variant.stock_quantity) AS "stockQuantity"
-    FROM garment_variants variant
-    JOIN products pattern ON pattern.id = variant.pattern_id
-    WHERE variant.product_id IN (:productIds)
-      AND variant.active = TRUE
-      AND pattern.active = TRUE
-      AND pattern.product_type = 'digital'
-    GROUP BY variant.product_id
+    SELECT stock.product_id AS "productId", SUM(GREATEST(stock.quantity, 0)) AS "stockQuantity"
+    FROM garment_stock stock
+    WHERE stock.product_id IN (:productIds)
+      AND EXISTS (
+        SELECT 1
+        FROM garment_variants variant
+        JOIN products pattern ON pattern.id = variant.pattern_id
+        WHERE variant.stock_id = stock.id AND variant.active = TRUE
+          AND pattern.active = TRUE AND pattern.product_type = 'digital'
+      )
+    GROUP BY stock.product_id
     """, nativeQuery = true)
   List<StockTotal> findAvailableStockTotals(@Param("productIds") Collection<String> productIds);
 

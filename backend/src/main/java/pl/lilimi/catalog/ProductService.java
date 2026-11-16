@@ -153,7 +153,8 @@ public class ProductService {
         variant.getHeightMm(),
         variant.getPlacement(),
         variant.getPriceInGrosz(),
-        "PLN"
+        "PLN",
+        variant.getAvailable()
       ))
       .toList();
 

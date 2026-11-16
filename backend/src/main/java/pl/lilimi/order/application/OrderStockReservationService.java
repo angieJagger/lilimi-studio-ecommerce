@@ -91,7 +91,7 @@ public class OrderStockReservationService {
         product.changeStockQuantity(Math.addExact(product.getStockQuantity(), item.getQuantity()));
       } else {
         var variant = variants.findByIdAndProductId(item.getReservedVariantId(), product.getId()).orElseThrow();
-        variant.changeStockQuantity(Math.addExact(variant.getStockQuantity(), item.getQuantity()));
+        variant.getStock().release(item.getQuantity());
       }
       item.markStockReleased();
     }

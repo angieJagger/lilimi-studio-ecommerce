@@ -13,6 +13,7 @@ public record GarmentVariantResponse(
   int heightMm,
   String placement,
   int priceInGrosz,
-  String currency
+  String currency,
+  boolean available
 ) {
 }
