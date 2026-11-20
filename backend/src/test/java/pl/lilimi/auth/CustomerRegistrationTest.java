@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -136,17 +135,17 @@ class CustomerRegistrationTest {
       .andExpect(status().isNoContent())
       .andReturn();
 
-    var session = (MockHttpSession) login.getRequest().getSession(false);
+    var session = login.getResponse().getCookie("JSESSIONID");
     assertThat(session).isNotNull();
 
-    mockMvc.perform(get("/api/auth/me").session(session))
+    mockMvc.perform(get("/api/auth/me").cookie(session))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.email").value(EMAIL))
       .andExpect(jsonPath("$.roles[0]").value("CUSTOMER"))
       .andExpect(jsonPath("$.password").doesNotExist())
       .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
-    mockMvc.perform(get("/api/admin/products").session(session))
+    mockMvc.perform(get("/api/admin/products").cookie(session))
       .andExpect(status().isForbidden());
   }
 
