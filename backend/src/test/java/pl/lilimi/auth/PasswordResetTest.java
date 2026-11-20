@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -89,7 +88,7 @@ class PasswordResetTest {
     var oldSession = login(OLD_PASSWORD, 204);
     assertThat(oldSession).isNotNull();
 
-    mockMvc.perform(get("/api/auth/me").session(oldSession))
+    mockMvc.perform(get("/api/auth/me").cookie(oldSession))
       .andExpect(status().isOk());
 
     var token = requestToken();
@@ -103,9 +102,8 @@ class PasswordResetTest {
     assertThat(passwordEncoder.matches(OLD_PASSWORD, account.getPasswordHash()))
       .isFalse();
 
-    mockMvc.perform(get("/api/auth/me").session(oldSession))
+    mockMvc.perform(get("/api/auth/me").cookie(oldSession))
       .andExpect(status().isUnauthorized());
-    assertThat(oldSession.isInvalid()).isTrue();
 
     // Reset does not automatically sign the customer in.
     mockMvc.perform(get("/api/auth/me"))
@@ -114,7 +112,7 @@ class PasswordResetTest {
     login(OLD_PASSWORD, 401);
     var newSession = login(NEW_PASSWORD, 204);
     assertThat(newSession).isNotNull();
-    mockMvc.perform(get("/api/auth/me").session(newSession))
+    mockMvc.perform(get("/api/auth/me").cookie(newSession))
       .andExpect(status().isOk());
   }
 
@@ -247,7 +245,7 @@ class PasswordResetTest {
     ));
   }
 
-  private MockHttpSession login(String password, int expectedStatus)
+  private Cookie login(String password, int expectedStatus)
     throws Exception {
 
     var csrf = csrfCookie();
@@ -260,7 +258,7 @@ class PasswordResetTest {
       .andExpect(status().is(expectedStatus))
       .andReturn();
 
-    return (MockHttpSession) result.getRequest().getSession(false);
+    return result.getResponse().getCookie("JSESSIONID");
   }
 
   private Cookie csrfCookie() throws Exception {

@@ -5,13 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.server.ResponseStatusException;
+
 import pl.lilimi.auth.application.CurrentAccountService;
 import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.order.persistence.OrderSubmissionRepository;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -40,12 +43,15 @@ class OrderPaymentAccessServiceTest {
   @Mock
   private Authentication authentication;
 
+  @Mock
+  private OrderSubmissionRepository submissions;
+
   private GuestOrderAccessService guestAccess;
   private OrderPaymentAccessService service;
 
   @BeforeEach
   void setUp() {
-    guestAccess = new GuestOrderAccessService();
+    guestAccess = new GuestOrderAccessService(submissions);
 
     service = new OrderPaymentAccessService(
       orders,

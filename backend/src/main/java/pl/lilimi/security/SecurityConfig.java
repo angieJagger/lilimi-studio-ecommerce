@@ -1,5 +1,7 @@
 package pl.lilimi.security;
 
+import jakarta.servlet.DispatcherType;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
@@ -57,6 +59,10 @@ public class SecurityConfig {
         SecurityContextHolderFilter.class
       )
       .authorizeHttpRequests(authorize -> {
+        authorize
+          .dispatcherTypeMatchers(DispatcherType.ERROR)
+          .permitAll();
+
         if (environment.acceptsProfiles(Profiles.of("local"))) {
           authorize.requestMatchers(
             "/swagger-ui.html",

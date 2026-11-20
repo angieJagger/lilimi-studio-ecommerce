@@ -3,10 +3,13 @@ package pl.lilimi.payment.access;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
 
+import pl.lilimi.order.persistence.OrderSubmissionRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class GuestOrderAccessService {
@@ -19,20 +22,34 @@ public class GuestOrderAccessService {
 
   private static final int MAX_ORDERS = 50;
 
+  private final OrderSubmissionRepository submissions;
+
+  public GuestOrderAccessService(OrderSubmissionRepository submissions) {
+    this.submissions = submissions;
+  }
+
   public UUID submissionOwner(HttpSession session) {
-    synchronized (session) {
-      if (session.getAttribute(SUBMISSION_OWNER_ATTRIBUTE) instanceof UUID owner) {
-        return owner;
-      }
-      var owner = UUID.randomUUID();
-      session.setAttribute(SUBMISSION_OWNER_ATTRIBUTE, owner);
+    Objects.requireNonNull(session, "Session is required");
+
+    if (session.getAttribute(SUBMISSION_OWNER_ATTRIBUTE) instanceof UUID owner) {
       return owner;
     }
+
+    UUID owner = UUID.nameUUIDFromBytes(
+      ("lilimi:guest:" + session.getId()).getBytes(StandardCharsets.UTF_8)
+    );
+
+    session.setAttribute(SUBMISSION_OWNER_ATTRIBUTE, owner);
+    return owner;
   }
 
   public void grant(HttpSession session, UUID orderId) {
     Objects.requireNonNull(session, "Session is required");
     Objects.requireNonNull(orderId, "Order ID is required");
+
+    if (session.getAttribute(SUBMISSION_OWNER_ATTRIBUTE) instanceof UUID) {
+      return;
+    }
 
     synchronized (session) {
       var orderIds = new ArrayList<UUID>();
@@ -59,20 +76,18 @@ public class GuestOrderAccessService {
     }
   }
 
-  public boolean hasAccess(
-    HttpSession session,
-    UUID orderId
-  ) {
+  public boolean hasAccess(HttpSession session, UUID orderId) {
     if (session == null || orderId == null) {
       return false;
     }
 
     try {
-      synchronized (session) {
-        return session.getAttribute(ATTRIBUTE)
-          instanceof List<?> saved
-          && saved.contains(orderId);
+      if (session.getAttribute(SUBMISSION_OWNER_ATTRIBUTE) instanceof UUID owner) {
+        return submissions.belongsToGuest(orderId, owner);
       }
+
+      return session.getAttribute(ATTRIBUTE) instanceof List<?> saved
+        && saved.contains(orderId);
     } catch (IllegalStateException exception) {
       // The session may have expired or been invalidated.
       return false;

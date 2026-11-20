@@ -1,13 +1,17 @@
 package pl.lilimi.payment.status;
 
 import org.junit.jupiter.api.Test;
+import jakarta.servlet.http.Cookie;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.mock.web.MockHttpSession;
+import org.springframework.session.Session;
+import org.springframework.session.SessionRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
@@ -16,6 +20,7 @@ import pl.lilimi.order.domain.Order;
 import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderDelivery;
 import pl.lilimi.order.persistence.OrderRepository;
+import pl.lilimi.order.persistence.OrderSubmissionRepository;
 import pl.lilimi.payment.access.GuestOrderAccessService;
 import pl.lilimi.payment.domain.PaymentAttempt;
 import pl.lilimi.payment.persistence.PaymentAttemptRepository;
@@ -51,7 +56,10 @@ class PaymentStatusControllerTest {
   private UserAccountRepository accounts;
 
   @Autowired
-  private GuestOrderAccessService guestAccess;
+  private SessionRepository<?> sessions;
+
+  @Autowired
+  private OrderSubmissionRepository submissions;
 
   @Test
   void shouldReturnPendingStatusForAuthorizedGuest()
@@ -59,12 +67,10 @@ class PaymentStatusControllerTest {
 
     var order = createOrder(null);
     var attempt = createAttempt(order);
-    var session = new MockHttpSession();
-
-    guestAccess.grant(session, order.getId());
+    var session = createGuestSession(order.getId());
 
     mockMvc.perform(get(url(attempt.getId()))
-        .session(session))
+        .cookie(session))
       .andExpect(status().isOk())
       .andExpect(header().string(
         "Cache-Control",
@@ -106,17 +112,17 @@ class PaymentStatusControllerTest {
   }
 
   @Test
-  void shouldRejectDifferentGuestSession()
-    throws Exception {
-
+  void shouldRejectDifferentGuestSession() throws Exception {
     var order = createOrder(null);
     var attempt = createAttempt(order);
-    var originalSession = new MockHttpSession();
 
-    guestAccess.grant(originalSession, order.getId());
+    createGuestSession(order.getId());
+
+    var otherOrder = createOrder(null);
+    var otherSession = createGuestSession(otherOrder.getId());
 
     mockMvc.perform(get(url(attempt.getId()))
-        .session(new MockHttpSession()))
+        .cookie(otherSession))
       .andExpect(status().isNotFound());
   }
 
@@ -150,12 +156,10 @@ class PaymentStatusControllerTest {
     var owner = createAccount();
     var order = createOrder(owner);
     var attempt = createAttempt(order);
-    var session = new MockHttpSession();
-
-    guestAccess.grant(session, order.getId());
+    var session = createGuestSession(order.getId());
 
     mockMvc.perform(get(url(attempt.getId()))
-        .session(session))
+        .cookie(session))
       .andExpect(status().isNotFound());
   }
 
@@ -171,6 +175,30 @@ class PaymentStatusControllerTest {
         "/api/payments/attempts/not-a-uuid"
       ))
       .andExpect(status().isBadRequest());
+  }
+
+  private Cookie createGuestSession(UUID orderId) {
+    return createGuestSession(sessions, orderId);
+  }
+
+  private <S extends Session> Cookie createGuestSession(
+    SessionRepository<S> repository,
+    UUID orderId
+  ) {
+    var session = repository.createSession();
+    UUID owner = UUID.randomUUID();
+
+    session.setAttribute(
+      GuestOrderAccessService.class.getName() + ".submissionOwner",
+      owner
+    );
+    repository.save(session);
+
+    UUID key = UUID.randomUUID();
+    submissions.reserve(key, "a".repeat(64), owner);
+    submissions.attachOrder(key, orderId);
+
+    return new Cookie("JSESSIONID", session.getId());
   }
 
   private UserAccount createAccount() {

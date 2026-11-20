@@ -2,6 +2,7 @@ package pl.lilimi.payment.checkout;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import jakarta.servlet.http.Cookie;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -80,14 +81,15 @@ class OrderPaymentControllerTest {
   void shouldAllowGuestAfterSubmittingOrderInSameSession()
     throws Exception {
 
-    var session = new MockHttpSession();
-    UUID orderId = submitGuestOrder(session);
+    var submission = submitGuestOrder();
+    UUID orderId = submission.orderId();
+    Cookie session = submission.sessionCookie();
     UUID key = UUID.randomUUID();
 
     stubCheckout(orderId, key);
 
     mockMvc.perform(post(paymentUrl(orderId))
-        .session(session)
+        .cookie(session)
         .with(csrf())
         .header("Idempotency-Key", key))
       .andExpect(status().isOk())
@@ -101,12 +103,9 @@ class OrderPaymentControllerTest {
   void shouldRejectGuestUsingDifferentSession()
     throws Exception {
 
-    UUID orderId = submitGuestOrder(
-      new MockHttpSession()
-    );
+    UUID orderId = submitGuestOrder().orderId();
 
     mockMvc.perform(post(paymentUrl(orderId))
-        .session(new MockHttpSession())
         .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID()))
       .andExpect(status().isNotFound());
@@ -151,11 +150,12 @@ class OrderPaymentControllerTest {
   void shouldRequireCsrfEvenForAuthorizedGuest()
     throws Exception {
 
-    var session = new MockHttpSession();
-    UUID orderId = submitGuestOrder(session);
+    var submission = submitGuestOrder();
+    UUID orderId = submission.orderId();
+    Cookie session = submission.sessionCookie();
 
     mockMvc.perform(post(paymentUrl(orderId))
-        .session(session)
+        .cookie(session)
         .header("Idempotency-Key", UUID.randomUUID()))
       .andExpect(status().isForbidden());
 
@@ -164,11 +164,12 @@ class OrderPaymentControllerTest {
 
   @Test
   void shouldRequireIdempotencyKey() throws Exception {
-    var session = new MockHttpSession();
-    UUID orderId = submitGuestOrder(session);
+    var submission = submitGuestOrder();
+    UUID orderId = submission.orderId();
+    Cookie session = submission.sessionCookie();
 
     mockMvc.perform(post(paymentUrl(orderId))
-        .session(session)
+        .cookie(session)
         .with(csrf()))
       .andExpect(status().isBadRequest());
 
@@ -179,11 +180,12 @@ class OrderPaymentControllerTest {
   void shouldRejectMalformedIdempotencyKey()
     throws Exception {
 
-    var session = new MockHttpSession();
-    UUID orderId = submitGuestOrder(session);
+    var submission = submitGuestOrder();
+    UUID orderId = submission.orderId();
+    Cookie session = submission.sessionCookie();
 
     mockMvc.perform(post(paymentUrl(orderId))
-        .session(session)
+        .cookie(session)
         .with(csrf())
         .header("Idempotency-Key", "not-a-uuid"))
       .andExpect(status().isBadRequest());
@@ -194,7 +196,6 @@ class OrderPaymentControllerTest {
   @Test
   void shouldRejectUnknownOrder() throws Exception {
     mockMvc.perform(post(paymentUrl(UUID.randomUUID()))
-        .session(new MockHttpSession())
         .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID()))
       .andExpect(status().isNotFound());
@@ -202,11 +203,11 @@ class OrderPaymentControllerTest {
     verifyNoInteractions(checkout);
   }
 
-  private UUID submitGuestOrder(
-    MockHttpSession session
-  ) throws Exception {
+  private record GuestSubmission(UUID orderId, Cookie sessionCookie) {
+  }
+
+  private GuestSubmission submitGuestOrder() throws Exception {
     var result = mockMvc.perform(post("/api/orders")
-        .session(session)
         .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID())
         .contentType(MediaType.APPLICATION_JSON)
@@ -236,7 +237,13 @@ class OrderPaymentControllerTest {
       result.getResponse().getContentAsString()
     );
 
-    return UUID.fromString(body.get("id").asText());
+    var sessionCookie = result.getResponse().getCookie("JSESSIONID");
+    assertThat(sessionCookie).isNotNull();
+
+    return new GuestSubmission(
+      UUID.fromString(body.get("id").asText()),
+      sessionCookie
+    );
   }
 
   private UserAccount createAccount() {
@@ -284,8 +291,9 @@ class OrderPaymentControllerTest {
   void shouldResumePaymentForAuthorizedGuest()
     throws Exception {
 
-    var session = new MockHttpSession();
-    UUID orderId = submitGuestOrder(session);
+    var submission = submitGuestOrder();
+    UUID orderId = submission.orderId();
+    Cookie session = submission.sessionCookie();
     UUID key = UUID.randomUUID();
     UUID attemptId = UUID.randomUUID();
 
@@ -297,7 +305,7 @@ class OrderPaymentControllerTest {
       ));
 
     mockMvc.perform(post(paymentUrl(orderId) + "/resume")
-        .session(session)
+        .cookie(session)
         .with(csrf())
         .header("Idempotency-Key", key))
       .andExpect(status().isOk())
@@ -338,12 +346,9 @@ class OrderPaymentControllerTest {
   void shouldRejectResumptionFromDifferentGuestSession()
     throws Exception {
 
-    UUID orderId = submitGuestOrder(
-      new MockHttpSession()
-    );
+    UUID orderId = submitGuestOrder().orderId();
 
     mockMvc.perform(post(paymentUrl(orderId) + "/resume")
-        .session(new MockHttpSession())
         .with(csrf())
         .header("Idempotency-Key", UUID.randomUUID()))
       .andExpect(status().isNotFound());
@@ -372,11 +377,12 @@ class OrderPaymentControllerTest {
   void shouldRequireCsrfForPaymentResumption()
     throws Exception {
 
-    var session = new MockHttpSession();
-    UUID orderId = submitGuestOrder(session);
+    var submission = submitGuestOrder();
+    UUID orderId = submission.orderId();
+    Cookie session = submission.sessionCookie();
 
     mockMvc.perform(post(paymentUrl(orderId) + "/resume")
-        .session(session)
+        .cookie(session)
         .header("Idempotency-Key", UUID.randomUUID()))
       .andExpect(status().isForbidden());
 

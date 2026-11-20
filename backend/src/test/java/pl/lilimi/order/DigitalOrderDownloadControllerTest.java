@@ -2,6 +2,7 @@ package pl.lilimi.order;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import jakarta.servlet.http.Cookie;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.mock.web.MockHttpSession;
+import org.springframework.session.Session;
+import org.springframework.session.SessionRepository;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ import pl.lilimi.order.domain.OrderContact;
 import pl.lilimi.order.domain.OrderDelivery;
 import pl.lilimi.order.domain.OrderItem;
 import pl.lilimi.order.persistence.OrderItemRepository;
+import pl.lilimi.order.persistence.OrderSubmissionRepository;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.order.persistence.DigitalDownloadTokenRepository;
 import pl.lilimi.payment.access.GuestOrderAccessService;
@@ -64,9 +67,6 @@ class DigitalOrderDownloadControllerTest {
   private JdbcTemplate jdbc;
 
   @Autowired
-  private GuestOrderAccessService guestAccess;
-
-  @Autowired
   private UserAccountRepository accounts;
 
   @Autowired
@@ -77,6 +77,12 @@ class DigitalOrderDownloadControllerTest {
 
   @Autowired
   private Clock clock;
+
+  @Autowired
+  private SessionRepository<?> sessions;
+
+  @Autowired
+  private OrderSubmissionRepository submissions;
 
   @MockitoBean
   private PaymentAttemptRepository payments;
@@ -122,8 +128,7 @@ class DigitalOrderDownloadControllerTest {
 
   @Test
   void shouldDownloadFileForAuthorizedGuest() throws Exception {
-    var session = new MockHttpSession();
-    guestAccess.grant(session, orderId);
+    Cookie session = createGuestSession();
 
     when(payments.existsByOrderIdAndStatus(
       orderId,
@@ -135,7 +140,7 @@ class DigitalOrderDownloadControllerTest {
     when(storage.load(packageId + ".zip"))
       .thenReturn(new ByteArrayResource(content));
 
-    mvc.perform(get(downloadUrl()).session(session))
+    mvc.perform(get(downloadUrl()).cookie(session))
       .andExpect(status().isOk())
       .andExpect(content().contentType("application/zip"))
       .andExpect(content().bytes(content))
@@ -167,10 +172,9 @@ class DigitalOrderDownloadControllerTest {
 
   @Test
   void shouldRejectDifferentGuestSession() throws Exception {
-    var authorizedSession = new MockHttpSession();
-    guestAccess.grant(authorizedSession, orderId);
+    createGuestSession();
 
-    mvc.perform(get(downloadUrl()).session(new MockHttpSession()))
+    mvc.perform(get(downloadUrl()))
       .andExpect(status().isNotFound());
 
     verifyNoInteractions(payments, storage);
@@ -226,15 +230,14 @@ class DigitalOrderDownloadControllerTest {
 
   @Test
   void shouldRejectDownloadBeforePayment() throws Exception {
-    var session = new MockHttpSession();
-    guestAccess.grant(session, orderId);
+    Cookie session = createGuestSession();
 
     when(payments.existsByOrderIdAndStatus(
       orderId,
       PaymentAttemptStatus.SUCCEEDED
     )).thenReturn(false);
 
-    mvc.perform(get(downloadUrl()).session(session))
+    mvc.perform(get(downloadUrl()).cookie(session))
       .andExpect(status().isConflict());
 
     verifyNoInteractions(storage);
@@ -242,8 +245,7 @@ class DigitalOrderDownloadControllerTest {
 
   @Test
   void shouldRejectItemFromAnotherOrder() throws Exception {
-    var session = new MockHttpSession();
-    guestAccess.grant(session, orderId);
+    Cookie session = createGuestSession();
 
     when(payments.existsByOrderIdAndStatus(
       orderId,
@@ -274,7 +276,7 @@ class DigitalOrderDownloadControllerTest {
     var manipulatedUrl = "/api/orders/" + orderId
       + "/items/" + otherItem.getId() + "/download";
 
-    mvc.perform(get(manipulatedUrl).session(session))
+    mvc.perform(get(manipulatedUrl).cookie(session))
       .andExpect(status().isNotFound());
 
     verifyNoInteractions(storage);
@@ -282,8 +284,7 @@ class DigitalOrderDownloadControllerTest {
 
   @Test
   void shouldListPurchasedPackageForAuthorizedGuest() throws Exception {
-    var session = new MockHttpSession();
-    guestAccess.grant(session, orderId);
+    Cookie session = createGuestSession();
 
     when(payments.existsByOrderIdAndStatus(
       orderId,
@@ -291,7 +292,7 @@ class DigitalOrderDownloadControllerTest {
     )).thenReturn(true);
 
     mvc.perform(get("/api/orders/" + orderId + "/downloads")
-        .session(session))
+        .cookie(session))
       .andExpect(status().isOk())
       .andExpect(header().string(
         HttpHeaders.CACHE_CONTROL,
@@ -319,8 +320,7 @@ class DigitalOrderDownloadControllerTest {
 
   @Test
   void shouldRejectDownloadListBeforePayment() throws Exception {
-    var session = new MockHttpSession();
-    guestAccess.grant(session, orderId);
+    Cookie session = createGuestSession();
 
     when(payments.existsByOrderIdAndStatus(
       orderId,
@@ -328,7 +328,7 @@ class DigitalOrderDownloadControllerTest {
     )).thenReturn(false);
 
     mvc.perform(get("/api/orders/" + orderId + "/downloads")
-        .session(session))
+        .cookie(session))
       .andExpect(status().isConflict());
 
     verifyNoInteractions(storage);
@@ -449,5 +449,28 @@ class DigitalOrderDownloadControllerTest {
   private String downloadUrl() {
     return "/api/orders/" + orderId
       + "/items/" + itemId + "/download";
+  }
+
+  private Cookie createGuestSession() {
+    return createGuestSession(sessions);
+  }
+
+  private <S extends Session> Cookie createGuestSession(
+    SessionRepository<S> repository
+  ) {
+    var session = repository.createSession();
+    UUID owner = UUID.randomUUID();
+
+    session.setAttribute(
+      GuestOrderAccessService.class.getName() + ".submissionOwner",
+      owner
+    );
+    repository.save(session);
+
+    UUID key = UUID.randomUUID();
+    submissions.reserve(key, "a".repeat(64), owner);
+    submissions.attachOrder(key, orderId);
+
+    return new Cookie("JSESSIONID", session.getId());
   }
 }

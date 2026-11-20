@@ -49,6 +49,23 @@ public class OrderSubmissionRepository {
     );
   }
 
+  @Transactional(readOnly = true)
+  public boolean belongsToGuest(UUID orderId, UUID guestOwner) {
+    return Boolean.TRUE.equals(jdbcTemplate.queryForObject(
+      """
+      SELECT EXISTS (
+          SELECT 1
+          FROM order_submissions
+          WHERE order_id = ?
+            AND guest_owner = ?
+      )
+      """,
+      Boolean.class,
+      orderId,
+      guestOwner
+    ));
+  }
+
   public void attachOrder(UUID idempotencyKey, UUID orderId) {
     int updated = jdbcTemplate.update("""
             UPDATE order_submissions
