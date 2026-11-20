@@ -2,16 +2,17 @@ package pl.lilimi.auth;
 
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import pl.lilimi.PostgresTestConfiguration;
 import pl.lilimi.auth.domain.UserAccount;
 import pl.lilimi.auth.domain.UserRole;
@@ -68,14 +69,12 @@ class AuthSessionTest {
       .andExpect(status().isNoContent())
       .andReturn();
 
-    var session = (MockHttpSession) loginResult
-      .getRequest()
-      .getSession(false);
+    var session = loginResult.getResponse().getCookie("JSESSIONID");
 
     assertThat(session).isNotNull();
 
     mockMvc.perform(get("/api/auth/me")
-        .session(session))
+        .cookie(session))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.email").value("admin-test@example.com"))
       .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
@@ -84,11 +83,11 @@ class AuthSessionTest {
       .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
     mockMvc.perform(get("/api/admin/auth-check")
-        .session(session))
+        .cookie(session))
       .andExpect(status().isOk())
       .andExpect(content().string("ok"));
 
-    mockMvc.perform(get("/api/auth/session").session(session))
+    mockMvc.perform(get("/api/auth/session").cookie(session))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.email").value("admin-test@example.com"))
       .andExpect(jsonPath("$.roles[0]").value("ADMIN"));
@@ -96,12 +95,13 @@ class AuthSessionTest {
     var logoutCsrf = getCsrfCookie(session);
 
     mockMvc.perform(post("/api/auth/logout")
-        .session(session)
+        .cookie(session)
         .cookie(logoutCsrf)
         .header("X-XSRF-TOKEN", logoutCsrf.getValue()))
       .andExpect(status().isNoContent());
 
-    assertThat(session.isInvalid()).isTrue();
+    mockMvc.perform(get("/api/auth/session").cookie(session))
+      .andExpect(status().isNoContent());
 
     mockMvc.perform(get("/api/admin/auth-check"))
       .andExpect(status().isUnauthorized());
@@ -136,14 +136,12 @@ class AuthSessionTest {
       .andExpect(status().isUnauthorized())
       .andReturn();
 
-    var session = (MockHttpSession) result
-      .getRequest()
-      .getSession(false);
+    var session = result.getResponse().getCookie("JSESSIONID");
 
     var adminRequest = get("/api/admin/auth-check");
 
     if (session != null) {
-      adminRequest.session(session);
+      adminRequest.cookie(session);
     }
 
     mockMvc.perform(adminRequest)
@@ -178,8 +176,7 @@ class AuthSessionTest {
       .andExpect(status().isNoContent())
       .andReturn();
 
-    var firstSession = (MockHttpSession) firstLogin
-      .getRequest().getSession(false);
+    var firstSession = firstLogin.getResponse().getCookie("JSESSIONID");
 
     var secondCsrf = getCsrfCookie(null);
 
@@ -191,16 +188,15 @@ class AuthSessionTest {
       .andExpect(status().isNoContent())
       .andReturn();
 
-    var secondSession = (MockHttpSession) secondLogin
-      .getRequest().getSession(false);
+    var secondSession = secondLogin.getResponse().getCookie("JSESSIONID");
 
     assertThat(firstSession).isNotNull();
     assertThat(secondSession).isNotNull();
 
-    mockMvc.perform(get("/api/auth/me").session(firstSession))
+    mockMvc.perform(get("/api/auth/me").cookie(firstSession))
       .andExpect(status().isOk());
 
-    mockMvc.perform(get("/api/auth/me").session(secondSession))
+    mockMvc.perform(get("/api/auth/me").cookie(secondSession))
       .andExpect(status().isOk());
 
     account.changePasswordHash(passwordEncoder.encode(newPassword));
@@ -208,15 +204,18 @@ class AuthSessionTest {
 
     assertThat(account.getCredentialsVersion()).isEqualTo(1);
 
-    mockMvc.perform(get("/api/auth/session").session(firstSession))
+    mockMvc.perform(get("/api/auth/session").cookie(firstSession))
       .andExpect(status().isNoContent())
       .andExpect(content().string(""));
 
-    mockMvc.perform(get("/api/auth/me").session(secondSession))
+    mockMvc.perform(get("/api/auth/me").cookie(secondSession))
       .andExpect(status().isUnauthorized());
 
-    assertThat(firstSession.isInvalid()).isTrue();
-    assertThat(secondSession.isInvalid()).isTrue();
+    mockMvc.perform(get("/api/auth/me").cookie(firstSession))
+      .andExpect(status().isUnauthorized());
+
+    mockMvc.perform(get("/api/auth/me").cookie(secondSession))
+      .andExpect(status().isUnauthorized());
 
     var oldLoginCsrf = getCsrfCookie(null);
 
@@ -237,12 +236,11 @@ class AuthSessionTest {
       .andExpect(status().isNoContent())
       .andReturn();
 
-    var newSession = (MockHttpSession) newLogin
-      .getRequest().getSession(false);
+    var newSession = newLogin.getResponse().getCookie("JSESSIONID");
 
     assertThat(newSession).isNotNull();
 
-    mockMvc.perform(get("/api/auth/me").session(newSession))
+    mockMvc.perform(get("/api/auth/me").cookie(newSession))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.email").value(email))
       .andExpect(jsonPath("$.roles[0]").value("CUSTOMER"));
@@ -283,13 +281,13 @@ class AuthSessionTest {
       .andExpect(jsonPath("$.firstName").doesNotExist());
   }
 
-  private Cookie getCsrfCookie(MockHttpSession session)
+  private Cookie getCsrfCookie(Cookie session)
     throws Exception {
 
     var request = get("/api/auth/csrf");
 
     if (session != null) {
-      request.session(session);
+      request.cookie(session);
     }
 
     var result = mockMvc.perform(request)

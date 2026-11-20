@@ -10,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -361,7 +360,7 @@ class OrderControllerTest {
 
     var orderId = UUID.fromString(mapper.readTree(response.getContentAsString()).get("id").asText());
     mockMvc.perform(post("/api/orders")
-        .session((MockHttpSession) submission.getRequest().getSession(false))
+        .cookie(submission.getResponse().getCookie("JSESSIONID"))
         .with(csrf())
         .header("Idempotency-Key", orderKey)
         .contentType(MediaType.APPLICATION_JSON)
@@ -609,7 +608,7 @@ class OrderControllerTest {
       .andReturn();
 
     var second = mockMvc.perform(post("/api/orders")
-        .session((MockHttpSession) first.getRequest().getSession(false))
+        .cookie(first.getResponse().getCookie("JSESSIONID"))
         .with(csrf())
         .header("Idempotency-Key", key)
         .contentType(MediaType.APPLICATION_JSON)
