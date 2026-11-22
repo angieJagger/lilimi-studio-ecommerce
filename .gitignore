@@ -54,3 +54,5 @@ Thumbs.db
 # Locally uploaded media
 /var/media/
 /backend/var/media/
+
+/backend/ci-artifacts/

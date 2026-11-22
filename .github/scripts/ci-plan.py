@@ -22,6 +22,10 @@ def classify(paths):
             # Unknown files, dependencies, Docker and workflow configuration:
             # run all checks rather than accidentally excluding them.
             frontend = backend = images = True
+
+    if images:
+          backend = True
+
     return {'frontend': frontend, 'backend': backend, 'images': images}
 
 
