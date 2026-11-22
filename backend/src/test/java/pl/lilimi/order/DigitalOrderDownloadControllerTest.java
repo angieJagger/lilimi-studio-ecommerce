@@ -1,5 +1,7 @@
 package pl.lilimi.order;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import jakarta.servlet.http.Cookie;
@@ -222,7 +224,7 @@ class DigitalOrderDownloadControllerTest {
     prepareOwnedOrder(owner);
 
     mvc.perform(get(downloadUrl())
-        .with(user(administrator.getEmail()).roles("ADMIN")))
+        .with(verifiedAdmin(administrator.getEmail())))
       .andExpect(status().isNotFound());
 
     verifyNoInteractions(payments, storage);

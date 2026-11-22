@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpParams, provideHttpClient } from '@angular/commo
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { API_BASE_URL } from '../api/api-base-url';
-import { AuthApiService } from './auth-api.service';
+import { AuthApiService, type AuthSessionState } from './auth-api.service';
 import type { CurrentUser } from './auth.model';
 
 describe('AuthApiService', () => {
@@ -93,7 +93,7 @@ describe('AuthApiService', () => {
   });
 
   it('should initialize CSRF, log in, renew CSRF and read the current user', () => {
-    let result: CurrentUser | undefined;
+    let result: CurrentUser | null | undefined;
 
     service
       .login({
@@ -498,5 +498,67 @@ describe('AuthApiService', () => {
 
       expect(receivedError?.status).toBe(503);
       http.expectNone('/api/auth/reset-password');
+    });
+
+    it('should return pending MFA without requesting the current user', () => {
+      let result: CurrentUser | null | undefined;
+
+      service
+        .login({
+          email: 'admin@example.com',
+          password: 'test-password',
+        })
+        .subscribe((user) => {
+          result = user;
+        });
+
+      completeCsrfRequest();
+
+      http.expectOne('/api/auth/login').flush(null, {
+        status: 202,
+        statusText: 'Accepted',
+      });
+
+      completeCsrfRequest();
+
+      expect(result).toBeNull();
+      http.expectNone('/api/auth/me');
+    });
+
+    it('should recognize a session awaiting MFA', () => {
+      let result: AuthSessionState | undefined;
+
+      service.getSessionState().subscribe((state) => {
+        result = state;
+      });
+
+      http.expectOne('/api/auth/session').flush(null, {
+        status: 204,
+        statusText: 'No Content',
+        headers: { 'X-MFA-Required': 'true' },
+      });
+
+      expect(result).toEqual({
+        user: null,
+        mfaRequired: true,
+      });
+    });
+
+    it('should distinguish an anonymous session from pending MFA', () => {
+      let result: AuthSessionState | undefined;
+
+      service.getSessionState().subscribe((state) => {
+        result = state;
+      });
+
+      http.expectOne('/api/auth/session').flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      expect(result).toEqual({
+        user: null,
+        mfaRequired: false,
+      });
     });
 });

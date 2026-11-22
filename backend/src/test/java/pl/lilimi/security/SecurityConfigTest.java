@@ -1,5 +1,7 @@
 package pl.lilimi.security;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,7 +56,7 @@ class SecurityConfigTest {
   @Test
   void shouldAllowAdministrator() throws Exception {
     mockMvc.perform(get("/api/admin/security-check")
-        .with(user("admin").roles("ADMIN")))
+        .with(verifiedAdmin("admin")))
       .andExpect(status().isOk())
       .andExpect(content().string("ok"));
   }
@@ -111,6 +113,13 @@ class SecurityConfigTest {
         .header("Idempotency-Key", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content("{}"))
+      .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void shouldRejectAdministratorWithoutMfa() throws Exception {
+    mockMvc.perform(get("/api/admin/security-check")
+        .with(user("admin").roles("ADMIN")))
       .andExpect(status().isForbidden());
   }
 

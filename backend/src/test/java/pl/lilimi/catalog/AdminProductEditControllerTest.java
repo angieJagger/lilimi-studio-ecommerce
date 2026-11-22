@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -86,7 +88,7 @@ class AdminProductEditControllerTest {
       "metadata", "", "application/json", json.writeValueAsBytes(request));
 
     mvc.perform(multipart("/api/admin/products/{id}/edit", productId).file(metadata)
-        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+        .with(verifiedAdmin("admin@example.com")).with(csrf()))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.product.physicalConfiguration.shippingPackage.lengthCm").value(15.5))
       .andExpect(jsonPath("$.product.physicalConfiguration.shippingPackage.weightKg").value(0.125));
@@ -182,7 +184,7 @@ class AdminProductEditControllerTest {
     var metadata = metadata(List.of(item(imageId, null, true)), 0);
     mvc.perform(multipart("/api/admin/products/{id}/edit", productId).file(metadata).with(csrf())).andExpect(status().isUnauthorized());
     mvc.perform(multipart("/api/admin/products/{id}/edit", productId).file(metadata).with(user("customer@example.com").roles("CUSTOMER")).with(csrf())).andExpect(status().isForbidden());
-    mvc.perform(multipart("/api/admin/products/{id}/edit", productId).file(metadata).with(user("admin@example.com").roles("ADMIN"))).andExpect(status().isForbidden());
+    mvc.perform(multipart("/api/admin/products/{id}/edit", productId).file(metadata).with(verifiedAdmin("admin@example.com"))).andExpect(status().isForbidden());
     assertOriginalProduct(); verifyNoInteractions(storage);
   }
 
@@ -191,7 +193,7 @@ class AdminProductEditControllerTest {
   }
   private MockMultipartHttpServletRequestBuilder adminRequest(List<SaveProductImageRequest> manifest, long version) throws Exception {
     var builder = multipart("/api/admin/products/{id}/edit", productId).file(metadata(manifest, version));
-    builder.with(user("admin@example.com").roles("ADMIN")).with(csrf());
+    builder.with(verifiedAdmin("admin@example.com")).with(csrf());
     return builder;
   }
   private MockMultipartFile metadata(List<SaveProductImageRequest> manifest, long version) {

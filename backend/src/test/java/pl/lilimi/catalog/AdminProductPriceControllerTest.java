@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,7 +46,7 @@ class AdminProductPriceControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/pattern-001/digital-price")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(3500, version))
@@ -70,7 +72,7 @@ class AdminProductPriceControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/pattern-001/digital-price")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(3500, version + 1))
@@ -101,7 +103,7 @@ class AdminProductPriceControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/pattern-001/digital-price")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(body)
@@ -121,7 +123,7 @@ class AdminProductPriceControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/embroidered-002/digital-price")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(3500, garment.getVersion()))
@@ -133,7 +135,7 @@ class AdminProductPriceControllerTest {
   void shouldReturnNotFoundForMissingProduct() throws Exception {
     mockMvc.perform(
         patch("/api/admin/products/missing-product/digital-price")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(3500, 0))
@@ -168,7 +170,7 @@ class AdminProductPriceControllerTest {
   void shouldRejectRequestWithoutCsrf() throws Exception {
     mockMvc.perform(
         patch("/api/admin/products/pattern-001/digital-price")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(3500, currentVersion()))
       )

@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of, Subject, throwError } from 'rxjs';
 import { AuthApiService } from './auth-api.service';
+import type { AuthSessionState } from './auth-api.service';
 import type { CurrentUser, LoginRequest } from './auth.model';
 import { AuthSessionService } from './auth-session.service';
 
@@ -19,13 +20,13 @@ describe('AuthSessionService', () => {
   };
 
   const api = {
-    getSession: vi.fn(),
+    getSessionState: vi.fn(),
     login: vi.fn(),
     logout: vi.fn(),
   };
 
   beforeEach(() => {
-    api.getSession.mockReset();
+    api.getSessionState.mockReset();
     api.login.mockReset();
     api.logout.mockReset();
 
@@ -37,12 +38,15 @@ describe('AuthSessionService', () => {
   });
 
   function restoreAdminSession(): void {
-    api.getSession.mockReturnValue(of(admin));
+    api.getSessionState.mockReturnValue(of({ user: admin, mfaRequired: false }));
     service.refresh().subscribe();
   }
 
   it('should update the current customer name and trim whitespace', () => {
-    api.getSession.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    api.getSessionState.mockReturnValue(of({
+  user: { ...customer, firstName: 'Anna' },
+  mfaRequired: false,
+}));
     service.refresh().subscribe();
 
     service.updateCustomerName(customer.email, '  Maria  ');
@@ -54,7 +58,10 @@ describe('AuthSessionService', () => {
   });
 
   it('should clear the customer name when it is empty', () => {
-    api.getSession.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    api.getSessionState.mockReturnValue(of({
+  user: { ...customer, firstName: 'Anna' },
+  mfaRequired: false,
+}));
     service.refresh().subscribe();
 
     service.updateCustomerName(customer.email, '   ');
@@ -64,7 +71,10 @@ describe('AuthSessionService', () => {
   });
 
   it('should ignore a profile belonging to another customer', () => {
-    api.getSession.mockReturnValue(of({ ...customer, firstName: 'Anna' }));
+    api.getSessionState.mockReturnValue(of({
+  user: { ...customer, firstName: 'Anna' },
+  mfaRequired: false,
+}));
     service.refresh().subscribe();
 
     service.updateCustomerName('another@example.com', 'Maria');
@@ -94,29 +104,29 @@ describe('AuthSessionService', () => {
   });
 
   it('shares a pending refresh and requests a fresh session after completion', () => {
-    const response = new Subject<CurrentUser | null>();
-    api.getSession.mockReturnValueOnce(response).mockReturnValueOnce(of(null));
+    const response = new Subject<AuthSessionState>();
+    api.getSessionState.mockReturnValueOnce(response).mockReturnValueOnce(of({ user: null, mfaRequired: false }));
 
     const first = vi.fn();
     const second = vi.fn();
     service.refresh().subscribe(first);
     service.refresh().subscribe(second);
 
-    expect(api.getSession).toHaveBeenCalledOnce();
-    response.next(customer);
+    expect(api.getSessionState).toHaveBeenCalledOnce();
+    response.next({ user: customer, mfaRequired: false });
     response.complete();
     expect(first).toHaveBeenCalledWith(customer);
     expect(second).toHaveBeenCalledWith(customer);
 
     service.refresh().subscribe();
-    expect(api.getSession).toHaveBeenCalledTimes(2);
+    expect(api.getSessionState).toHaveBeenCalledTimes(2);
     expect(service.user()).toBeNull();
   });
 
   it('ignores an earlier guest response after login and keeps the new refresh pending', () => {
-    const earlier = new Subject<CurrentUser | null>();
-    const latest = new Subject<CurrentUser | null>();
-    api.getSession.mockReturnValueOnce(earlier).mockReturnValueOnce(latest);
+    const earlier = new Subject<AuthSessionState>();
+    const latest = new Subject<AuthSessionState>();
+    api.getSessionState.mockReturnValueOnce(earlier).mockReturnValueOnce(latest);
     api.login.mockReturnValue(of(customer));
 
     const result = vi.fn();
@@ -124,26 +134,26 @@ describe('AuthSessionService', () => {
     service.login({ email: customer.email, password: 'test' }).subscribe();
     service.refresh().subscribe();
 
-    earlier.next(null);
+    earlier.next({ user: null, mfaRequired: false });
     earlier.complete();
     expect(service.user()).toEqual(customer);
     expect(result).toHaveBeenCalledWith(customer);
 
     service.refresh().subscribe();
-    expect(api.getSession).toHaveBeenCalledTimes(2);
-    latest.next(customer);
+    expect(api.getSessionState).toHaveBeenCalledTimes(2);
+    latest.next({ user: customer, mfaRequired: false });
     latest.complete();
   });
 
   it('ignores an earlier authenticated response after logout', () => {
-    const earlier = new Subject<CurrentUser | null>();
-    api.getSession.mockReturnValue(earlier);
+    const earlier = new Subject<AuthSessionState>();
+    api.getSessionState.mockReturnValue(earlier);
     api.logout.mockReturnValue(of(undefined));
 
     const result = vi.fn();
     service.refresh().subscribe(result);
     service.logout().subscribe();
-    earlier.next(customer);
+    earlier.next({ user: customer, mfaRequired: false });
     earlier.complete();
 
     expect(service.user()).toBeNull();
@@ -153,13 +163,13 @@ describe('AuthSessionService', () => {
   it('should restore an administrator session', () => {
     let result: CurrentUser | null | undefined;
 
-    api.getSession.mockReturnValue(of(admin));
+    api.getSessionState.mockReturnValue(of({ user: admin, mfaRequired: false }));
 
     service.refresh().subscribe((user) => {
       result = user;
     });
 
-    expect(api.getSession).toHaveBeenCalledOnce();
+    expect(api.getSessionState).toHaveBeenCalledOnce();
     expect(result).toEqual(admin);
     expect(service.user()).toEqual(admin);
     expect(service.isAuthenticated()).toBe(true);
@@ -167,7 +177,7 @@ describe('AuthSessionService', () => {
   });
 
   it('should recognize a customer without administrator access', () => {
-    api.getSession.mockReturnValue(of(customer));
+    api.getSessionState.mockReturnValue(of({ user: customer, mfaRequired: false }));
 
     service.refresh().subscribe();
 
@@ -179,7 +189,7 @@ describe('AuthSessionService', () => {
   it('should clear an expired session and return null', () => {
     restoreAdminSession();
 
-    api.getSession.mockReturnValue(
+    api.getSessionState.mockReturnValue(
       throwError(
         () =>
           new HttpErrorResponse({
@@ -209,7 +219,7 @@ describe('AuthSessionService', () => {
       statusText: 'Unknown Error',
     });
 
-    api.getSession.mockReturnValue(throwError(() => connectionError));
+    api.getSessionState.mockReturnValue(throwError(() => connectionError));
 
     let receivedError: unknown;
 
@@ -236,7 +246,7 @@ describe('AuthSessionService', () => {
 
     api.login.mockReturnValue(of(admin));
 
-    let result: CurrentUser | undefined;
+    let result: CurrentUser | null | undefined;
 
     service.login(request).subscribe((user) => {
       result = user;
@@ -295,5 +305,59 @@ describe('AuthSessionService', () => {
     expect(service.user()).toBeNull();
     expect(service.isAuthenticated()).toBe(false);
     expect(service.isAdmin()).toBe(false);
+  });
+
+  it('should restore pending MFA without granting administrator access', () => {
+    api.getSessionState.mockReturnValue(
+      of({
+        user: null,
+        mfaRequired: true,
+      }),
+    );
+
+    service.refresh().subscribe();
+
+    expect(service.mfaRequired()).toBe(true);
+    expect(service.user()).toBeNull();
+    expect(service.isAuthenticated()).toBe(false);
+    expect(service.isAdmin()).toBe(false);
+  });
+
+  it('should require MFA after a password-only administrator login', () => {
+    api.login.mockReturnValue(of(null));
+
+    service
+      .login({
+        email: admin.email,
+        password: 'test',
+      })
+      .subscribe();
+
+    expect(service.mfaRequired()).toBe(true);
+    expect(service.isAdmin()).toBe(false);
+  });
+
+  it('should clear pending MFA after successful verification', () => {
+    api.login.mockReturnValue(of(null));
+
+    service
+      .login({
+        email: admin.email,
+        password: 'test',
+      })
+      .subscribe();
+
+    api.getSessionState.mockReturnValue(
+      of({
+        user: admin,
+        mfaRequired: false,
+      }),
+    );
+
+    service.refresh().subscribe();
+
+    expect(service.mfaRequired()).toBe(false);
+    expect(service.user()).toEqual(admin);
+    expect(service.isAdmin()).toBe(true);
   });
 });

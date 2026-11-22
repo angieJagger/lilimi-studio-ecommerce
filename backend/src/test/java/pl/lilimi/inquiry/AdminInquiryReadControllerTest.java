@@ -1,5 +1,7 @@
 package pl.lilimi.inquiry;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +28,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+import static pl.lilimi.security.VerifiedAdminRequests.forgedAdminAuthority;
 
 @SpringBootTest(properties = {
   "lilimi.payments.stripe.enabled=false",
@@ -68,7 +72,7 @@ class AdminInquiryReadControllerTest {
               + inquiry.getId()
               + "/read"
           )
-            .with(user(admin.getEmail()).roles("ADMIN"))
+            .with(verifiedAdmin(admin.getEmail()))
             .with(csrf())
         )
         .andExpect(status().isNoContent());
@@ -121,7 +125,7 @@ class AdminInquiryReadControllerTest {
           get("/api/admin/project-inquiries")
             .param("view", "all")
             .param("search", inquiry.getId().toString())
-            .with(user(admin.getEmail()).roles("ADMIN"))
+            .with(verifiedAdmin(admin.getEmail()))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(1))
@@ -142,7 +146,7 @@ class AdminInquiryReadControllerTest {
             + inquiry.getId()
             + "/read"
         )
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isNoContent());
@@ -151,7 +155,7 @@ class AdminInquiryReadControllerTest {
         get("/api/admin/project-inquiries")
           .param("view", "all")
           .param("search", inquiry.getId().toString())
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(true));
@@ -160,7 +164,7 @@ class AdminInquiryReadControllerTest {
         get("/api/admin/project-inquiries")
           .param("view", "all")
           .param("search", inquiry.getId().toString())
-          .with(user(anotherAdmin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(anotherAdmin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(false));
@@ -178,7 +182,7 @@ class AdminInquiryReadControllerTest {
             + firstInquiry.getId()
             + "/read"
         )
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isNoContent());
@@ -187,7 +191,7 @@ class AdminInquiryReadControllerTest {
         get("/api/admin/project-inquiries")
           .param("view", "all")
           .param("search", firstInquiry.getId().toString())
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(true));
@@ -196,7 +200,7 @@ class AdminInquiryReadControllerTest {
         get("/api/admin/project-inquiries")
           .param("view", "all")
           .param("search", secondInquiry.getId().toString())
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(false));
@@ -240,7 +244,7 @@ class AdminInquiryReadControllerTest {
           "/api/admin/project-inquiries/"
             + inquiry.getId()
             + "/read"
-        ).with(user(admin.getEmail()).roles("ADMIN"))
+        ).with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isForbidden());
 
@@ -261,7 +265,7 @@ class AdminInquiryReadControllerTest {
             + missingId
             + "/read"
         )
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isNotFound());
@@ -281,7 +285,7 @@ class AdminInquiryReadControllerTest {
             + inquiry.getId()
             + "/read"
         )
-          .with(user(customer.getEmail()).roles("ADMIN"))
+          .with(forgedAdminAuthority(customer.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isForbidden());

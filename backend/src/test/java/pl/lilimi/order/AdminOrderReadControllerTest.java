@@ -29,6 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+import static pl.lilimi.security.VerifiedAdminRequests.forgedAdminAuthority;
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 @SpringBootTest(properties = {
   "lilimi.payments.stripe.enabled=false",
   "lilimi.mail.order-confirmation.enabled=false"
@@ -66,7 +69,7 @@ class AdminOrderReadControllerTest {
     for (int attempt = 0; attempt < 2; attempt++) {
       mockMvc.perform(
           post("/api/admin/orders/" + order.getId() + "/read")
-            .with(user(admin.getEmail()).roles("ADMIN"))
+            .with(verifiedAdmin(admin.getEmail()))
             .with(csrf())
         )
         .andExpect(status().isNoContent());
@@ -117,7 +120,7 @@ class AdminOrderReadControllerTest {
           get("/api/admin/orders")
             .param("view", "all")
             .param("search", order.getId().toString())
-            .with(user(admin.getEmail()).roles("ADMIN"))
+            .with(verifiedAdmin(admin.getEmail()))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(1))
@@ -134,7 +137,7 @@ class AdminOrderReadControllerTest {
 
     mockMvc.perform(
         post("/api/admin/orders/" + order.getId() + "/read")
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isNoContent());
@@ -143,7 +146,7 @@ class AdminOrderReadControllerTest {
         get("/api/admin/orders")
           .param("view", "all")
           .param("search", order.getId().toString())
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(true));
@@ -152,7 +155,7 @@ class AdminOrderReadControllerTest {
         get("/api/admin/orders")
           .param("view", "all")
           .param("search", order.getId().toString())
-          .with(user(anotherAdmin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(anotherAdmin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(false));
@@ -166,7 +169,7 @@ class AdminOrderReadControllerTest {
 
     mockMvc.perform(
         post("/api/admin/orders/" + firstOrder.getId() + "/read")
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isNoContent());
@@ -175,7 +178,7 @@ class AdminOrderReadControllerTest {
         get("/api/admin/orders")
           .param("view", "all")
           .param("search", firstOrder.getId().toString())
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(true));
@@ -184,7 +187,7 @@ class AdminOrderReadControllerTest {
         get("/api/admin/orders")
           .param("view", "all")
           .param("search", secondOrder.getId().toString())
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].read").value(false));
@@ -218,7 +221,7 @@ class AdminOrderReadControllerTest {
 
     mockMvc.perform(
         post("/api/admin/orders/" + order.getId() + "/read")
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
       )
       .andExpect(status().isForbidden());
 
@@ -233,7 +236,7 @@ class AdminOrderReadControllerTest {
 
     mockMvc.perform(
         post("/api/admin/orders/" + missingId + "/read")
-          .with(user(admin.getEmail()).roles("ADMIN"))
+          .with(verifiedAdmin(admin.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isNotFound());
@@ -250,7 +253,7 @@ class AdminOrderReadControllerTest {
     // The database role must be checked even with a forged test authority.
     mockMvc.perform(
         post("/api/admin/orders/" + order.getId() + "/read")
-          .with(user(customer.getEmail()).roles("ADMIN"))
+          .with(forgedAdminAuthority(customer.getEmail()))
           .with(csrf())
       )
       .andExpect(status().isForbidden());

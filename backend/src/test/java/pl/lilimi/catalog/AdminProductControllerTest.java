@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -68,7 +69,7 @@ class AdminProductControllerTest {
 
     mockMvc.perform(
         get(result.getResponse().getHeader("Location"))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.slug").value("wzor-haftu-laka"))
@@ -85,14 +86,14 @@ class AdminProductControllerTest {
     String version = Long.toString(products.findById(productId).orElseThrow().getVersion());
 
     mockMvc.perform(delete(location).param("expectedVersion", version)
-        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+        .with(verifiedAdmin("admin@example.com")).with(csrf()))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.archived").value(true));
 
     mockMvc.perform(get("/api/products/wzor-haftu-laka"))
       .andExpect(status().isNotFound());
     mockMvc.perform(get("/api/admin/products").param("archived", "true")
-        .with(user("admin@example.com").roles("ADMIN")))
+        .with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[*].id").value(hasItem(productId)));
     org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject(
@@ -165,7 +166,7 @@ class AdminProductControllerTest {
 
     var location = result.getResponse().getHeader("Location");
     var version = products.findById(location.substring(location.lastIndexOf('/') + 1)).orElseThrow().getVersion();
-    mockMvc.perform(get(location).with(user("admin@example.com").roles("ADMIN")))
+    mockMvc.perform(get(location).with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.stockQuantity").value(0))
       .andExpect(jsonPath("$.physicalConfiguration.category").value("Breloczki"))
@@ -176,7 +177,7 @@ class AdminProductControllerTest {
 
     mockMvc.perform(
         patch(location + "/visibility")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content("""
@@ -187,14 +188,14 @@ class AdminProductControllerTest {
       .andExpect(jsonPath("$.code").value("PHYSICAL_PRODUCT_NOT_PUBLISHABLE"));
 
     mockMvc.perform(delete(location).param("expectedVersion", Long.toString(version))
-        .with(user("admin@example.com").roles("ADMIN")))
+        .with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isForbidden());
 
     mockMvc.perform(delete(location).param("expectedVersion", Long.toString(version))
-        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+        .with(verifiedAdmin("admin@example.com")).with(csrf()))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.archived").value(false));
-    mockMvc.perform(get(location).with(user("admin@example.com").roles("ADMIN")))
+    mockMvc.perform(get(location).with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isNotFound());
   }
 
@@ -227,7 +228,7 @@ class AdminProductControllerTest {
       }
       request.file(new MockMultipartFile("package", "meadow.zip", "application/zip", output.toByteArray()));
     }
-    request.with(user("admin@example.com").roles("ADMIN")).with(csrf());
+    request.with(verifiedAdmin("admin@example.com")).with(csrf());
     return request;
   }
 
@@ -264,7 +265,7 @@ class AdminProductControllerTest {
 
     mockMvc.perform(
         get("/api/admin/products")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.page").value(0))
@@ -286,7 +287,7 @@ class AdminProductControllerTest {
     mockMvc.perform(
         get("/api/admin/products")
           .param("size", "100")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath(
@@ -305,7 +306,7 @@ class AdminProductControllerTest {
         get("/api/admin/products")
           .param("page", "1")
           .param("size", "1")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.page").value(1))
@@ -331,7 +332,7 @@ class AdminProductControllerTest {
         get("/api/admin/products")
           .param("page", Integer.toString(page))
           .param("size", Integer.toString(size))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isBadRequest());
   }
@@ -342,7 +343,7 @@ class AdminProductControllerTest {
 
     mockMvc.perform(
         get("/api/admin/products/{id}", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id").value("pattern-001"))
@@ -370,7 +371,7 @@ class AdminProductControllerTest {
 
     mockMvc.perform(
         get("/api/admin/products/{id}", "pattern-001")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.active").value(false))
@@ -400,7 +401,7 @@ class AdminProductControllerTest {
     throws Exception {
     mockMvc.perform(
         get("/api/admin/products/{id}", "missing-product")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isNotFound());
   }

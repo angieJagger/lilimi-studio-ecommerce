@@ -1,0 +1,92 @@
+<section class="customer-login container" aria-labelledby="admin-mfa-title">
+  <h1 id="admin-mfa-title">{{ 'adminMfa.title' | transloco }}</h1>
+
+  @if (errorKey(); as error) {
+  <p class="customer-login__error" role="alert">
+    {{ error | transloco }}
+  </p>
+  }
+
+  @if (loading()) {
+  <output aria-live="polite">
+    {{ 'adminMfa.loading' | transloco }}
+  </output>
+  } @else if (recoveryCodes().length) {
+  <h2>{{ 'adminMfa.recoveryTitle' | transloco }}</h2>
+  <p>{{ 'adminMfa.recoveryHint' | transloco }}</p>
+
+  <ul>
+    @for (code of recoveryCodes(); track code) {
+    <li><code>{{ code }}</code></li>
+    }
+  </ul>
+
+  <button class="button button--primary" type="button" [disabled]="busy()" (click)="continueAfterSavingCodes()">
+    {{ 'adminMfa.savedCodes' | transloco }}
+  </button>
+  } @else {
+  @if (!enabled()) {
+  <p>{{ 'adminMfa.setupHint' | transloco }}</p>
+
+  @if (secret(); as setupSecret) {
+  <div class="customer-login__field">
+    <label for="admin-mfa-secret">
+      {{ 'adminMfa.secret' | transloco }}
+    </label>
+    <input id="admin-mfa-secret" type="text" [value]="setupSecret" readonly autocomplete="off" spellcheck="false" />
+  </div>
+  } @else {
+  <button class="button button--primary" type="button" [disabled]="busy()" (click)="startSetup()">
+    {{ 'adminMfa.startSetup' | transloco }}
+  </button>
+  }
+  } @else {
+  <p>
+    {{
+    (recoveryMode()
+    ? 'adminMfa.enterRecovery'
+    : 'adminMfa.enterTotp') | transloco
+    }}
+  </p>
+  }
+
+  @if (enabled() || secret()) {
+  <form [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="busy()">
+    <div class="customer-login__field">
+      <label for="admin-mfa-code">
+        {{
+        (recoveryMode()
+        ? 'adminMfa.recoveryCode'
+        : 'adminMfa.code') | transloco
+        }}
+      </label>
+
+      <input id="admin-mfa-code" type="text" formControlName="code"
+        [attr.inputmode]="recoveryMode() ? 'text' : 'numeric'"
+        [attr.autocomplete]="recoveryMode() ? 'off' : 'one-time-code'" [attr.maxlength]="recoveryMode() ? 64 : 6"
+        [readOnly]="busy()" autocapitalize="none" spellcheck="false" required />
+    </div>
+
+    <button class="button button--primary" type="submit" [disabled]="busy() || form.invalid">
+      {{
+      (busy() ? 'adminMfa.verifying' : 'adminMfa.confirm') | transloco
+      }}
+    </button>
+  </form>
+  }
+
+  @if (enabled()) {
+  <button class="button button--secondary" type="button" [disabled]="busy()" (click)="toggleRecovery()">
+    {{
+    (recoveryMode()
+    ? 'adminMfa.useTotp'
+    : 'adminMfa.useRecovery') | transloco
+    }}
+  </button>
+  }
+
+  <button class="button button--secondary" type="button" [disabled]="busy()" (click)="logout()">
+    {{ 'adminMfa.logout' | transloco }}
+  </button>
+  }
+</section>

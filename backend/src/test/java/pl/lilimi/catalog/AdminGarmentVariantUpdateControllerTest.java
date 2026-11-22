@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,7 +48,7 @@ class AdminGarmentVariantUpdateControllerTest {
 
     mockMvc.perform(delete("/api/admin/products/embroidered-002/variants/{id}", variant.getId())
         .param("expectedVersion", Long.toString(variant.getVersion()))
-        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+        .with(verifiedAdmin("admin@example.com")).with(csrf()))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.archived").value(false));
 
@@ -66,7 +68,7 @@ class AdminGarmentVariantUpdateControllerTest {
           "/api/admin/products/embroidered-002/variants/{id}",
           id
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content("""
@@ -105,7 +107,7 @@ class AdminGarmentVariantUpdateControllerTest {
           "/api/admin/products/embroidered-002/variants/{id}",
           id
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(
@@ -135,7 +137,7 @@ class AdminGarmentVariantUpdateControllerTest {
           "/api/admin/products/embroidered-002/variants/{id}",
           UUID.randomUUID()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(18900, true, 0))
@@ -152,7 +154,7 @@ class AdminGarmentVariantUpdateControllerTest {
           "/api/admin/products/missing-product/variants/{id}",
           variant.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(
@@ -186,7 +188,7 @@ class AdminGarmentVariantUpdateControllerTest {
           "/api/admin/products/embroidered-002/variants/{id}",
           id
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(body)
@@ -244,7 +246,7 @@ class AdminGarmentVariantUpdateControllerTest {
           "/api/admin/products/embroidered-002/variants/{id}",
           variant.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(18900, false, variant.getVersion()))
       )
@@ -285,7 +287,7 @@ class AdminGarmentVariantUpdateControllerTest {
           "/api/admin/products/test-other-sweatshirt/variants/{id}",
           id
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(

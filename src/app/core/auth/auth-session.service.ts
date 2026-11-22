@@ -10,6 +10,9 @@ import type { CurrentUser, LoginRequest } from './auth.model';
 export class AuthSessionService {
   private readonly api = inject(AuthApiService);
   private readonly currentUser = signal<CurrentUser | null>(null);
+  private readonly pendingMfa = signal(false);
+
+  readonly mfaRequired = this.pendingMfa.asReadonly();
 
   private pendingRefresh?: Observable<CurrentUser | null>;
 
@@ -24,14 +27,15 @@ export class AuthSessionService {
       return this.pendingRefresh;
     }
 
-    const refresh: Observable<CurrentUser | null> = this.api.getSession().pipe(
-      map((user) => {
+    const refresh: Observable<CurrentUser | null> = this.api.getSessionState().pipe(
+      map((state) => {
         if (this.pendingRefresh !== refresh) {
           return this.currentUser();
         }
 
-        this.currentUser.set(user);
-        return user;
+        this.currentUser.set(state.user);
+        this.pendingMfa.set(state.mfaRequired);
+        return state.user;
       }),
       catchError((error: unknown) => {
         if (this.pendingRefresh !== refresh) {
@@ -39,6 +43,7 @@ export class AuthSessionService {
         }
 
         this.currentUser.set(null);
+        this.pendingMfa.set(false);
 
         if (error instanceof HttpErrorResponse && error.status === 401) {
           return of(null);
@@ -58,12 +63,22 @@ export class AuthSessionService {
     return refresh;
   }
 
-  login(request: LoginRequest): Observable<CurrentUser> {
-    return this.api.login(request).pipe(tap((user) => this.replaceSession(user)));
+  login(request: LoginRequest): Observable<CurrentUser | null> {
+    return this.api.login(request).pipe(
+      tap((user) => {
+        this.replaceSession(user);
+        this.pendingMfa.set(user === null);
+      }),
+    );
   }
 
   logout(): Observable<void> {
-    return this.api.logout().pipe(tap(() => this.replaceSession(null)));
+    return this.api.logout().pipe(
+      tap(() => {
+        this.replaceSession(null);
+        this.pendingMfa.set(false);
+      }),
+    );
   }
 
   private replaceSession(user: CurrentUser | null): void {

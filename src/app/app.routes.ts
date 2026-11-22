@@ -72,6 +72,10 @@ const shopRoutes: Routes = [
     loadComponent: () => import('./features/cart/cart').then((m) => m.Cart),
   },
   {
+    path: 'account/mfa',
+    loadComponent: () => import('./features/auth/admin-mfa').then((m) => m.AdminMfa),
+  },
+  {
     path: 'account/login',
     loadComponent: () => import('./features/auth/customer-login').then((m) => m.CustomerLogin),
   },

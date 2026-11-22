@@ -18,9 +18,12 @@ describe('adminGuard', () => {
 
   const session = {
     refresh: vi.fn(),
+    mfaRequired: vi.fn(),
   };
 
   beforeEach(() => {
+    session.mfaRequired.mockReset();
+    session.mfaRequired.mockReturnValue(false);
     session.refresh.mockReset();
 
     TestBed.configureTestingModule({
@@ -105,5 +108,23 @@ describe('adminGuard', () => {
     const result = await checkAccess('/en/admin/orders');
 
     expectLoginRedirect(result, '/en/account/login');
+  });
+
+  it('should redirect an administrator awaiting MFA to Polish verification', async () => {
+    session.refresh.mockReturnValue(of(null));
+    session.mfaRequired.mockReturnValue(true);
+
+    const result = await checkAccess('/pl/admin/orders');
+
+    expectLoginRedirect(result, '/pl/account/mfa');
+  });
+
+  it('should redirect an administrator awaiting MFA to English verification', async () => {
+    session.refresh.mockReturnValue(of(null));
+    session.mfaRequired.mockReturnValue(true);
+
+    const result = await checkAccess('/en/admin/products');
+
+    expectLoginRedirect(result, '/en/account/mfa');
   });
 });

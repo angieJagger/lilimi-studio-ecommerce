@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +86,7 @@ class AdminProductImageContentControllerTest {
   void shouldReturnImageContentForAdministrator() throws Exception {
     mockMvc.perform(
         get(URL, PRODUCT_ID, imageId)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(content().contentType(MediaType.IMAGE_PNG))
@@ -125,7 +127,7 @@ class AdminProductImageContentControllerTest {
   void shouldRejectImageBelongingToAnotherProduct() throws Exception {
     mockMvc.perform(
         get(URL, "pattern-002", imageId)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isNotFound());
 
@@ -136,7 +138,7 @@ class AdminProductImageContentControllerTest {
   void shouldReturnNotFoundForMissingImage() throws Exception {
     mockMvc.perform(
         get(URL, PRODUCT_ID, UUID.randomUUID())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isNotFound());
 
@@ -150,7 +152,7 @@ class AdminProductImageContentControllerTest {
 
     mockMvc.perform(
         get(URL, PRODUCT_ID, imageId)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isNotFound());
   }
@@ -162,7 +164,7 @@ class AdminProductImageContentControllerTest {
 
     mockMvc.perform(
         get(URL, PRODUCT_ID, imageId)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isInternalServerError());
   }

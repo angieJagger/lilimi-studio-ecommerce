@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +59,7 @@ class AdminProductPrimaryImageControllerTest {
 
     mockMvc.perform(
         patch(URL, PRODUCT_ID, secondImage.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(version))
@@ -91,7 +93,7 @@ class AdminProductPrimaryImageControllerTest {
 
     mockMvc.perform(
         patch(URL, PRODUCT_ID, secondImage.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(version + 1))
@@ -112,7 +114,7 @@ class AdminProductPrimaryImageControllerTest {
 
     mockMvc.perform(
         patch(URL, PRODUCT_ID, foreignImage.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(version))
@@ -128,7 +130,7 @@ class AdminProductPrimaryImageControllerTest {
   void shouldReturnNotFoundForMissingImage() throws Exception {
     mockMvc.perform(
         patch(URL, PRODUCT_ID, UUID.randomUUID())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(currentVersion()))
@@ -142,7 +144,7 @@ class AdminProductPrimaryImageControllerTest {
   void shouldReturnNotFoundForMissingProduct() throws Exception {
     mockMvc.perform(
         patch(URL, "missing-product", secondImage.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(0))
@@ -183,7 +185,7 @@ class AdminProductPrimaryImageControllerTest {
   void shouldRejectRequestWithoutCsrfToken() throws Exception {
     mockMvc.perform(
         patch(URL, PRODUCT_ID, secondImage.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(currentVersion()))
       )

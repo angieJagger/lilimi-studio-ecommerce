@@ -1,5 +1,7 @@
 package pl.lilimi.inquiry;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +111,7 @@ class AdminInquiryControllerTest {
   void shouldAllowAdministratorWithDefaultPagination() throws Exception {
     mockMvc.perform(
         get("/api/admin/project-inquiries")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.page").value(0))
@@ -135,7 +137,7 @@ class AdminInquiryControllerTest {
         get("/api/admin/project-inquiries")
           .param("page", "0")
           .param("size", "1")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items.length()").value(1))
@@ -157,7 +159,7 @@ class AdminInquiryControllerTest {
         get("/api/admin/project-inquiries")
           .param("page", "1")
           .param("size", "1")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.page").value(1))
@@ -207,7 +209,7 @@ class AdminInquiryControllerTest {
           get("/api/admin/project-inquiries")
             .param("view", view)
             .param("size", "100")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(
@@ -288,7 +290,7 @@ class AdminInquiryControllerTest {
             .param("projectType", "graphicDesign")
             .param("page", Integer.toString(page))
             .param("size", "1")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(1))
@@ -310,7 +312,7 @@ class AdminInquiryControllerTest {
         get("/api/admin/project-inquiries")
           .param("view", "active")
           .param("status", "closed")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items").isEmpty())
@@ -342,7 +344,7 @@ class AdminInquiryControllerTest {
             .param("dateFrom", "2092-01-10")
             .param("dateTo", "2092-01-10")
             .param("search", phrase)
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(1))
@@ -380,7 +382,7 @@ class AdminInquiryControllerTest {
         get("/api/admin/project-inquiries")
           .param("dateFrom", "2026-10-25")
           .param("dateTo", "2026-10-25")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(2))
@@ -442,7 +444,7 @@ class AdminInquiryControllerTest {
             .param("dateTo", "2092-02-10")
             .param("page", Integer.toString(page))
             .param("size", "1")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(1))
@@ -472,7 +474,7 @@ class AdminInquiryControllerTest {
             .param("search", phrase)
             .param("dateFrom", "2092-03-10")
             .param("dateTo", "2092-03-10")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(1))
@@ -486,7 +488,7 @@ class AdminInquiryControllerTest {
           .param("search", "' OR 1=1 --")
           .param("dateFrom", "2092-03-10")
           .param("dateTo", "2092-03-10")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items").isEmpty())
@@ -506,7 +508,7 @@ class AdminInquiryControllerTest {
             .param("search", phrase)
             .param("dateFrom", "2092-04-10")
             .param("dateTo", "2092-04-10")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(1))
@@ -521,7 +523,7 @@ class AdminInquiryControllerTest {
     mockMvc.perform(
         get("/api/admin/project-inquiries")
           .param("search", "a".repeat(255))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isBadRequest());
   }
@@ -540,7 +542,7 @@ class AdminInquiryControllerTest {
     }) {
       mockMvc.perform(
           get("/api/admin/project-inquiries" + query)
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isBadRequest());
     }
@@ -555,7 +557,7 @@ class AdminInquiryControllerTest {
     }) {
       mockMvc.perform(
         get("/api/admin/project-inquiries" + query)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       ).andExpect(status().isBadRequest());
     }
   }
@@ -576,7 +578,7 @@ class AdminInquiryControllerTest {
 
     mockMvc.perform(
         get("/api/admin/project-inquiries/" + inquiry.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id").value(inquiry.getId().toString()))
@@ -614,7 +616,7 @@ class AdminInquiryControllerTest {
   void shouldReturnNotFoundForMissingInquiry() throws Exception {
     mockMvc.perform(
       get("/api/admin/project-inquiries/" + UUID.randomUUID())
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
     ).andExpect(status().isNotFound());
   }
 
@@ -622,7 +624,7 @@ class AdminInquiryControllerTest {
   void shouldRejectInvalidInquiryId() throws Exception {
     mockMvc.perform(
       get("/api/admin/project-inquiries/invalid-id")
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
     ).andExpect(status().isBadRequest());
   }
 }
