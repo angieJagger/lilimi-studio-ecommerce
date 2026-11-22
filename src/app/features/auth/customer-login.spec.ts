@@ -1,7 +1,7 @@
 import { TranslocoService } from '@jsverse/transloco';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthApiService } from '../../core/auth/auth-api.service';
@@ -12,7 +12,7 @@ import { CustomerLogin } from './customer-login';
 describe('CustomerLogin', () => {
   let fixture: ComponentFixture<CustomerLogin>;
   let element: HTMLElement;
-  let loginResult: Subject<CurrentUser>;
+  let loginResult: Subject<CurrentUser | null>;
   let logoutResult: Subject<void>;
 
   const customer: CurrentUser = {
@@ -21,17 +21,17 @@ describe('CustomerLogin', () => {
   };
 
   const api = {
-    getSession: vi.fn(),
+    getSessionState: vi.fn(),
     login: vi.fn(),
     logout: vi.fn(),
   };
 
   beforeEach(async () => {
-    loginResult = new Subject<CurrentUser>();
+    loginResult = new Subject<CurrentUser | null>();
     logoutResult = new Subject<void>();
 
-    api.getSession.mockReset();
-    api.getSession.mockReturnValue(of(null));
+    api.getSessionState.mockReset();
+    api.getSessionState.mockReturnValue(of({ user: null, mfaRequired: false }));
 
     api.login.mockReset();
     api.login.mockReturnValue(loginResult.asObservable());
@@ -135,7 +135,7 @@ describe('CustomerLogin', () => {
 
   it('should restore an existing customer session', async () => {
     fixture.destroy();
-    api.getSession.mockReturnValue(of(customer));
+    api.getSessionState.mockReturnValue(of({ user: customer, mfaRequired: false }));
 
     await openPage();
 
@@ -145,10 +145,13 @@ describe('CustomerLogin', () => {
 
   it('should show the administrator panel link for an administrator', async () => {
     fixture.destroy();
-    api.getSession.mockReturnValue(
+    api.getSessionState.mockReturnValue(
       of({
-        email: 'admin@example.com',
-        roles: ['ADMIN'],
+        user: {
+          email: 'admin@example.com',
+          roles: ['ADMIN'],
+        },
+        mfaRequired: false,
       }),
     );
 
@@ -159,7 +162,7 @@ describe('CustomerLogin', () => {
 
   it('should show a session check failure', async () => {
     fixture.destroy();
-    api.getSession.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 503 })));
+    api.getSessionState.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 503 })));
 
     await openPage();
 
@@ -170,7 +173,7 @@ describe('CustomerLogin', () => {
 
   it('should clear the session after logout', async () => {
     fixture.destroy();
-    api.getSession.mockReturnValue(of(customer));
+    api.getSessionState.mockReturnValue(of({ user: customer, mfaRequired: false }));
 
     await openPage();
 
@@ -189,7 +192,7 @@ describe('CustomerLogin', () => {
 
   it('should preserve the session when logout fails', async () => {
     fixture.destroy();
-    api.getSession.mockReturnValue(of(customer));
+    api.getSessionState.mockReturnValue(of({ user: customer, mfaRequired: false }));
 
     await openPage();
 
@@ -204,5 +207,36 @@ describe('CustomerLogin', () => {
     expect(element.querySelector('[role="alert"]')?.textContent).toContain(
       'Nie udało się wylogować',
     );
+  });
+
+  it('should redirect to MFA after password-only administrator login', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    await fillValidForm();
+    await submitForm();
+
+    loginResult.next(null);
+    loginResult.complete();
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/', 'pl', 'account', 'mfa']);
+    expect(element.querySelector<HTMLInputElement>('#customer-login-password')?.value).toBe('');
+  });
+
+  it('should resume pending MFA after refreshing the login page', async () => {
+    fixture.destroy();
+
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    api.getSessionState.mockReturnValue(
+      of({
+        user: null,
+        mfaRequired: true,
+      }),
+    );
+
+    await openPage();
+
+    expect(navigate).toHaveBeenCalledWith(['/', 'pl', 'account', 'mfa']);
   });
 });

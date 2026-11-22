@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,7 +53,7 @@ class AdminProductTranslationControllerTest {
           "/api/admin/products/{id}/translations",
           product.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(originalVersion))
@@ -101,7 +103,7 @@ class AdminProductTranslationControllerTest {
           "/api/admin/products/{id}/translations",
           product.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(originalVersion + 1))
@@ -133,7 +135,7 @@ class AdminProductTranslationControllerTest {
           "/api/admin/products/{id}/translations",
           "missing-product"
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(0))
@@ -174,7 +176,7 @@ class AdminProductTranslationControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/translations", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(product.getVersion()))
       )
@@ -205,7 +207,7 @@ class AdminProductTranslationControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/translations", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(body)
@@ -235,7 +237,7 @@ class AdminProductTranslationControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/translations", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(body)
@@ -260,7 +262,7 @@ class AdminProductTranslationControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/translations", "pattern-001")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(body)
@@ -283,7 +285,7 @@ class AdminProductTranslationControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/translations", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(body)
@@ -316,7 +318,7 @@ class AdminProductTranslationControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/translations", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(mapper.writeValueAsString(body))
@@ -336,7 +338,7 @@ class AdminProductTranslationControllerTest {
   void shouldRejectNegativeVersion() throws Exception {
     mockMvc.perform(
         patch("/api/admin/products/{id}/translations", "pattern-001")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(-1))

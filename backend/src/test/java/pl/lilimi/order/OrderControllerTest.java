@@ -1,5 +1,7 @@
 package pl.lilimi.order;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.junit.jupiter.api.BeforeEach;
@@ -283,7 +285,7 @@ class OrderControllerTest {
   @Test
   void shouldPublishAndSellPhysicalProductWithSelectedOptions() throws Exception {
     var created = mockMvc.perform(multipart("/api/admin/products")
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf())
         .file(new MockMultipartFile("metadata", "", "application/json", """
           {
@@ -388,7 +390,7 @@ class OrderControllerTest {
       .andExpect(status().isNotFound());
 
     mockMvc.perform(patch("/api/admin/orders/" + orderId + "/status")
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content("""
@@ -397,7 +399,7 @@ class OrderControllerTest {
       .andExpect(status().isOk());
 
     mockMvc.perform(get(created.getHeader("Location"))
-        .with(user("admin@example.com").roles("ADMIN")))
+        .with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.stockQuantity").value(120))
       .andExpect(jsonPath("$.active").value(true));
@@ -443,7 +445,7 @@ class OrderControllerTest {
 
     assertThat(orderRepository.findDueStockReservationOrderIds(now)).doesNotContain(secondOrderId);
     mockMvc.perform(get(created.getHeader("Location"))
-        .with(user("admin@example.com").roles("ADMIN")))
+        .with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.stockQuantity").value(120));
     mockMvc.perform(get("/api/products/breloczek-testowy"))
@@ -464,7 +466,7 @@ class OrderControllerTest {
       .andExpect(jsonPath("$.maxQuantity").value(1));
 
     mockMvc.perform(patch("/api/admin/products/embroidered-002/variants/{id}", variantId)
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content("""
@@ -560,12 +562,12 @@ class OrderControllerTest {
     var variantVersion = jdbc.queryForObject("SELECT version FROM garment_variants WHERE id = ?", Long.class, variantId);
     mockMvc.perform(delete("/api/admin/products/embroidered-002/variants/{id}", variantId)
         .param("expectedVersion", Long.toString(variantVersion))
-        .with(user("admin@example.com").roles("ADMIN")).with(csrf()))
+        .with(verifiedAdmin("admin@example.com")).with(csrf()))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.archived").value(true));
 
     mockMvc.perform(patch("/api/admin/orders/" + orderId + "/status")
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content("""

@@ -1,5 +1,7 @@
 package pl.lilimi.inquiry;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -212,7 +214,7 @@ class ProjectInquiryControllerTest {
 
     mockMvc.perform(
         get("/api/admin/project-inquiries/{id}", id)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.projectType").value(projectType));

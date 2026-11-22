@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -44,7 +46,7 @@ class AdminGarmentVariantControllerTest {
 
     mockMvc.perform(
         get("/api/admin/products/embroidered-002/variants")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .param("page", "1")
           .param("size", "5")
           .accept(MediaType.APPLICATION_JSON)
@@ -74,7 +76,7 @@ class AdminGarmentVariantControllerTest {
 
     mockMvc.perform(
         get("/api/admin/products/embroidered-002/variants")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .param("fit", variant.getFit())
           .param("patternId", variant.getPatternId())
           .param("embroideryOptionId", variant.getEmbroideryOptionId())
@@ -107,7 +109,7 @@ class AdminGarmentVariantControllerTest {
         get(
           "/api/admin/products/embroidered-002/variants/embroidery-selections"
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .accept(MediaType.APPLICATION_JSON)
       )
       .andExpect(status().isOk())
@@ -159,7 +161,7 @@ class AdminGarmentVariantControllerTest {
 
     mockMvc.perform(
         get("/api/admin/products/embroidered-002/variants")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .param("size", "100")
       )
       .andExpect(status().isOk())
@@ -172,7 +174,7 @@ class AdminGarmentVariantControllerTest {
   void shouldReturnNotFoundForMissingProduct() throws Exception {
     mockMvc.perform(
         get("/api/admin/products/missing-product/variants")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isNotFound());
   }
@@ -181,7 +183,7 @@ class AdminGarmentVariantControllerTest {
   void shouldRejectDigitalProduct() throws Exception {
     mockMvc.perform(
         get("/api/admin/products/pattern-001/variants")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isBadRequest());
   }
@@ -196,7 +198,7 @@ class AdminGarmentVariantControllerTest {
     throws Exception {
     mockMvc.perform(
         get("/api/admin/products/embroidered-002/variants")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .param("page", Integer.toString(page))
           .param("size", Integer.toString(size))
       )

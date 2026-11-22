@@ -1,5 +1,7 @@
 package pl.lilimi.inquiry;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ class AdminInquiryStatusControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/project-inquiries/{id}/status", id)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody("in_progress", originalVersion))
@@ -74,7 +76,7 @@ class AdminInquiryStatusControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/project-inquiries/{id}/status", id)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody("in_progress", originalVersion + 1))
@@ -101,7 +103,7 @@ class AdminInquiryStatusControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/project-inquiries/{id}/status", id)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody("answered", originalVersion))
@@ -126,7 +128,7 @@ class AdminInquiryStatusControllerTest {
           "/api/admin/project-inquiries/{id}/status",
           UUID.randomUUID()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody("in_progress", 0))
@@ -188,7 +190,7 @@ class AdminInquiryStatusControllerTest {
           "/api/admin/project-inquiries/{id}/status",
           inquiry.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody("in_progress", inquiry.getVersion()))
       )
@@ -210,7 +212,7 @@ class AdminInquiryStatusControllerTest {
           "/api/admin/project-inquiries/{id}/status",
           inquiry.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody("unknown", inquiry.getVersion()))
@@ -233,7 +235,7 @@ class AdminInquiryStatusControllerTest {
           "/api/admin/project-inquiries/{id}/status",
           inquiry.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content("""
@@ -260,7 +262,7 @@ class AdminInquiryStatusControllerTest {
           "/api/admin/project-inquiries/{id}/status",
           inquiry.getId()
         )
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody("in_progress", -1))

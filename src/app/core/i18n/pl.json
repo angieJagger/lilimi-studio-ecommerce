@@ -119,6 +119,31 @@
     "inquiries": "Zapytania"
   },
 
+  "adminMfa": {
+    "title": "Weryfikacja administratora",
+    "loading": "Sprawdzanie zabezpieczeń…",
+    "setupHint": "Dodaj konto Lilimi Studio do aplikacji uwierzytelniającej, wybierając ręczne wpisanie klucza. Następnie wpisz wygenerowany sześciocyfrowy kod.",
+    "startSetup": "Skonfiguruj MFA",
+    "secret": "Klucz konfiguracji",
+    "code": "Kod z aplikacji",
+    "enterTotp": "Wpisz aktualny sześciocyfrowy kod z aplikacji uwierzytelniającej.",
+    "enterRecovery": "Wpisz jeden z zapisanych kodów odzyskiwania. Każdy kod działa tylko raz.",
+    "recoveryCode": "Kod odzyskiwania",
+    "confirm": "Potwierdź",
+    "verifying": "Sprawdzanie…",
+    "useRecovery": "Użyj kodu odzyskiwania",
+    "useTotp": "Użyj kodu z aplikacji",
+    "recoveryTitle": "Zapisz kody odzyskiwania",
+    "recoveryHint": "Przechowuj je w bezpiecznym miejscu, najlepiej w menedżerze haseł. Nie będzie można wyświetlić ich ponownie. Każdy kod pozwala zalogować się jeden raz bez aplikacji uwierzytelniającej.",
+    "savedCodes": "Kody zapisane — przejdź do panelu",
+    "logout": "Wyloguj się",
+    "errors": {
+      "invalidCode": "Kod jest niepoprawny, wygasł lub został już użyty.",
+      "tooManyAttempts": "Zbyt wiele prób. Spróbuj ponownie za 5 minut.",
+      "unavailable": "Nie udało się zakończyć weryfikacji. Spróbuj ponownie."
+    }
+  },
+
   "adminInquiries": {
     "title": "Zapytania projektowe",
     "loading": "Ładowanie zapytań…",

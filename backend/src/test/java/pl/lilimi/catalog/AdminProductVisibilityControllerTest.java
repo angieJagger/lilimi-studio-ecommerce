@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +51,7 @@ class AdminProductVisibilityControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(false, originalVersion))
@@ -89,7 +91,7 @@ class AdminProductVisibilityControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(true, originalVersion))
@@ -121,7 +123,7 @@ class AdminProductVisibilityControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(false, originalVersion + 1))
@@ -151,7 +153,7 @@ class AdminProductVisibilityControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", draft.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(true, draft.getVersion()))
@@ -168,7 +170,7 @@ class AdminProductVisibilityControllerTest {
   void shouldReturnNotFoundForMissingProduct() throws Exception {
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", "missing-product")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(false, 0))
@@ -213,7 +215,7 @@ class AdminProductVisibilityControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(false, product.getVersion()))
       )
@@ -228,7 +230,7 @@ class AdminProductVisibilityControllerTest {
 
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", product.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content("""
@@ -246,7 +248,7 @@ class AdminProductVisibilityControllerTest {
   void shouldRejectMissingVersion() throws Exception {
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", "pattern-001")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content("""
@@ -264,7 +266,7 @@ class AdminProductVisibilityControllerTest {
   void shouldRejectNegativeVersion() throws Exception {
     mockMvc.perform(
         patch("/api/admin/products/{id}/visibility", "pattern-001")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(false, -1))

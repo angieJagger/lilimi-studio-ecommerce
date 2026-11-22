@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { AuthSessionService } from '../../core/auth/auth-session.service';
@@ -19,6 +19,7 @@ export class CustomerLogin {
 
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   protected readonly isLoadingSession = signal(true);
   protected readonly isSubmitting = signal(false);
@@ -40,6 +41,7 @@ export class CustomerLogin {
         error: () => {
           this.errorKey.set('customerLogin.errors.sessionUnavailable');
         },
+        next: () => this.redirectToMfaIfRequired(),
       });
   }
 
@@ -72,13 +74,12 @@ export class CustomerLogin {
       .subscribe({
         next: () => {
           this.loginForm.controls.password.reset();
+          this.redirectToMfaIfRequired();
         },
         error: (error: unknown) => {
           this.loginForm.controls.password.reset();
 
-          this.errorKey.set(
-            this.loginError(error),
-          );
+          this.errorKey.set(this.loginError(error));
         },
       });
   }
@@ -113,5 +114,13 @@ export class CustomerLogin {
           this.errorKey.set('customerLogin.errors.logoutUnavailable');
         },
       });
+  }
+
+  private redirectToMfaIfRequired(): void {
+    if (this.session.mfaRequired()) {
+      const language = this.transloco.getActiveLang() === 'en' ? 'en' : 'pl';
+
+      void this.router.navigate(['/', language, 'account', 'mfa']);
+    }
   }
 }

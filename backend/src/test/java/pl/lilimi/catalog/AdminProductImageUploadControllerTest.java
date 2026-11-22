@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +77,7 @@ class AdminProductImageUploadControllerTest {
         multipart(URL, PRODUCT_ID)
           .file(image())
           .file(metadata(version))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isCreated())
@@ -108,7 +110,7 @@ class AdminProductImageUploadControllerTest {
         multipart(URL, PRODUCT_ID)
           .file(image())
           .file(metadata(currentVersion() + 1))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isConflict())
@@ -155,7 +157,7 @@ class AdminProductImageUploadControllerTest {
         multipart(URL, PRODUCT_ID)
           .file(image())
           .file(metadata(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isForbidden());
 
@@ -169,7 +171,7 @@ class AdminProductImageUploadControllerTest {
         multipart(URL, "missing-product")
           .file(image())
           .file(metadata(0))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isNotFound());
@@ -184,7 +186,7 @@ class AdminProductImageUploadControllerTest {
         multipart(URL, PRODUCT_ID)
           .file(image())
           .file(metadata(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isCreated());

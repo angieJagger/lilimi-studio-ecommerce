@@ -52,7 +52,7 @@ class AuthSessionTest {
   private CustomerProfileRepository profileRepository;
 
   @Test
-  void shouldLogInAccessAdminEndpointAndLogOut() throws Exception {
+  void shouldRequireMfaAfterPasswordLoginAndAllowLogout() throws Exception {
     accountRepository.saveAndFlush(new UserAccount(
       "admin-test@example.com",
       passwordEncoder.encode("Test-only-password-2026!"),
@@ -66,42 +66,36 @@ class AuthSessionTest {
         .header("X-XSRF-TOKEN", loginCsrf.getValue())
         .param("email", "admin-test@example.com")
         .param("password", "Test-only-password-2026!"))
-      .andExpect(status().isNoContent())
+      .andExpect(status().isAccepted())
       .andReturn();
 
     var session = loginResult.getResponse().getCookie("JSESSIONID");
-
     assertThat(session).isNotNull();
 
-    mockMvc.perform(get("/api/auth/me")
-        .cookie(session))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.email").value("admin-test@example.com"))
-      .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
-      .andExpect(jsonPath("$.firstName").doesNotExist())
-      .andExpect(jsonPath("$.password").doesNotExist())
-      .andExpect(jsonPath("$.passwordHash").doesNotExist());
+    mockMvc.perform(get("/api/auth/me").cookie(session))
+      .andExpect(status().isForbidden())
+      .andExpect(jsonPath("$.code").value("MFA_REQUIRED"));
 
-    mockMvc.perform(get("/api/admin/auth-check")
-        .cookie(session))
-      .andExpect(status().isOk())
-      .andExpect(content().string("ok"));
+    mockMvc.perform(get("/api/admin/auth-check").cookie(session))
+      .andExpect(status().isForbidden())
+      .andExpect(jsonPath("$.code").value("MFA_REQUIRED"));
 
     mockMvc.perform(get("/api/auth/session").cookie(session))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.email").value("admin-test@example.com"))
-      .andExpect(jsonPath("$.roles[0]").value("ADMIN"));
+      .andExpect(status().isNoContent())
+      .andExpect(header().string("X-MFA-Required", "true"))
+      .andExpect(header().string("Cache-Control", "no-store"))
+      .andExpect(content().string(""));
 
     var logoutCsrf = getCsrfCookie(session);
 
     mockMvc.perform(post("/api/auth/logout")
-        .cookie(session)
-        .cookie(logoutCsrf)
+        .cookie(session, logoutCsrf)
         .header("X-XSRF-TOKEN", logoutCsrf.getValue()))
       .andExpect(status().isNoContent());
 
     mockMvc.perform(get("/api/auth/session").cookie(session))
-      .andExpect(status().isNoContent());
+      .andExpect(status().isNoContent())
+      .andExpect(header().doesNotExist("X-MFA-Required"));
 
     mockMvc.perform(get("/api/admin/auth-check"))
       .andExpect(status().isUnauthorized());

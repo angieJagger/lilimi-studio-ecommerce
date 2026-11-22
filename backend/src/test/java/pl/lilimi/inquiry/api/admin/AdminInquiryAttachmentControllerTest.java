@@ -1,5 +1,7 @@
 package pl.lilimi.inquiry.api.admin;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +51,7 @@ class AdminInquiryAttachmentControllerTest {
 
     mockMvc.perform(
         get(downloadUrl())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(content().contentType("image/png"))

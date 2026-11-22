@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +102,7 @@ class AdminProductImageReplaceControllerTest {
         multipart(URL, PRODUCT_ID, image.getId())
           .file(replacement())
           .file(metadata(version))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isOk())
@@ -138,7 +140,7 @@ class AdminProductImageReplaceControllerTest {
         multipart(URL, PRODUCT_ID, image.getId())
           .file(replacement())
           .file(metadata(version + 1))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isConflict())
@@ -161,7 +163,7 @@ class AdminProductImageReplaceControllerTest {
         multipart(URL, "pattern-002", image.getId())
           .file(replacement())
           .file(metadata(version))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isNotFound());
@@ -176,7 +178,7 @@ class AdminProductImageReplaceControllerTest {
         multipart(URL, PRODUCT_ID, UUID.randomUUID())
           .file(replacement())
           .file(metadata(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isNotFound());
@@ -220,7 +222,7 @@ class AdminProductImageReplaceControllerTest {
         multipart(URL, PRODUCT_ID, image.getId())
           .file(replacement())
           .file(metadata(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isForbidden());
 
@@ -235,7 +237,7 @@ class AdminProductImageReplaceControllerTest {
         multipart(URL, PRODUCT_ID, image.getId())
           .file(replacement())
           .file(metadata(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isOk());

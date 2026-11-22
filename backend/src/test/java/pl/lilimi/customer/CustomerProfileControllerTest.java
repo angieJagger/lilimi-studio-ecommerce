@@ -1,5 +1,7 @@
 package pl.lilimi.customer;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,11 +74,11 @@ class CustomerProfileControllerTest {
     var account = createAccount(UserRole.ADMIN);
 
     mockMvc.perform(get(URL)
-        .with(user(account.getEmail()).roles("ADMIN")))
+        .with(verifiedAdmin(account.getEmail())))
       .andExpect(status().isForbidden());
 
     mockMvc.perform(put(URL).with(csrf())
-        .with(user(account.getEmail()).roles("ADMIN"))
+        .with(verifiedAdmin(account.getEmail()))
         .contentType(MediaType.APPLICATION_JSON)
         .content("{}"))
       .andExpect(status().isForbidden());

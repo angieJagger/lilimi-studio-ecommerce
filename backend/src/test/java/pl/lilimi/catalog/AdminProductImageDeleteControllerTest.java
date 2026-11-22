@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +70,7 @@ class AdminProductImageDeleteControllerTest {
     mockMvc.perform(
         delete(URL, PRODUCT_ID, first.getId())
           .param("expectedVersion", String.valueOf(version))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isOk())
@@ -93,7 +95,7 @@ class AdminProductImageDeleteControllerTest {
     mockMvc.perform(
         delete(URL, PRODUCT_ID, second.getId())
           .param("expectedVersion", String.valueOf(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isOk())
@@ -115,7 +117,7 @@ class AdminProductImageDeleteControllerTest {
     mockMvc.perform(
         delete(URL, PRODUCT_ID, first.getId())
           .param("expectedVersion", String.valueOf(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isOk())
@@ -134,7 +136,7 @@ class AdminProductImageDeleteControllerTest {
     mockMvc.perform(
         delete(URL, PRODUCT_ID, first.getId())
           .param("expectedVersion", String.valueOf(version + 1))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isConflict())
@@ -154,7 +156,7 @@ class AdminProductImageDeleteControllerTest {
     mockMvc.perform(
         delete(URL, PRODUCT_ID, foreign.getId())
           .param("expectedVersion", String.valueOf(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
       )
       .andExpect(status().isNotFound());
@@ -194,7 +196,7 @@ class AdminProductImageDeleteControllerTest {
     mockMvc.perform(
         delete(URL, PRODUCT_ID, first.getId())
           .param("expectedVersion", String.valueOf(currentVersion()))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isForbidden());
 
@@ -213,7 +215,7 @@ class AdminProductImageDeleteControllerTest {
       mockMvc.perform(
           delete(URL, PRODUCT_ID, first.getId())
             .param("expectedVersion", String.valueOf(currentVersion()))
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
             .with(csrf())
         )
         .andExpect(status().isOk());

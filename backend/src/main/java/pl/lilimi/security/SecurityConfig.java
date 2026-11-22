@@ -20,6 +20,7 @@ import org.springframework.security.web.csrf.CsrfFilter;
 
 import pl.lilimi.auth.persistence.UserAccountRepository;
 import pl.lilimi.auth.application.LoginRateLimiter;
+import pl.lilimi.auth.mfa.AdminMfaSession;
 import pl.lilimi.security.application.PublicFormRateLimiter;
 import pl.lilimi.security.turnstile.TurnstileFilter;
 import pl.lilimi.security.turnstile.TurnstileVerifier;
@@ -57,6 +58,10 @@ public class SecurityConfig {
       .addFilterAfter(
         new CredentialsVersionFilter(accounts),
         SecurityContextHolderFilter.class
+      )
+      .addFilterAfter(
+        new AdminMfaFilter(),
+        CredentialsVersionFilter.class
       )
       .authorizeHttpRequests(authorize -> {
         authorize
@@ -121,6 +126,7 @@ public class SecurityConfig {
           HttpMethod.PUT,
           "/api/account/profile"
         ).hasRole("CUSTOMER")
+        .requestMatchers("/api/auth/mfa/**").hasRole("ADMIN")
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
           .anyRequest().denyAll();
       })
@@ -143,9 +149,17 @@ public class SecurityConfig {
         .loginProcessingUrl("/api/auth/login")
         .usernameParameter("email")
         .passwordParameter("password")
-        .successHandler((request, response, authentication) ->
-          response.setStatus(204)
-        )
+        .successHandler((request, response, authentication) -> {
+          AdminMfaSession.clear(request.getSession(false));
+          response.setHeader("Cache-Control", "no-store");
+
+          boolean admin = authentication.getAuthorities().stream()
+            .anyMatch(authority ->
+              authority.getAuthority().equals("ROLE_ADMIN")
+            );
+
+          response.setStatus(admin ? 202 : 204);
+        })
         .failureHandler((request, response, exception) ->
           response.setStatus(401)
         )

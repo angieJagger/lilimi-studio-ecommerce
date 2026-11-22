@@ -1,5 +1,7 @@
 package pl.lilimi.catalog;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +64,7 @@ class AdminProductImageOrderControllerTest {
 
     mockMvc.perform(
         patch(URL, PRODUCT_ID)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(
@@ -133,7 +135,7 @@ class AdminProductImageOrderControllerTest {
 
     mockMvc.perform(
         patch(URL, PRODUCT_ID)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(
@@ -181,7 +183,7 @@ class AdminProductImageOrderControllerTest {
   void shouldRejectRequestWithoutCsrfToken() throws Exception {
     mockMvc.perform(
         patch(URL, PRODUCT_ID)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .contentType(MediaType.APPLICATION_JSON)
           .content(validRequestBody())
       )
@@ -195,7 +197,7 @@ class AdminProductImageOrderControllerTest {
 
     mockMvc.perform(
         patch(URL, PRODUCT_ID)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType(MediaType.APPLICATION_JSON)
           .content(requestBody(ids, version))

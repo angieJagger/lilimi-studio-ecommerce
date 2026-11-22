@@ -1,5 +1,7 @@
 package pl.lilimi.catalog.digital;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,7 +63,7 @@ class AdminDigitalProductPackageControllerTest {
 
     mockMvc.perform(multipart(URL)
         .file(upload())
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf()))
       .andExpect(status().isCreated())
       .andExpect(header().string("Cache-Control", "no-store"))
@@ -101,7 +103,7 @@ class AdminDigitalProductPackageControllerTest {
   void shouldRejectAdministratorWithoutCsrf() throws Exception {
     mockMvc.perform(multipart(URL)
         .file(upload())
-        .with(user("admin@example.com").roles("ADMIN")))
+        .with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isForbidden());
 
     verifyNoInteractions(service);
@@ -116,7 +118,7 @@ class AdminDigitalProductPackageControllerTest {
 
     mockMvc.perform(multipart(URL)
         .file(upload())
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf()))
       .andExpect(status().isBadRequest())
       .andExpect(header().string("Cache-Control", "no-store"))
@@ -126,7 +128,7 @@ class AdminDigitalProductPackageControllerTest {
   @Test
   void shouldRejectRequestWithoutFile() throws Exception {
     mockMvc.perform(multipart(URL)
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf()))
       .andExpect(status().isBadRequest());
 
@@ -142,7 +144,7 @@ class AdminDigitalProductPackageControllerTest {
       .thenReturn(List.of(second, first));
 
     mockMvc.perform(get(URL)
-        .with(user("admin@example.com").roles("ADMIN")))
+        .with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isOk())
       .andExpect(header().string("Cache-Control", "no-store"))
       .andExpect(jsonPath("$.length()").value(2))
@@ -161,7 +163,7 @@ class AdminDigitalProductPackageControllerTest {
       .thenReturn(List.of());
 
     mockMvc.perform(get(URL)
-        .with(user("admin@example.com").roles("ADMIN")))
+        .with(verifiedAdmin("admin@example.com")))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.length()").value(0));
   }

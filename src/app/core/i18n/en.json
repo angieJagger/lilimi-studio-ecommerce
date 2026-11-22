@@ -117,6 +117,30 @@
     "products": "Products",
     "inquiries": "Inquiries"
   },
+  "adminMfa": {
+    "title": "Administrator verification",
+    "loading": "Checking security settings…",
+    "setupHint": "Add your Lilimi Studio account to an authenticator app using manual key entry. Then enter the generated six-digit code.",
+    "startSetup": "Set up MFA",
+    "secret": "Setup key",
+    "code": "Authenticator code",
+    "enterTotp": "Enter the current six-digit code from your authenticator app.",
+    "enterRecovery": "Enter one of your saved recovery codes. Each code can only be used once.",
+    "recoveryCode": "Recovery code",
+    "confirm": "Confirm",
+    "verifying": "Verifying…",
+    "useRecovery": "Use a recovery code",
+    "useTotp": "Use an authenticator code",
+    "recoveryTitle": "Save your recovery codes",
+    "recoveryHint": "Keep these codes somewhere safe, preferably in a password manager. They cannot be displayed again. Each code allows one sign-in without your authenticator app.",
+    "savedCodes": "Codes saved — open dashboard",
+    "logout": "Sign out",
+    "errors": {
+      "invalidCode": "The code is incorrect, expired or has already been used.",
+      "tooManyAttempts": "Too many attempts. Try again in 5 minutes.",
+      "unavailable": "Verification could not be completed. Please try again."
+    }
+  },
   "adminInquiries": {
     "title": "Project inquiries",
     "loading": "Loading inquiries…",

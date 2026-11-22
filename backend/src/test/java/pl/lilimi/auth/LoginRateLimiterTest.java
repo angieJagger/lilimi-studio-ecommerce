@@ -148,7 +148,7 @@ class LoginRateLimiterTest {
       when(clock.instant()).thenReturn(NOW.plusSeconds(10));
       mvc.perform(post("/api/auth/login").with(csrf())
           .param("email", account.getEmail()).param("password", "Test-only-password-2026!"))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isAccepted());
     } finally {
       accounts.deleteById(account.getId());
     }

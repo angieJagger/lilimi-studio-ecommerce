@@ -1,5 +1,7 @@
 package pl.lilimi.order;
 
+import static pl.lilimi.security.VerifiedAdminRequests.verifiedAdmin;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +146,7 @@ class AdminOrderControllerTest {
   ) throws Exception {
     return mockMvc.perform(
       patch("/api/admin/orders/" + id + "/status")
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .with(csrf())
         .contentType("application/json")
         .content("""
@@ -174,7 +176,7 @@ class AdminOrderControllerTest {
   void shouldAllowAdministrator() throws Exception {
     mockMvc.perform(
         get("/api/admin/orders")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.page").value(0))
@@ -202,7 +204,7 @@ class AdminOrderControllerTest {
         get("/api/admin/orders")
           .param("page", "0")
           .param("size", "1")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items.length()").value(1))
@@ -227,7 +229,7 @@ class AdminOrderControllerTest {
         get("/api/admin/orders")
           .param("page", "1")
           .param("size", "1")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.page").value(1))
@@ -274,7 +276,7 @@ class AdminOrderControllerTest {
           .param("dateTo", "2090-01-10")
           .param("size", "1")
           .param("page", "0")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items.length()").value(1))
@@ -291,7 +293,7 @@ class AdminOrderControllerTest {
           .param("dateTo", "2090-01-10")
           .param("size", "1")
           .param("page", "1")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items.length()").value(1))
@@ -334,7 +336,7 @@ class AdminOrderControllerTest {
         get("/api/admin/orders")
           .param("dateFrom", "2026-03-29")
           .param("dateTo", "2026-03-29")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(2))
@@ -369,7 +371,7 @@ class AdminOrderControllerTest {
     mockMvc.perform(
         get("/api/admin/orders")
           .param("status", "cancelled")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].id").value(
@@ -388,7 +390,7 @@ class AdminOrderControllerTest {
         get("/api/admin/orders")
           .param("dateFrom", "2089-06-01")
           .param("dateTo", "2089-06-01")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items").isEmpty())
@@ -428,7 +430,7 @@ class AdminOrderControllerTest {
           .param("view", "active")
           .param("dateFrom", "2091-01-10")
           .param("dateTo", "2091-01-10")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(2))
@@ -444,7 +446,7 @@ class AdminOrderControllerTest {
           .param("view", "archive")
           .param("dateFrom", "2091-01-10")
           .param("dateTo", "2091-01-10")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(2))
@@ -460,7 +462,7 @@ class AdminOrderControllerTest {
           .param("view", "all")
           .param("dateFrom", "2091-01-10")
           .param("dateTo", "2091-01-10")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(4));
@@ -488,7 +490,7 @@ class AdminOrderControllerTest {
             .param("view", view)
             .param("dateFrom", "2091-02-10")
             .param("dateTo", "2091-02-10")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(1))
@@ -507,7 +509,7 @@ class AdminOrderControllerTest {
           .param("status", "new")
           .param("dateFrom", "2091-02-10")
           .param("dateTo", "2091-02-10")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(0));
@@ -517,7 +519,7 @@ class AdminOrderControllerTest {
           .param("view", "active")
           .param("dateFrom", "2091-02-11")
           .param("dateTo", "2091-02-11")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(0));
@@ -549,7 +551,7 @@ class AdminOrderControllerTest {
             .param("search", phrase)
             .param("dateFrom", "2092-01-10")
             .param("dateTo", "2092-01-10")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(1))
@@ -611,7 +613,7 @@ class AdminOrderControllerTest {
             .param("dateTo", "2092-02-10")
             .param("size", "1")
             .param("page", Integer.toString(page))
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items.length()").value(1))
@@ -626,7 +628,7 @@ class AdminOrderControllerTest {
           .param("search", "phone-search")
           .param("dateFrom", "2092-02-10")
           .param("dateTo", "2092-02-10")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.totalElements").value(1))
@@ -658,7 +660,7 @@ class AdminOrderControllerTest {
             .param("search", phrase)
             .param("dateFrom", "2092-03-10")
             .param("dateTo", "2092-03-10")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(1))
@@ -673,7 +675,7 @@ class AdminOrderControllerTest {
           .param("search", "' OR 1=1 --")
           .param("dateFrom", "2092-03-10")
           .param("dateTo", "2092-03-10")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items").isEmpty())
@@ -694,7 +696,7 @@ class AdminOrderControllerTest {
             .param("search", phrase)
             .param("dateFrom", "2092-04-10")
             .param("dateTo", "2092-04-10")
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(1))
@@ -709,7 +711,7 @@ class AdminOrderControllerTest {
     mockMvc.perform(
         get("/api/admin/orders")
           .param("search", "a".repeat(255))
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isBadRequest());
   }
@@ -725,7 +727,7 @@ class AdminOrderControllerTest {
     }) {
       mockMvc.perform(
           get("/api/admin/orders" + query)
-            .with(user("admin@example.com").roles("ADMIN"))
+            .with(verifiedAdmin("admin@example.com"))
         )
         .andExpect(status().isBadRequest());
     }
@@ -739,7 +741,7 @@ class AdminOrderControllerTest {
     }) {
       mockMvc.perform(
         get("/api/admin/orders" + query)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       ).andExpect(status().isBadRequest());
     }
   }
@@ -781,7 +783,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + id)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.id").value(id))
@@ -827,7 +829,7 @@ class AdminOrderControllerTest {
   void shouldReturnNotFoundForMissingOrder() throws Exception {
     mockMvc.perform(
       get("/api/admin/orders/" + UUID.randomUUID())
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
     ).andExpect(status().isNotFound());
   }
 
@@ -835,7 +837,7 @@ class AdminOrderControllerTest {
   void shouldRejectInvalidOrderId() throws Exception {
     mockMvc.perform(
       get("/api/admin/orders/invalid-id")
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
     ).andExpect(status().isBadRequest());
   }
 
@@ -896,7 +898,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + id)
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.delivery.kind").value("courier"))
@@ -938,7 +940,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("processing"))
@@ -964,7 +966,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("new"))
@@ -1003,7 +1005,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("processing"))
@@ -1050,7 +1052,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.paymentCancellation.status")
@@ -1060,7 +1062,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].id")
@@ -1104,7 +1106,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("cancelled"))
@@ -1115,7 +1117,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].id")
@@ -1170,7 +1172,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("cancelled"))
@@ -1181,7 +1183,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.items[0].id")
@@ -1208,7 +1210,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("processing"))
@@ -1231,7 +1233,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("new"))
@@ -1290,7 +1292,7 @@ class AdminOrderControllerTest {
   void shouldRejectStatusChangeWithoutCsrfToken() throws Exception {
     mockMvc.perform(
       patch("/api/admin/orders/" + UUID.randomUUID() + "/status")
-        .with(user("admin@example.com").roles("ADMIN"))
+        .with(verifiedAdmin("admin@example.com"))
         .contentType("application/json")
         .content("""
         {
@@ -1336,7 +1338,7 @@ class AdminOrderControllerTest {
     for (String request : invalidRequests) {
       mockMvc.perform(
         patch("/api/admin/orders/" + order.getId() + "/status")
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
           .with(csrf())
           .contentType("application/json")
           .content(request)
@@ -1345,7 +1347,7 @@ class AdminOrderControllerTest {
 
     mockMvc.perform(
         get("/api/admin/orders/" + order.getId())
-          .with(user("admin@example.com").roles("ADMIN"))
+          .with(verifiedAdmin("admin@example.com"))
       )
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.status").value("new"))
