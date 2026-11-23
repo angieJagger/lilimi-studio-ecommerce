@@ -25,6 +25,10 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 - Order and inquiry work queues with filters, search, archive views, per-administrator read tracking and URL-preserved navigation.
 - Private project inquiry attachments for logos, artwork and visual references, with file validation and administrator-only downloads.
 - Cloudflare Turnstile protection for registration and project inquiries, with server-side token, hostname and action validation.
+- Mandatory administrator MFA with authenticator codes, encrypted TOTP secrets, hashed single-use recovery codes and account-level rate limiting.
+- PostgreSQL-backed HTTP sessions shared between backend instances.
+- Shared stock for base garments, independent of the selected embroidery size or placement.
+- Optional administrator notifications for new project inquiries and confirmed payments through Telegram and email. Both channels have been verified locally; production configuration is pending.
 
 ## Technology
 
@@ -46,6 +50,10 @@ I am building Lilimi Studio for my own planned business. I design the interface 
 - **A product update does not replace a purchased file.** Downloads use the package version pinned to the order item, rather than the latest upload.
 - **Tests use PostgreSQL.** Integration tests exercise migrations, constraints and concurrency against Testcontainers databases.
 - **Deployments use verified commits.** CI runs tests, dependency audits and image scans before publishing images tagged with the full commit SHA.
+- **A password alone does not grant administrator access.** Protected APIs require an MFA-verified session. Successful verification rotates the session ID, and database updates prevent reuse of accepted TOTP and recovery codes.
+- **HTTP sessions survive instance changes.** Spring Session JDBC stores sessions in PostgreSQL. Session sharing and guest order access have been manually verified across two local backend instances; production currently uses a single backend instance.
+- **CI packages the tested backend artifact.** The backend image uses the JAR produced by the successful verification job, avoiding a second Maven build and dependency download inside Docker. Image scanning remains required before publication.
+- **Administrator notifications use a transactional outbox.** Queue entries commit with the business event. Telegram and email have independent delivery states, bounded retries and expiring worker leases. A unique constraint prevents duplicate queue entries; external delivery can still be repeated if sending succeeds but recording success fails.
 
 ## Digital purchase flow
 
@@ -107,10 +115,11 @@ The project covers both interface design and implementation. README screenshots 
 
 ## Next steps
 
-- Optimize catalogue image loading and introduce appropriately sized thumbnails.
-- Refine interface designs and replace remaining sample portfolio content.
-- Further payment recovery, refunds and preparation for real payments.
-- Physical fulfilment workflows, order status notifications and automated off-host backups.
-- Assess multi-instance readiness and test load balancing locally before provisioning additional cloud infrastructure.
+- Configure and verify administrator notifications in production.
+- Prepare store terms, service agreements, privacy information and data retention procedures.
+- Finalize sales documentation, refund handling and operational requirements before enabling live payments.
+- Improve technical SEO, configure Google Search Console and address measured performance issues, including the initial bundle budget warning.
+- Update Figma designs and project documentation to match the deployed application.
+- Extend local multi-instance testing to load balancing and concurrent workloads before adding cloud infrastructure.
 
 [Detailed features and implementation notes](docs/PROJECT_GUIDE.md)

@@ -9,6 +9,7 @@ import pl.lilimi.catalog.ProductRepository;
 import pl.lilimi.inquiry.api.CreateInquiryRequest;
 import pl.lilimi.inquiry.domain.ProjectInquiry;
 import pl.lilimi.inquiry.persistence.ProjectInquiryRepository;
+import pl.lilimi.notification.admin.AdminNotificationQueue;
 
 @Service
 @Validated
@@ -16,13 +17,16 @@ public class ProjectInquiryService {
 
   private final ProjectInquiryRepository inquiries;
   private final ProductRepository products;
+  private final AdminNotificationQueue adminNotifications;
 
   public ProjectInquiryService(
     ProjectInquiryRepository inquiries,
-    ProductRepository products
+    ProductRepository products,
+    AdminNotificationQueue adminNotifications
   ) {
     this.inquiries = inquiries;
     this.products = products;
+    this.adminNotifications = adminNotifications;
   }
 
   @Transactional
@@ -52,6 +56,8 @@ public class ProjectInquiryService {
       productId
     );
 
-    return inquiries.saveAndFlush(inquiry);
+    var saved = inquiries.saveAndFlush(inquiry);
+    adminNotifications.enqueueInquiry(saved.getId());
+    return saved;
   }
 }
