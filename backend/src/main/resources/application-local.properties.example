@@ -37,3 +37,13 @@ lilimi.security.turnstile.enabled=false
 lilimi.security.turnstile.site-key=
 lilimi.security.turnstile.secret-key=
 lilimi.security.turnstile.allowed-hostnames=localhost,127.0.0.1
+
+# Administrator notifications
+lilimi.notifications.admin.telegram.enabled=false
+lilimi.notifications.admin.telegram.bot-token=
+lilimi.notifications.admin.telegram.chat-id=
+
+lilimi.notifications.admin.email.enabled=false
+lilimi.notifications.admin.email.recipient=
+
+lilimi.notifications.admin.worker.enabled=false

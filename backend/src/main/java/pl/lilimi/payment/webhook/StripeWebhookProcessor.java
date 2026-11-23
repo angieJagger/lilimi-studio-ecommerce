@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import pl.lilimi.notification.admin.AdminNotificationQueue;
 import pl.lilimi.order.persistence.OrderRepository;
 import pl.lilimi.order.persistence.DigitalDownloadEmailRepository;
 import pl.lilimi.order.persistence.OrderItemRepository;
@@ -36,6 +37,7 @@ public class StripeWebhookProcessor {
   private final CheckoutExpirationQueue expirationQueue;
   private final DigitalDownloadEmailRepository downloadEmails;
   private final OrderItemRepository items;
+  private final AdminNotificationQueue adminNotifications;
 
   public StripeWebhookProcessor(
     OrderRepository orders,
@@ -43,7 +45,8 @@ public class StripeWebhookProcessor {
     StripeWebhookEventRepository events,
     CheckoutExpirationQueue expirationQueue,
     DigitalDownloadEmailRepository downloadEmails,
-    OrderItemRepository items
+    OrderItemRepository items,
+    AdminNotificationQueue adminNotifications
   ) {
     this.orders = orders;
     this.attempts = attempts;
@@ -51,6 +54,7 @@ public class StripeWebhookProcessor {
     this.expirationQueue = expirationQueue;
     this.downloadEmails = downloadEmails;
     this.items = items;
+    this.adminNotifications = adminNotifications;
   }
 
   @Transactional
@@ -142,6 +146,13 @@ public class StripeWebhookProcessor {
     }
 
     attempts.saveAndFlush(attempt);
+
+    if (
+      attempt.getStatus() == PaymentAttemptStatus.SUCCEEDED
+        && order.getStatus() != OrderStatus.CANCELLED
+    ) {
+      adminNotifications.enqueuePaidOrder(orderId);
+    }
 
     if (
       attempt.getStatus() == PaymentAttemptStatus.SUCCEEDED
